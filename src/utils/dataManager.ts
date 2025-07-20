@@ -1,4 +1,8 @@
-// Default configuration data (replaces the deleted JSON file)
+// ============================================================================
+// DATA MANAGER - Handles JSON file operations for scope configuration
+// ============================================================================
+
+// Default configuration data (used only for reset functionality)
 const initialScopeData = [
   {
     "name": "Section 1",
@@ -19,6 +23,10 @@ const initialScopeData = [
   }
 ];
 
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
 export interface ScopeItem {
   name: string;
   hours: number;
@@ -35,21 +43,32 @@ export interface ScopeSection {
 
 export type ScopeData = ScopeSection[];
 
-const STORAGE_KEY = 'scoping_tool_data';
-const CONFIG_VERSION_KEY = 'scoping_tool_config_version';
-const CURRENT_CONFIG_VERSION = '1.0';
+// ============================================================================
+// CORE FUNCTIONS
+// ============================================================================
 
 /**
- * Load scope data with the following priority:
- * 1. From localStorage (user modifications)
- * 2. From JSON config file (initial data)
+ * Get empty scope data for app startup
  */
+export const getEmptyScopeData = (): ScopeData => {
+  console.log('Starting with empty scope data');
+  return [];
+};
+
 /**
- * Load scope data from a selected JSON file
+ * Get default scope data from the bundled configuration (used for reset only)
+ */
+export const getDefaultScopeData = (): ScopeData => {
+  console.log('Loading default scope data from bundled config');
+  return JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
+};
+
+/**
+ * Load scope data from a user-selected JSON file
  */
 export const loadScopeDataFromFile = async (): Promise<ScopeData> => {
   try {
-    // Check if File System Access API is supported
+    // Check if File System Access API is supported (modern browsers)
     if ('showOpenFilePicker' in window) {
       try {
         const [fileHandle] = await (window as any).showOpenFilePicker({
@@ -113,32 +132,17 @@ export const loadScopeDataFromFile = async (): Promise<ScopeData> => {
 };
 
 /**
- * Get default scope data from the bundled config
- */
-export const getDefaultScopeData = (): ScopeData => {
-  console.log('Loading default scope data from bundled config');
-  return JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
-};
-
-/**
- * Load scope data (keeping for compatibility)
- */
-export const loadScopeData = (): ScopeData => {
-  return getDefaultScopeData();
-};
-
-/**
- * Save scope data directly to JSON file (using File System Access API)
+ * Save scope data directly to a JSON file
  */
 export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
   try {
     const jsonContent = JSON.stringify(data, null, 2);
     
-    // Check if File System Access API is supported
+    // Check if File System Access API is supported (modern browsers)
     if ('showSaveFilePicker' in window) {
       try {
         const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: 'initialScopeData.json',
+          suggestedName: 'scope-configuration.json',
           types: [{
             description: 'JSON files',
             accept: { 'application/json': ['.json'] }
@@ -159,12 +163,12 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
       }
     }
     
-    // Fallback: Download the JSON file
+    // Fallback: Download the JSON file (for older browsers or if user cancels)
     const blob = new Blob([jsonContent], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'initialScopeData.json';
+    a.download = 'scope-configuration.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -183,55 +187,11 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
  */
 export const resetToInitialConfig = (): ScopeData => {
   try {
-    // Clear localStorage
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(CONFIG_VERSION_KEY);
-    
-    // Return fresh copy of initial data
     const data = JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
-    
-    // Data is ready to use
-    
     console.log('Reset to initial configuration');
     return data;
   } catch (error) {
     console.error('Error resetting to initial config:', error);
     return JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
-  }
-};
-
-/**
- * Export current configuration as JSON for backup/sharing
- */
-export const exportConfiguration = (data: ScopeData): string => {
-  return JSON.stringify(data, null, 2);
-};
-
-/**
- * Import configuration from JSON string
- */
-export const importConfiguration = (jsonString: string): ScopeData => {
-  try {
-    const importedData = JSON.parse(jsonString) as ScopeData;
-    
-    // Validate the structure
-    if (!Array.isArray(importedData)) {
-      throw new Error('Invalid data format: expected array');
-    }
-    
-    importedData.forEach((section, index) => {
-      if (!section.name || !section.description || !Array.isArray(section.items)) {
-        throw new Error(`Invalid section format at index ${index}`);
-      }
-    });
-    
-    // Save the imported data
-    saveScopeData(importedData);
-    
-    console.log('Configuration imported successfully');
-    return importedData;
-  } catch (error) {
-    console.error('Error importing configuration:', error);
-    throw error;
   }
 }; 
