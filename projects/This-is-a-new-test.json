@@ -1,0 +1,157 @@
+{
+  "projectType": "This is a new test",
+  "description": "Standard B2C e-commerce project with integrated payment processing, customer management, and content delivery systems",
+  "numberOfDevelopers": 6,
+  "sprintLength": 14,
+  "sprintEfficiency": 80,
+  "sections": [
+    {
+      "name": "Integrations",
+      "items": [
+        {
+          "name": "Basic API Integration ",
+          "hours": 50,
+          "selected": true
+        },
+        {
+          "name": "Database Integration",
+          "hours": 60,
+          "selected": false
+        },
+        {
+          "name": "Third-party Service Integration",
+          "hours": 80,
+          "selected": false
+        },
+        {
+          "name": "Legacy System Integration",
+          "hours": 120,
+          "selected": false
+        },
+        {
+          "name": "Real-time Data Integration",
+          "hours": 100,
+          "selected": false
+        },
+        {
+          "name": "File Import/Export",
+          "hours": 50,
+          "selected": false
+        },
+        {
+          "name": "Payment Gateway Integration",
+          "hours": 90,
+          "selected": false
+        },
+        {
+          "name": "Email Service Integration",
+          "hours": 30,
+          "selected": false
+        },
+        {
+          "name": "Authentication Integration",
+          "hours": 70,
+          "selected": false
+        },
+        {
+          "name": "Analytics Integration",
+          "hours": 45,
+          "selected": false
+        },
+        {
+          "name": "CRM Integration",
+          "hours": 110,
+          "selected": false
+        },
+        {
+          "name": "ERP Integration",
+          "hours": 200,
+          "selected": false
+        },
+        {
+          "name": "Cloud Storage Integration",
+          "hours": 55,
+          "selected": false
+        },
+        {
+          "name": "Notification Service Integration",
+          "hours": 40,
+          "selected": false
+        },
+        {
+          "name": "Custom API Development",
+          "hours": 200,
+          "selected": false
+        }
+      ]
+    },
+    {
+      "name": "Frontend Customizations",
+      "items": [
+        {
+          "name": "Custom Dashboard Design",
+          "hours": 80,
+          "selected": true
+        },
+        {
+          "name": "Responsive Layout Adjustments",
+          "hours": 60,
+          "selected": false
+        },
+        {
+          "name": "Custom Components",
+          "hours": 100,
+          "selected": false
+        },
+        {
+          "name": "Theme Customization",
+          "hours": 40,
+          "selected": false
+        },
+        {
+          "name": "Advanced Forms",
+          "hours": 70,
+          "selected": false
+        },
+        {
+          "name": "Data Visualization",
+          "hours": 90,
+          "selected": false
+        },
+        {
+          "name": "Interactive Elements",
+          "hours": 85,
+          "selected": false
+        },
+        {
+          "name": "Mobile Optimization",
+          "hours": 75,
+          "selected": false
+        },
+        {
+          "name": "Accessibility Features",
+          "hours": 65,
+          "selected": false
+        },
+        {
+          "name": "Custom Navigation",
+          "hours": 55,
+          "selected": false
+        },
+        {
+          "name": "Advanced Search Interface",
+          "hours": 95,
+          "selected": false
+        },
+        {
+          "name": "Real-time Updates UI",
+          "hours": 110,
+          "selected": false
+        }
+      ]
+    }
+  ],
+  "templateSource": "b2c-commerce.json",
+  "createdAt": "2025-07-20T22:00:30.179Z",
+  "lastModified": "2025-07-20T22:00:30.179Z"
+}

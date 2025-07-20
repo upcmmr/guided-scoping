@@ -34,6 +34,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [debugUpdate, setDebugUpdate] = useState(0);
   const [cameFromTemplate, setCameFromTemplate] = useState(false);
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
+  const [showCustomize, setShowCustomize] = useState(false);
 
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
@@ -148,6 +149,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setShowExitWarning(false);
     setCameFromTemplate(false);
     setSelectedSize(null);
+    setShowCustomize(false);
   };
 
   const handleSaveProject = async () => {
@@ -424,6 +426,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     console.log(`Selected ${size} items:`, Object.fromEntries(newSelections));
   };
 
+
+
   // Loading state
   if (loading) {
     return (
@@ -561,81 +565,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           </div>
 
-          {/* Size Selector - Only show when coming from template */}
-          {cameFromTemplate && (
-            <div className="border-2 border-blue-200 rounded-xl shadow-lg mb-8 overflow-hidden bg-blue-50">
-              <div className="bg-blue-100 text-blue-800 p-6">
-                <h4 className="font-bold text-xl">Project Size Selection</h4>
-                <p className="text-blue-700 mt-1 text-sm">Choose your project scope to automatically select relevant items</p>
-              </div>
-              
-              <div className="p-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => handleSizeSelection('small')}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'small'
-                        ? 'border-green-500 bg-green-50 text-green-800'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Small</div>
-                      <div className="text-sm">Essential features only</div>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleSizeSelection('medium')}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'medium'
-                        ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Medium</div>
-                      <div className="text-sm">Standard feature set</div>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleSizeSelection('large')}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'large'
-                        ? 'border-red-500 bg-red-50 text-red-800'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Large</div>
-                      <div className="text-sm">Comprehensive features</div>
-                    </div>
-                  </button>
-                </div>
-                
-                {selectedSize && (
-                  <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium text-gray-800">Selected:</span> {selectedSize.charAt(0).toUpperCase() + selectedSize.slice(1)} scope 
-                      ({getSelectedItemsCount()} items, {getTotalHours()} hours)
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Project-Level Information - Match admin panel structure */}
+          {/* Project Information - Always at top */}
           <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-              <h4 className="font-bold text-xl">Project Settings</h4>
-              <p className="text-gray-600 mt-1 text-sm">Customize project metadata and team configuration</p>
+              <h4 className="font-bold text-xl">Project Information</h4>
+              <p className="text-gray-600 mt-1 text-sm">Basic project details and description</p>
             </div>
             
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="md:col-span-2 lg:col-span-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
                   <input
                     type="text"
@@ -645,7 +584,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     placeholder="e.g., B2C E-commerce Platform"
                   />
                 </div>
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                   <input
                     type="text"
@@ -655,48 +594,109 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     placeholder="Project description and key features"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Number of Developers</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={editableData.numberOfDevelopers || 3}
-                    onChange={(e) => updateProjectInfo('numberOfDevelopers', parseInt(e.target.value) || 3)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="3"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sprint Length (days)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="30"
-                    value={editableData.sprintLength || 14}
-                    onChange={(e) => updateProjectInfo('sprintLength', parseInt(e.target.value) || 14)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="14"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={editableData.sprintEfficiency || 80}
-                    onChange={(e) => updateProjectInfo('sprintEfficiency', parseInt(e.target.value) || 80)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="80"
-                  />
-                </div>
               </div>
             </div>
           </div>
 
+          {/* Size Selector - Only show when coming from template */}
+          {cameFromTemplate && (
+            <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <h4 className="font-bold text-xl">Prime Profile Selection</h4>
+                <p className="text-gray-600 mt-1 text-sm">Choose your project scope to automatically select relevant items</p>
+              </div>
+              
+              <div className="p-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() => !showCustomize && handleSizeSelection('small')}
+                    disabled={showCustomize}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'small'
+                        ? showCustomize 
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-green-500 bg-green-50 text-green-800'
+                        : showCustomize
+                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Small</div>
+                      <div className="text-sm">Essential features only</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => !showCustomize && handleSizeSelection('medium')}
+                    disabled={showCustomize}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'medium'
+                        ? showCustomize 
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-yellow-500 bg-yellow-50 text-yellow-800'
+                        : showCustomize
+                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Medium</div>
+                      <div className="text-sm">Standard feature set</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => !showCustomize && handleSizeSelection('large')}
+                    disabled={showCustomize}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'large'
+                        ? showCustomize 
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-red-500 bg-red-50 text-red-800'
+                        : showCustomize
+                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Large</div>
+                      <div className="text-sm">Comprehensive features</div>
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Customize Button - Show after size selection */}
+                {selectedSize && (
+                  <div className="mt-6 pt-4 border-t border-gray-300">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          <span className="italic">Optional:</span> Customize the prime profile for your project
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShowCustomize(true)}
+                        disabled={showCustomize}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          showCustomize
+                            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                            : 'bg-gray-600 text-white hover:bg-gray-700'
+                        }`}
+                      >
+                        Customize
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Sections - Editable like admin panel */}
-          {editableData.sections.length === 0 ? (
+          {showCustomize && (
+            <>
+              {editableData.sections.length === 0 ? (
             <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
                 <Layers className="w-8 h-8 text-gray-400" />
@@ -929,6 +929,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </button>
             </div>
           </div>
+            </>
+          )}
         </div>
 
         {/* Exit Warning Dialog */}
