@@ -32,6 +32,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [debugUpdate, setDebugUpdate] = useState(0);
+  const [cameFromTemplate, setCameFromTemplate] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
 
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
@@ -85,6 +87,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         });
         
         setHasUnsavedChanges(false);
+        setCameFromTemplate(false);
+        setSelectedSize(null);
         setCurrentState('scoping');
         console.log('Loaded project file successfully:', projectData);
       }
@@ -111,6 +115,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       });
       setItemSelections(initialSelections);
       setHasUnsavedChanges(false);
+      setCameFromTemplate(true);
+      setSelectedSize(null);
       
       setCurrentState('scoping');
       console.log('Selected template:', template);
@@ -140,6 +146,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setItemSelections(new Map());
     setHasUnsavedChanges(false);
     setShowExitWarning(false);
+    setCameFromTemplate(false);
+    setSelectedSize(null);
   };
 
   const handleSaveProject = async () => {
@@ -394,6 +402,28 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return total;
   };
 
+  const handleSizeSelection = (size: 'small' | 'medium' | 'large') => {
+    if (!templateData) return;
+    
+    const newSelections = new Map<string, boolean>();
+    
+    templateData.sections.forEach((section: any, sectionIndex: number) => {
+      section.items.forEach((item: any, itemIndex: number) => {
+        const key = `${sectionIndex}-${itemIndex}`;
+        // Select item if it has the chosen size flag set to true
+        const shouldSelect = item[size] === true;
+        newSelections.set(key, shouldSelect);
+      });
+    });
+    
+    setItemSelections(newSelections);
+    setSelectedSize(size);
+    setHasUnsavedChanges(true);
+    setDebugUpdate(prev => prev + 1);
+    
+    console.log(`Selected ${size} items:`, Object.fromEntries(newSelections));
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -530,6 +560,71 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </button>
             </div>
           </div>
+
+          {/* Size Selector - Only show when coming from template */}
+          {cameFromTemplate && (
+            <div className="border-2 border-blue-200 rounded-xl shadow-lg mb-8 overflow-hidden bg-blue-50">
+              <div className="bg-blue-100 text-blue-800 p-6">
+                <h4 className="font-bold text-xl">Project Size Selection</h4>
+                <p className="text-blue-700 mt-1 text-sm">Choose your project scope to automatically select relevant items</p>
+              </div>
+              
+              <div className="p-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() => handleSizeSelection('small')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'small'
+                        ? 'border-green-500 bg-green-50 text-green-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Small</div>
+                      <div className="text-sm">Essential features only</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSizeSelection('medium')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'medium'
+                        ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Medium</div>
+                      <div className="text-sm">Standard feature set</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSizeSelection('large')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedSize === 'large'
+                        ? 'border-red-500 bg-red-50 text-red-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-2xl font-bold mb-2">Large</div>
+                      <div className="text-sm">Comprehensive features</div>
+                    </div>
+                  </button>
+                </div>
+                
+                {selectedSize && (
+                  <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-800">Selected:</span> {selectedSize.charAt(0).toUpperCase() + selectedSize.slice(1)} scope 
+                      ({getSelectedItemsCount()} items, {getTotalHours()} hours)
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Project-Level Information - Match admin panel structure */}
           <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
