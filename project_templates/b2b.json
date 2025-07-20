@@ -1,0 +1,21 @@
+{
+    "projectType": "B2B Commerce",
+    "description": "B2B Commerce Project",
+    "numberOfDevelopers": 6,
+    "sprintLength": 10,
+    "sprintEfficiency": 60,
+    "sections": [
+      {
+        "name": "Test Section",
+        "items": [
+          {
+            "name": "Sample Scope Item",
+            "hours": 40,
+            "small": true,
+            "medium": false,
+            "large": false
+          }
+        ]
+      }
+    ]
+  }

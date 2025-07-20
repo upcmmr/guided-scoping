@@ -1,0 +1,52 @@
+{
+  "projectType": "My Custom E-commerce Platform",
+  "description": "A customized e-commerce project based on B2C template with specific modifications",
+  "numberOfDevelopers": 6,
+  "sprintLength": 10,
+  "sprintEfficiency": 85,
+  "sections": [
+    {
+      "name": "Frontend Development",
+      "items": [
+        {
+          "name": "Product Catalog UI",
+          "hours": 60,
+          "selected": true
+        },
+        {
+          "name": "Shopping Cart Component",
+          "hours": 40,
+          "selected": true
+        },
+        {
+          "name": "User Account Dashboard",
+          "hours": 35,
+          "selected": false
+        }
+      ]
+    },
+    {
+      "name": "Backend API",
+      "items": [
+        {
+          "name": "Payment Gateway Integration",
+          "hours": 80,
+          "selected": true
+        },
+        {
+          "name": "Order Management System",
+          "hours": 70,
+          "selected": true
+        },
+        {
+          "name": "Inventory Tracking",
+          "hours": 45,
+          "selected": false
+        }
+      ]
+    }
+  ],
+  "templateSource": "b2c-commerce.json",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "lastModified": "2024-01-15T14:45:00.000Z"
+} 
