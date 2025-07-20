@@ -90,6 +90,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         setHasUnsavedChanges(false);
         setCameFromTemplate(false);
         setSelectedSize(null);
+        setShowCustomize(true);
         setCurrentState('scoping');
         console.log('Loaded project file successfully:', projectData);
       }
