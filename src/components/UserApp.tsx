@@ -405,6 +405,26 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return total;
   };
 
+  const getSectionTotals = () => {
+    if (!editableData) return [];
+    return editableData.sections.map((section: any, sectionIndex: number) => {
+      let sectionHours = 0;
+      let sectionItems = 0;
+      section.items.forEach((item: any, itemIndex: number) => {
+        const key = `${sectionIndex}-${itemIndex}`;
+        if (itemSelections.get(key)) {
+          sectionHours += item.hours || 0;
+          sectionItems += 1;
+        }
+      });
+      return {
+        name: section.name,
+        hours: sectionHours,
+        items: sectionItems
+      };
+         }).filter((section: any) => section.items > 0); // Only show sections with selected items
+  };
+
   const handleSizeSelection = (size: 'small' | 'medium' | 'large') => {
     if (!templateData) return;
     
@@ -539,9 +559,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-semibold text-gray-800">Project Configuration</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {getSelectedItemsCount()} items selected • {getTotalHours()} hours estimated{hasUnsavedChanges ? ' • Unsaved changes' : ''}
-              </p>
+              {hasUnsavedChanges && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Unsaved changes
+                </p>
+              )}
             </div>
             <div className="flex space-x-2">
               <button
@@ -570,7 +592,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
               <h4 className="font-bold text-xl">Project Information</h4>
-              <p className="text-gray-600 mt-1 text-sm">Basic project details and description</p>
             </div>
             
             <div className="p-6">
@@ -913,25 +934,56 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           )}
 
-          {/* Summary Footer */}
-          <div className="mt-8 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Project Summary</h3>
-                <p className="text-gray-600">
-                  {getSelectedItemsCount()} scope items selected • {getTotalHours()} total hours estimated
-                </p>
-              </div>
-              <button
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
-                disabled={getSelectedItemsCount() === 0}
-              >
-                Generate Estimate
-              </button>
-            </div>
-          </div>
+          
             </>
           )}
+
+          {/* Enhanced Project Summary - Always visible */}
+          <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+            <div className="bg-gray-200 text-gray-800 p-6">
+              <h3 className="text-xl font-bold">Project Summary</h3>
+              <p className="text-gray-600 mt-1 text-sm">Development hours breakdown by section</p>
+            </div>
+            
+            <div className="p-6 bg-white">
+              {getSectionTotals().length > 0 ? (
+                <>
+                  {/* Section Totals */}
+                  <div className="space-y-3 mb-6">
+                    {getSectionTotals().map((section: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <span className="font-medium text-gray-800">{section.name}</span>
+                          <span className="text-gray-500 text-sm ml-2">({section.items} items)</span>
+                        </div>
+                        <div className="font-semibold text-gray-800">
+                          {section.hours} hours
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Grand Total */}
+                  <div className="border-t-2 border-gray-200 pt-4">
+                    <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                      <div className="flex items-center">
+                        <span className="text-lg font-bold text-gray-800">Total Development Hours</span>
+                        <span className="text-gray-600 text-sm ml-2">({getSelectedItemsCount()} items selected)</span>
+                      </div>
+                      <div className="text-2xl font-bold text-gray-800">
+                        {getTotalHours()} hours
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-lg font-medium">No scope items selected</p>
+                  <p className="text-sm mt-1">Select scope items to see development hours breakdown</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Exit Warning Dialog */}
