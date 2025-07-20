@@ -1,27 +1,32 @@
 // ============================================================================
-// DATA MANAGER - Handles JSON file operations for scope configuration
+// DATA MANAGER - Handles JSON file operations for project templates
 // ============================================================================
 
 // Default configuration data (used only for reset functionality)
-const initialScopeData = [
-  {
-    "name": "Section 1",
-    "description": "Basic project scope section",
-    "items": [
-      { "name": "Basic API Integration", "hours": 40, "small": true, "medium": true, "large": true },
-      { "name": "Database Setup", "hours": 24, "small": true, "medium": true, "large": true },
-      { "name": "User Authentication", "hours": 32, "small": false, "medium": true, "large": true }
-    ]
-  },
-  {
-    "name": "Section 2", 
-    "description": "Frontend development scope",
-    "items": [
-      { "name": "UI Components", "hours": 48, "small": true, "medium": true, "large": true },
-      { "name": "Responsive Design", "hours": 24, "small": false, "medium": true, "large": true }
-    ]
-  }
-];
+const initialScopeData = {
+  "projectType": "B2C E-commerce Platform",
+  "description": "Standard B2C e-commerce project with common integrations and features",
+  "numberOfDevelopers": 4,
+  "sprintLength": 14,
+  "sprintEfficiency": 80,
+  "sections": [
+    {
+      "name": "Section 1",
+      "items": [
+        { "name": "Basic API Integration", "hours": 40, "small": true, "medium": true, "large": true },
+        { "name": "Database Setup", "hours": 24, "small": true, "medium": true, "large": true },
+        { "name": "User Authentication", "hours": 32, "small": false, "medium": true, "large": true }
+      ]
+    },
+    {
+      "name": "Section 2", 
+      "items": [
+        { "name": "UI Components", "hours": 48, "small": true, "medium": true, "large": true },
+        { "name": "Responsive Design", "hours": 24, "small": false, "medium": true, "large": true }
+      ]
+    }
+  ]
+};
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -37,11 +42,19 @@ export interface ScopeItem {
 
 export interface ScopeSection {
   name: string;
-  description: string;
   items: ScopeItem[];
 }
 
-export type ScopeData = ScopeSection[];
+export interface ProjectConfig {
+  projectType: string;
+  description: string;
+  numberOfDevelopers: number;
+  sprintLength: number;
+  sprintEfficiency: number; // percentage (0-100)
+  sections: ScopeSection[];
+}
+
+export type ScopeData = ProjectConfig;
 
 // ============================================================================
 // CORE FUNCTIONS
@@ -52,7 +65,14 @@ export type ScopeData = ScopeSection[];
  */
 export const getEmptyScopeData = (): ScopeData => {
   console.log('Starting with empty scope data');
-  return [];
+  return {
+    projectType: '',
+    description: '',
+    numberOfDevelopers: 3,
+    sprintLength: 14,
+    sprintEfficiency: 80,
+    sections: []
+  };
 };
 
 /**
@@ -88,11 +108,12 @@ export const loadScopeDataFromFile = async (): Promise<ScopeData> => {
         return data;
       } catch (err: any) {
         if (err.name === 'AbortError') {
-          console.log('File selection cancelled, using default config');
+          console.log('File selection cancelled, using empty config');
         } else {
           console.error('Error loading from file:', err);
         }
-        // Fall through to default
+        // Return empty config on error
+        return getEmptyScopeData();
       }
     } else {
       // Fallback: File input for older browsers
@@ -111,23 +132,20 @@ export const loadScopeDataFromFile = async (): Promise<ScopeData> => {
                 resolve(data);
               } catch (error) {
                 console.error('Error parsing JSON file:', error);
-                resolve(getDefaultScopeData());
+                resolve(getEmptyScopeData());
               }
             };
             reader.readAsText(file);
           } else {
-            resolve(getDefaultScopeData());
+            resolve(getEmptyScopeData());
           }
         };
         input.click();
       });
     }
-    
-    // If no file selected or API not supported, use default
-    return getDefaultScopeData();
   } catch (error) {
     console.error('Error in loadScopeDataFromFile:', error);
-    return getDefaultScopeData();
+    return getEmptyScopeData();
   }
 };
 
@@ -142,7 +160,7 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
     if ('showSaveFilePicker' in window) {
       try {
         const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: 'scope-configuration.json',
+          suggestedName: 'project-template.json',
           types: [{
             description: 'JSON files',
             accept: { 'application/json': ['.json'] }
@@ -153,7 +171,7 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
         await writable.write(jsonContent);
         await writable.close();
         
-        console.log('Scope data saved to JSON file successfully');
+        console.log('Project template saved to JSON file successfully');
         return true;
       } catch (err: any) {
         if (err.name !== 'AbortError') {
@@ -168,13 +186,13 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'scope-configuration.json';
+    a.download = 'project-template.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    console.log('Scope data downloaded as JSON file');
+    console.log('Project template downloaded as JSON file');
     return true;
   } catch (error) {
     console.error('Error saving scope data:', error);
