@@ -1,0 +1,354 @@
+[
+  {
+    "name": "Integrations",
+    "description": "Configure the number and complexity of system integrations required for your project.",
+    "items": [
+      {
+        "name": "Basic API Integration",
+        "hours": 50,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Database Integration",
+        "hours": 60,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Third-party Service Integration",
+        "hours": 80,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Legacy System Integration",
+        "hours": 120,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Real-time Data Integration",
+        "hours": 100,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "File Import/Export",
+        "hours": 50,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Payment Gateway Integration",
+        "hours": 90,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Email Service Integration",
+        "hours": 30,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Authentication Integration",
+        "hours": 70,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Analytics Integration",
+        "hours": 45,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "CRM Integration",
+        "hours": 110,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "ERP Integration",
+        "hours": 150,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Cloud Storage Integration",
+        "hours": 55,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Notification Service Integration",
+        "hours": 40,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Custom API Development",
+        "hours": 200,
+        "small": false,
+        "medium": false,
+        "large": true
+      }
+    ]
+  },
+  {
+    "name": "Section 2",
+    "description": "Define the level of frontend customization and UI/UX complexity needed.",
+    "items": [
+      {
+        "name": "Custom Dashboard Design",
+        "hours": 80,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Responsive Layout Adjustments",
+        "hours": 60,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Custom Components",
+        "hours": 100,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Theme Customization",
+        "hours": 40,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Advanced Forms",
+        "hours": 70,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Data Visualization",
+        "hours": 90,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Interactive Elements",
+        "hours": 85,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Mobile Optimization",
+        "hours": 75,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Accessibility Features",
+        "hours": 65,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Custom Navigation",
+        "hours": 55,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Advanced Search Interface",
+        "hours": 95,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Real-time Updates UI",
+        "hours": 110,
+        "small": false,
+        "medium": false,
+        "large": true
+      }
+    ]
+  },
+  {
+    "name": "Section 3",
+    "description": "Specify data integration requirements, including ETL processes and data transformation needs.",
+    "items": [
+      {
+        "name": "Basic Data Mapping",
+        "hours": 30,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Data Transformation",
+        "hours": 60,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Data Validation",
+        "hours": 40,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Data Migration",
+        "hours": 120,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "ETL Pipeline",
+        "hours": 150,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Data Synchronization",
+        "hours": 100,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Real-time Data Processing",
+        "hours": 180,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Data Quality Assurance",
+        "hours": 80,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Backup & Recovery",
+        "hours": 90,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Data Analytics Setup",
+        "hours": 130,
+        "small": false,
+        "medium": false,
+        "large": true
+      }
+    ]
+  },
+  {
+    "name": "Section 4",
+    "description": "Configure testing requirements including unit, integration, and end-to-end testing.",
+    "items": [
+      {
+        "name": "Unit Testing",
+        "hours": 60,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Integration Testing",
+        "hours": 80,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "End-to-End Testing",
+        "hours": 100,
+        "small": false,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Performance Testing",
+        "hours": 90,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Security Testing",
+        "hours": 120,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "User Acceptance Testing",
+        "hours": 70,
+        "small": true,
+        "medium": true,
+        "large": true
+      },
+      {
+        "name": "Automated Testing Setup",
+        "hours": 110,
+        "small": false,
+        "medium": false,
+        "large": true
+      },
+      {
+        "name": "Cross-browser Testing",
+        "hours": 50,
+        "small": true,
+        "medium": true,
+        "large": true
+      }
+    ]
+  },
+  {
+    "name": "Pants and Undies",
+    "description": "Pants size",
+    "items": [
+      {
+        "name": "Big Ones",
+        "hours": 40,
+        "small": true,
+        "medium": false,
+        "large": false
+      }
+    ]
+  }
+]
