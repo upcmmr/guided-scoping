@@ -461,17 +461,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 </div>
               </div>
             </div>
-
-            {/* Help Text */}
-            {!showTemplates && (
-              <div className="text-center mt-12 max-w-2xl mx-auto">
-                <p className="text-gray-500 text-sm">
-                  New to project scoping? Start with a template to get pre-configured scope items for your project type. 
-                  If you've been working on a project, open your saved project file to continue where you left off.
-                </p>
-              </div>
-            )}
           </div>
+
+          {/* Help Text */}
+          {!showTemplates && (
+            <div className="text-center mt-12">
+              <p className="text-gray-500 text-sm max-w-2xl mx-auto">
+                New to project scoping? Start with a template to get pre-configured scope items for your project type. If you've been working on a project, open your saved project file to continue where you left off.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Template Selection - Shown inline when templates are visible */}
