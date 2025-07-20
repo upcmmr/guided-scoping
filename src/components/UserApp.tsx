@@ -15,11 +15,7 @@ interface UserAppProps {
 
 type UserAppState = 'landing' | 'scoping';
 
-interface ProjectData {
-  template: TemplateMetadata;
-  data: any;
-  selections: Map<string, boolean>;
-}
+
 
 const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [currentState, setCurrentState] = useState<UserAppState>('landing');
@@ -31,17 +27,12 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [itemSelections, setItemSelections] = useState<Map<string, boolean>>(new Map());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitWarning, setShowExitWarning] = useState(false);
-  const [debugUpdate, setDebugUpdate] = useState(0);
   const [cameFromTemplate, setCameFromTemplate] = useState(false);
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
   const [showCustomize, setShowCustomize] = useState(false);
 
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
-  };
-
-  const handleHideTemplates = () => {
-    setShowTemplates(false);
   };
 
   const handleOpenProjectFile = async () => {
@@ -92,7 +83,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         setSelectedSize(null);
         setShowCustomize(true);
         setCurrentState('scoping');
-        console.log('Loaded project file successfully:', projectData);
       }
     } catch (error) {
       console.error('Error opening project file:', error);
@@ -121,8 +111,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       setSelectedSize(null);
       
       setCurrentState('scoping');
-      console.log('Selected template:', template);
-      console.log('Template data:', completeTemplate);
     } catch (error) {
       console.error('Failed to load template:', error);
       alert('Failed to load the selected template. Please try again.');
@@ -362,29 +350,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setHasUnsavedChanges(true);
   };
 
-  const handleNameChange = (sectionIndex: number, itemIndex: number, newName: string) => {
-    updateScopeItem(sectionIndex, itemIndex, { name: newName });
-  };
 
-  const handleHoursChange = (sectionIndex: number, itemIndex: number, newHours: string) => {
-    const hours = parseInt(newHours) || 0;
-    updateScopeItem(sectionIndex, itemIndex, { hours });
-  };
 
   const toggleItemSelection = (sectionIndex: number, itemIndex: number) => {
     const key = `${sectionIndex}-${itemIndex}`;
-    console.log('Toggling item selection:', key);
     setItemSelections(prev => {
       const newMap = new Map(prev);
       const currentValue = newMap.get(key) || false;
       const newValue = !currentValue;
       newMap.set(key, newValue);
-      console.log('Updated selection:', key, 'from', currentValue, 'to', newValue);
-      console.log('Full selection map:', Object.fromEntries(newMap));
       return newMap;
     });
     setHasUnsavedChanges(true);
-    setDebugUpdate(prev => prev + 1); // Force re-render
   };
 
   const getSelectedItemsCount = () => {
@@ -442,9 +419,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setItemSelections(newSelections);
     setSelectedSize(size);
     setHasUnsavedChanges(true);
-    setDebugUpdate(prev => prev + 1);
-    
-    console.log(`Selected ${size} items:`, Object.fromEntries(newSelections));
   };
 
 
@@ -595,7 +569,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
             
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
                   <input
@@ -606,13 +580,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     placeholder="e.g., B2C E-commerce Platform"
                   />
                 </div>
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows={3}
                     value={editableData.description || ''}
                     onChange={(e) => updateProjectInfo('description', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
                     placeholder="Project description and key features"
                   />
                 </div>
@@ -782,8 +756,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       {sectionData.items.map((item: any, itemIndex: number) => {
                         const key = `${sectionIndex}-${itemIndex}`;
                         const isSelected = itemSelections.get(key) || false;
-                        console.log('Rendering item:', key, 'selected:', isSelected, 'debugUpdate:', debugUpdate);
-                                                  return (
+                        return (
                             <div 
                               key={key} 
                             className={`flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm transition-all ${
@@ -847,7 +820,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                               <input
                                 type="text"
                                 value={item.name || ''}
-                                onChange={(e) => handleNameChange(sectionIndex, itemIndex, e.target.value)}
+                                onChange={(e) => updateScopeItem(sectionIndex, itemIndex, { name: e.target.value })}
                                 onClick={(e) => e.stopPropagation()}
                                 className={`w-full p-3 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                                   isSelected ? 'bg-blue-50' : 'bg-white'
@@ -862,7 +835,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 type="number"
                                 min="0"
                                 value={item.hours || 0}
-                                onChange={(e) => handleHoursChange(sectionIndex, itemIndex, e.target.value)}
+                                onChange={(e) => updateScopeItem(sectionIndex, itemIndex, { hours: parseInt(e.target.value) || 0 })}
                                 onClick={(e) => e.stopPropagation()}
                                 className={`w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                                   isSelected ? 'bg-blue-50' : 'bg-white'
