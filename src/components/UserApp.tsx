@@ -30,6 +30,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [cameFromTemplate, setCameFromTemplate] = useState(false);
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
   const [showCustomize, setShowCustomize] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
@@ -82,6 +83,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         setCameFromTemplate(false);
         setSelectedSize(null);
         setShowCustomize(true);
+        setIsEditMode(true);
         setCurrentState('scoping');
       }
     } catch (error) {
@@ -139,6 +141,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setCameFromTemplate(false);
     setSelectedSize(null);
     setShowCustomize(false);
+    setIsEditMode(false);
   };
 
   const handleSaveProject = async () => {
@@ -605,14 +608,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               <div className="p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => !showCustomize && handleSizeSelection('small')}
-                    disabled={showCustomize}
+                    onClick={() => !isEditMode && handleSizeSelection('small')}
+                    disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       selectedSize === 'small'
-                        ? showCustomize 
+                        ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-green-500 bg-green-50 text-green-800'
-                        : showCustomize
+                        : isEditMode
                           ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
                           : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
                     }`}
@@ -624,14 +627,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => !showCustomize && handleSizeSelection('medium')}
-                    disabled={showCustomize}
+                    onClick={() => !isEditMode && handleSizeSelection('medium')}
+                    disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       selectedSize === 'medium'
-                        ? showCustomize 
+                        ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-yellow-500 bg-yellow-50 text-yellow-800'
-                        : showCustomize
+                        : isEditMode
                           ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
                           : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
                     }`}
@@ -643,14 +646,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => !showCustomize && handleSizeSelection('large')}
-                    disabled={showCustomize}
+                    onClick={() => !isEditMode && handleSizeSelection('large')}
+                    disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       selectedSize === 'large'
-                        ? showCustomize 
+                        ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-red-500 bg-red-50 text-red-800'
-                        : showCustomize
+                        : isEditMode
                           ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
                           : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
                     }`}
@@ -668,19 +671,29 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-gray-600">
-                          <span className="italic">Optional:</span> Customize the prime profile for your project
+                          View details of the selected prime profile.
                         </p>
                       </div>
                       <button
-                        onClick={() => setShowCustomize(true)}
-                        disabled={showCustomize}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          showCustomize
+                        onClick={() => setShowCustomize(!showCustomize)}
+                        disabled={isEditMode}
+                        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          isEditMode
                             ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                             : 'bg-gray-600 text-white hover:bg-gray-700'
                         }`}
                       >
-                        Customize
+                        {showCustomize ? (
+                          <>
+                            <ChevronUp className="w-4 h-4 mr-2" />
+                            Hide Details
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4 mr-2" />
+                            See Details
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -692,32 +705,53 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Sections - Editable like admin panel */}
           {showCustomize && (
             <>
+              {/* Edit Mode Toggle - Show when in view-only mode */}
+              {!isEditMode && (
+                <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+                  <div className="bg-gray-200 text-gray-800 p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-xl">Scope Details</h4>
+                        <p className="text-gray-600 mt-1 text-sm"><span className="italic">Optional:</span> Customize the prime profile for your project.</p>
+                      </div>
+                      <button
+                        onClick={() => setIsEditMode(true)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+                      >
+                        Customize
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               {editableData.sections.length === 0 ? (
             <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
                 <Layers className="w-8 h-8 text-gray-400" />
               </div>
               <p className="mb-4 font-medium">No sections defined</p>
-              <p className="text-sm text-gray-400 mb-6">Add sections to organize your project scope</p>
-              <button
-                onClick={addNewSection}
-                className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add First Section
-              </button>
+              <p className="text-sm text-gray-400 mb-6">{isEditMode ? 'Add sections to organize your project scope' : 'No scope items available'}</p>
+              {isEditMode && (
+                <button
+                  onClick={addNewSection}
+                  className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add First Section
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-8">
               {editableData.sections.map((sectionData: any, sectionIndex: number) => (
                 <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
                   {/* Section Header */}
-                  <div className="bg-gray-200 text-gray-800 p-6">
+                  <div className={`${isEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-bold text-xl">{sectionData.name || 'Unnamed Section'}</h4>
                       </div>
-                      {editableData.sections.length > 1 && (
+                      {isEditMode && editableData.sections.length > 1 && (
                         <button
                           onClick={() => removeSection(sectionIndex)}
                           className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
@@ -730,25 +764,31 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </div>
 
                   {/* Section Configuration Form */}
-                  <div className="border-b border-gray-300 p-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Section Name</label>
-                      <input
-                        type="text"
-                        value={sectionData.name || ''}
-                        onChange={(e) => updateSectionInfo(sectionIndex, 'name', e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter section name"
-                      />
+                  {isEditMode && (
+                    <div className="border-b border-gray-300 p-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Section Name</label>
+                        <input
+                          type="text"
+                          value={sectionData.name || ''}
+                          onChange={(e) => updateSectionInfo(sectionIndex, 'name', e.target.value)}
+                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Enter section name"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
                   {/* Scope Items */}
                   <div className="p-6">
                     <div className="mb-6">
                       <h5 className="font-bold text-gray-800 text-lg flex items-center">
                         <Plus className="w-5 h-5 mr-2 text-green-600" />
-                        Scope Items ({sectionData.items.length})
+                        Selected Scope Items: ({
+                          sectionData.items.filter((_: any, itemIndex: number) => 
+                            itemSelections.get(`${sectionIndex}-${itemIndex}`) || false
+                          ).length
+                        }) of ({sectionData.items.length})
                       </h5>
                     </div>
                     
@@ -760,70 +800,85 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                             <div 
                               key={key} 
                             className={`flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm transition-all ${
-                              isSelected 
-                                ? 'border-blue-500 bg-blue-50' 
-                                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                              !isEditMode 
+                                ? 'border-gray-200 bg-gray-50 opacity-75'
+                                : isSelected 
+                                  ? 'border-blue-500 bg-blue-50' 
+                                  : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                             }`}
                           >
                             {/* Selection Checkbox - Larger clickable area */}
                             <div 
-                              className="flex-shrink-0 cursor-pointer p-2 hover:bg-gray-100 rounded transition-colors"
+                              className={`flex-shrink-0 p-2 rounded transition-colors ${
+                                isEditMode 
+                                  ? 'cursor-pointer hover:bg-gray-100' 
+                                  : 'cursor-default'
+                              }`}
                               onClick={(e) => {
-                                e.stopPropagation();
-                                toggleItemSelection(sectionIndex, itemIndex);
+                                if (isEditMode) {
+                                  e.stopPropagation();
+                                  toggleItemSelection(sectionIndex, itemIndex);
+                                }
                               }}
-                              title={isSelected ? "Deselect item" : "Select item"}
+                              title={isEditMode ? (isSelected ? "Deselect item" : "Select item") : "View only"}
                             >
                               {isSelected ? (
-                                <CheckSquare className="w-5 h-5 text-blue-600" />
+                                <CheckSquare className={`w-5 h-5 ${isEditMode ? 'text-blue-600' : 'text-gray-400'}`} />
                               ) : (
-                                <Square className="w-5 h-5 text-gray-400 hover:text-gray-600" />
+                                <Square className={`w-5 h-5 ${isEditMode ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300'}`} />
                               )}
                             </div>
 
                             {/* Reorder Controls */}
-                            <div className="flex flex-col gap-1">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  moveItemUp(sectionIndex, itemIndex);
-                                }}
-                                disabled={itemIndex === 0}
-                                className={`p-1 rounded transition-colors ${
-                                  itemIndex === 0 
-                                    ? 'text-gray-300 cursor-not-allowed' 
-                                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                                }`}
-                                title="Move up"
-                              >
-                                <ChevronUp className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  moveItemDown(sectionIndex, itemIndex);
-                                }}
-                                disabled={itemIndex === sectionData.items.length - 1}
-                                className={`p-1 rounded transition-colors ${
-                                  itemIndex === sectionData.items.length - 1
-                                    ? 'text-gray-300 cursor-not-allowed' 
-                                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                                }`}
-                                title="Move down"
-                              >
-                                <ChevronDown className="w-4 h-4" />
-                              </button>
-                            </div>
+                            {isEditMode && (
+                              <div className="flex flex-col gap-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveItemUp(sectionIndex, itemIndex);
+                                  }}
+                                  disabled={itemIndex === 0}
+                                  className={`p-1 rounded transition-colors ${
+                                    itemIndex === 0 
+                                      ? 'text-gray-300 cursor-not-allowed' 
+                                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                                  }`}
+                                  title="Move up"
+                                >
+                                  <ChevronUp className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    moveItemDown(sectionIndex, itemIndex);
+                                  }}
+                                  disabled={itemIndex === sectionData.items.length - 1}
+                                  className={`p-1 rounded transition-colors ${
+                                    itemIndex === sectionData.items.length - 1
+                                      ? 'text-gray-300 cursor-not-allowed' 
+                                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                                  }`}
+                                  title="Move down"
+                                >
+                                  <ChevronDown className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
 
                             {/* Item Name */}
                             <div className="flex-1">
                               <input
                                 type="text"
                                 value={item.name || ''}
-                                onChange={(e) => updateScopeItem(sectionIndex, itemIndex, { name: e.target.value })}
+                                onChange={(e) => isEditMode && updateScopeItem(sectionIndex, itemIndex, { name: e.target.value })}
                                 onClick={(e) => e.stopPropagation()}
-                                className={`w-full p-3 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                  isSelected ? 'bg-blue-50' : 'bg-white'
+                                readOnly={!isEditMode}
+                                className={`w-full p-3 border-2 rounded-lg text-sm ${
+                                  !isEditMode 
+                                    ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-default'
+                                    : `border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        isSelected ? 'bg-blue-50' : 'bg-white'
+                                      }`
                                 }`}
                                 placeholder="Scope item name"
                               />
@@ -835,26 +890,33 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 type="number"
                                 min="0"
                                 value={item.hours || 0}
-                                onChange={(e) => updateScopeItem(sectionIndex, itemIndex, { hours: parseInt(e.target.value) || 0 })}
+                                onChange={(e) => isEditMode && updateScopeItem(sectionIndex, itemIndex, { hours: parseInt(e.target.value) || 0 })}
                                 onClick={(e) => e.stopPropagation()}
-                                className={`w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                  isSelected ? 'bg-blue-50' : 'bg-white'
+                                readOnly={!isEditMode}
+                                className={`w-20 p-3 border-2 rounded-lg text-sm text-center ${
+                                  !isEditMode 
+                                    ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-default'
+                                    : `border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                        isSelected ? 'bg-blue-50' : 'bg-white'
+                                      }`
                                 }`}
                               />
                               <span className="text-xs font-medium text-gray-600">hrs</span>
                             </div>
 
                             {/* Delete Button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeScopeItem(sectionIndex, itemIndex);
-                              }}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                              title="Remove item"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                            {isEditMode && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeScopeItem(sectionIndex, itemIndex);
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                title="Remove item"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -865,19 +927,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                             <Plus className="w-8 h-8 text-gray-400" />
                           </div>
                           <p className="mb-4 font-medium">No scope items in this section yet</p>
-                          <button
-                            onClick={() => addScopeItem(sectionIndex)}
-                            className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add First Item
-                          </button>
+                          {isEditMode && (
+                            <button
+                              onClick={() => addScopeItem(sectionIndex)}
+                              className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add First Item
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
                     
                     {/* Add Item Button */}
-                    {sectionData.items.length > 0 && (
+                    {isEditMode && sectionData.items.length > 0 && (
                       <div className="mt-6 flex justify-center">
                         <button
                           onClick={() => addScopeItem(sectionIndex)}
@@ -895,7 +959,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           )}
           
           {/* Add Section Button - Only show if there are existing sections */}
-          {editableData.sections.length > 0 && (
+          {isEditMode && editableData.sections.length > 0 && (
             <div className="mt-8 flex justify-center">
               <button
                 onClick={addNewSection}

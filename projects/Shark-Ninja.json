@@ -1,0 +1,157 @@
+{
+  "projectType": "Shark Ninja",
+  "description": "Shark Ninja US site. ",
+  "numberOfDevelopers": 6,
+  "sprintLength": 14,
+  "sprintEfficiency": 80,
+  "sections": [
+    {
+      "name": "Integrations",
+      "items": [
+        {
+          "name": "Basic API Integration ",
+          "hours": 50,
+          "selected": true
+        },
+        {
+          "name": "Database Integration",
+          "hours": 60,
+          "selected": true
+        },
+        {
+          "name": "Third-party Service Integration",
+          "hours": 80,
+          "selected": true
+        },
+        {
+          "name": "Legacy System Integration",
+          "hours": 120,
+          "selected": true
+        },
+        {
+          "name": "Real-time Data Integration",
+          "hours": 100,
+          "selected": true
+        },
+        {
+          "name": "File Import/Export",
+          "hours": 50,
+          "selected": true
+        },
+        {
+          "name": "Payment Gateway Integration",
+          "hours": 90,
+          "selected": true
+        },
+        {
+          "name": "Email Service Integration",
+          "hours": 30,
+          "selected": false
+        },
+        {
+          "name": "Authentication Integration",
+          "hours": 70,
+          "selected": false
+        },
+        {
+          "name": "Analytics Integration",
+          "hours": 45,
+          "selected": true
+        },
+        {
+          "name": "CRM Integration",
+          "hours": 120,
+          "selected": true
+        },
+        {
+          "name": "ERP Integration",
+          "hours": 200,
+          "selected": false
+        },
+        {
+          "name": "Cloud Storage Integration",
+          "hours": 55,
+          "selected": true
+        },
+        {
+          "name": "Notification Service Integration",
+          "hours": 40,
+          "selected": true
+        },
+        {
+          "name": "Custom API Development",
+          "hours": 200,
+          "selected": false
+        }
+      ]
+    },
+    {
+      "name": "Frontend Customizations",
+      "items": [
+        {
+          "name": "Custom Dashboard Design",
+          "hours": 80,
+          "selected": true
+        },
+        {
+          "name": "Responsive Layout Adjustments",
+          "hours": 60,
+          "selected": true
+        },
+        {
+          "name": "Custom Components",
+          "hours": 100,
+          "selected": true
+        },
+        {
+          "name": "Theme Customization",
+          "hours": 40,
+          "selected": true
+        },
+        {
+          "name": "Advanced Forms",
+          "hours": 70,
+          "selected": true
+        },
+        {
+          "name": "Data Visualization",
+          "hours": 90,
+          "selected": true
+        },
+        {
+          "name": "Interactive Elements",
+          "hours": 85,
+          "selected": true
+        },
+        {
+          "name": "Mobile Optimization",
+          "hours": 75,
+          "selected": true
+        },
+        {
+          "name": "Accessibility Features",
+          "hours": 65,
+          "selected": true
+        },
+        {
+          "name": "Custom Navigation",
+          "hours": 55,
+          "selected": true
+        },
+        {
+          "name": "Advanced Search Interface",
+          "hours": 95,
+          "selected": false
+        },
+        {
+          "name": "Real-time Updates UI",
+          "hours": 110,
+          "selected": false
+        }
+      ]
+    }
+  ],
+  "templateSource": "b2c-commerce.json",
+  "createdAt": "2025-07-20T23:51:53.746Z",
+  "lastModified": "2025-07-20T23:51:53.746Z"
+}
