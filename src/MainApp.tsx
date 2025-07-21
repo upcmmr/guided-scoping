@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState } from 'react';
-import ScopingEstimationTool from './App';
+import AdminApp from './components/AdminApp';
 import UserApp from './components/UserApp';
 
 type AppMode = 'user' | 'admin';
@@ -44,7 +44,7 @@ const MainApp: React.FC = () => {
 
       {/* Content */}
       {currentMode === 'admin' ? (
-        <ScopingEstimationTool />
+        <AdminApp />
       ) : (
         <UserApp onSwitchToAdmin={switchToAdmin} />
       )}

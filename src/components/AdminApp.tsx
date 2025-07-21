@@ -12,7 +12,7 @@ import {
   type ScopeData,
   type ScopeSection,
   type ScopeItem
-} from './utils/dataManager';
+} from '../utils/dataManager';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -693,7 +693,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 // MAIN COMPONENT
 // ============================================================================
 
-const ScopingEstimationTool: React.FC = () => {
+const AdminApp: React.FC = () => {
   const adminHook = useAdminConfiguration();
 
   return (
@@ -734,4 +734,4 @@ const ScopingEstimationTool: React.FC = () => {
   );
 };
 
-export default ScopingEstimationTool;
+export default AdminApp;
