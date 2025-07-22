@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Clock, Zap, Layers, CheckCircle2, ChevronRight } from 'lucide-react';
 import { loadAllTemplateMetadata, type TemplateMetadata } from '../utils/templateScanner';
+import { APP_DEFAULTS } from '../config/defaults';
 
 interface TemplateSelectorProps {
   onTemplateSelected: (template: TemplateMetadata) => void;
@@ -47,8 +48,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Select a Template</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className={APP_DEFAULTS.typography.h1}>Select a Template</h1>
+                          <p className={`${APP_DEFAULTS.typography.body} mt-2`}>
               Select a template that best matches your project type to get started with accurate scoping.
             </p>
           </div>
@@ -90,10 +91,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
               {/* Template Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  <h3 className={APP_DEFAULTS.typography.h3}>
                     {template.projectType}
                   </h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                                      <p className={`${APP_DEFAULTS.typography.body} leading-relaxed`}>
                     {template.description}
                   </p>
                 </div>
@@ -160,7 +161,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
   );
 
   return inline ? content : (
-    <div className="max-w-6xl mx-auto p-6 min-h-screen">
+    <div className="max-w-7xl mx-auto p-6 min-h-screen">
       {content}
     </div>
   );

@@ -2,15 +2,52 @@
 // USER APP - End user interface for project scoping
 // ============================================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Layers, CheckSquare, Square, FolderOpen, Plus, X, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import TemplateSelector from './TemplateSelector';
 import { loadCompleteTemplate } from '../utils/templateScanner';
 import type { TemplateMetadata } from '../utils/templateScanner';
 import { saveUserProject, loadUserProject } from '../utils/projectManager';
+import { APP_DEFAULTS, getNewSectionName } from '../config/defaults';
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
 
 interface UserAppProps {
   onSwitchToAdmin?: () => void;
+}
+
+interface ProjectScopeItem {
+  name: string;
+  hours: number;
+  small?: boolean;
+  medium?: boolean;
+  large?: boolean;
+}
+
+interface ProjectSection {
+  name: string;
+  items: ProjectScopeItem[];
+}
+
+interface ProjectData {
+  projectType: string;
+  description: string;
+  numberOfDevelopers?: number;
+  minDevelopers?: number;
+  standardDevelopers?: number;
+  maxDevelopers?: number;
+  sprintLength: number;
+  sprintEfficiency: number;
+  sections: ProjectSection[];
+  templateSource?: string;
+}
+
+interface SectionTotal {
+  name: string;
+  hours: number;
+  items: number;
 }
 
 type UserAppState = 'landing' | 'scoping';
@@ -21,8 +58,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [currentState, setCurrentState] = useState<UserAppState>('landing');
   const [showTemplates, setShowTemplates] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateMetadata | null>(null);
-  const [templateData, setTemplateData] = useState<any>(null);
-  const [editableData, setEditableData] = useState<any>(null);
+  const [templateData, setTemplateData] = useState<ProjectData | null>(null);
+  const [editableData, setEditableData] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(false);
   const [itemSelections, setItemSelections] = useState<Map<string, boolean>>(new Map());
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -31,12 +68,30 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
   const [showCustomize, setShowCustomize] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedDevelopers, setSelectedDevelopers] = useState<number>(APP_DEFAULTS.developers.standard);
+
+  // Sync CSS custom properties with config values
+  useEffect(() => {
+    const root = document.documentElement;
+    const sliderConfig = APP_DEFAULTS.ui.slider;
+    
+    root.style.setProperty('--slider-primary-color', sliderConfig.primaryColor);
+    root.style.setProperty('--slider-background-color', sliderConfig.backgroundColor);
+    root.style.setProperty('--slider-thumb-border-color', sliderConfig.thumbBorderColor);
+    root.style.setProperty('--slider-track-height', sliderConfig.trackHeight);
+    root.style.setProperty('--slider-track-border-radius', sliderConfig.trackBorderRadius);
+    root.style.setProperty('--slider-thumb-size', sliderConfig.thumbSize);
+    root.style.setProperty('--slider-thumb-border-width', sliderConfig.thumbBorderWidth);
+    root.style.setProperty('--slider-box-shadow', sliderConfig.boxShadow);
+    root.style.setProperty('--slider-hover-box-shadow', sliderConfig.hoverBoxShadow);
+    root.style.setProperty('--slider-thumb-scale', sliderConfig.thumbScale.toString());
+  }, []);
 
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
   };
 
-  const handleOpenProjectFile = async () => {
+  const handleOpenProjectFile = useCallback(async () => {
     try {
       const projectData = await loadUserProject();
       
@@ -48,9 +103,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           numberOfDevelopers: projectData.numberOfDevelopers,
           sprintLength: projectData.sprintLength,
           sprintEfficiency: projectData.sprintEfficiency,
-          sections: projectData.sections.map((section: any) => ({
+          sections: projectData.sections.map((section: ProjectSection) => ({
             name: section.name,
-            items: section.items.map((item: any) => ({
+            items: section.items.map((item: ProjectScopeItem) => ({
               name: item.name,
               hours: item.hours
               // Remove selected field for editing format
@@ -60,8 +115,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         
         // Restore item selections from embedded selected field
         const restoredSelections = new Map<string, boolean>();
-        projectData.sections.forEach((section: any, sectionIndex: number) => {
-          section.items.forEach((item: any, itemIndex: number) => {
+        projectData.sections.forEach((section: ProjectSection, sectionIndex: number) => {
+          section.items.forEach((item: ProjectScopeItem & { selected?: boolean }, itemIndex: number) => {
             restoredSelections.set(`${sectionIndex}-${itemIndex}`, item.selected || false);
           });
         });
@@ -72,12 +127,17 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           filename: projectData.templateSource || 'loaded-project',
           projectType: projectData.projectType,
           description: projectData.description,
-          numberOfDevelopers: projectData.numberOfDevelopers,
+          minDevelopers: APP_DEFAULTS.templateFallbacks.minDevelopers,
+          standardDevelopers: projectData.numberOfDevelopers,
+          maxDevelopers: projectData.numberOfDevelopers * APP_DEFAULTS.userProject.developerMultiplierForMax,
           sprintLength: projectData.sprintLength,
           sprintEfficiency: projectData.sprintEfficiency,
           sectionsCount: projectData.sections.length,
           totalItems: projectData.sections.reduce((total, section) => total + section.items.length, 0)
         });
+        
+        // Set default developer count for slider
+        setSelectedDevelopers(projectData.numberOfDevelopers || APP_DEFAULTS.developers.standard);
         
         setHasUnsavedChanges(false);
         setCameFromTemplate(false);
@@ -90,9 +150,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       console.error('Error opening project file:', error);
       alert('Failed to open project file.');
     }
-  };
+  }, []);
 
-  const handleTemplateSelected = async (template: TemplateMetadata) => {
+  const handleTemplateSelected = useCallback(async (template: TemplateMetadata) => {
     try {
       setLoading(true);
       const completeTemplate = await loadCompleteTemplate(template.filename);
@@ -102,8 +162,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       // Initialize all items as unselected
       const initialSelections = new Map<string, boolean>();
-      completeTemplate.sections.forEach((section: any, sectionIndex: number) => {
-        section.items.forEach((item: any, itemIndex: number) => {
+      completeTemplate.sections.forEach((section: ProjectSection, sectionIndex: number) => {
+        section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
           initialSelections.set(`${sectionIndex}-${itemIndex}`, false);
         });
       });
@@ -112,6 +172,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       setCameFromTemplate(true);
       setSelectedSize(null);
       
+      // Set default developer count for slider
+      setSelectedDevelopers(template.standardDevelopers || APP_DEFAULTS.developers.standard);
+      
       setCurrentState('scoping');
     } catch (error) {
       console.error('Failed to load template:', error);
@@ -119,7 +182,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleBackToLanding = () => {
     if (hasUnsavedChanges) {
@@ -142,6 +205,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setSelectedSize(null);
     setShowCustomize(false);
     setIsEditMode(false);
+    setSelectedDevelopers(APP_DEFAULTS.developers.standard);
   };
 
   const handleSaveProject = async () => {
@@ -183,31 +247,32 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setShowExitWarning(false);
   };
 
-  const updateProjectInfo = (field: string, value: string | number) => {
-    setEditableData((prev: any) => ({ ...prev, [field]: value }));
+  const updateProjectInfo = (field: keyof ProjectData, value: string | number) => {
+    setEditableData((prev) => prev ? ({ ...prev, [field]: value }) : null);
     setHasUnsavedChanges(true);
   };
 
   // Section management functions
   const addNewSection = () => {
-    const sectionNumber = editableData.sections.length + 1;
+    if (!editableData) return;
+    
     const newSection = {
-      name: `Section ${sectionNumber}`,
+      name: getNewSectionName(editableData.sections.length),
       items: []
     };
 
-    setEditableData((prev: any) => ({
+    setEditableData((prev) => prev ? ({
       ...prev,
       sections: [...prev.sections, newSection]
-    }));
+    }) : null);
     setHasUnsavedChanges(true);
   };
 
   const removeSection = (sectionIndex: number) => {
-    setEditableData((prev: any) => ({
+    setEditableData((prev) => prev ? ({
       ...prev,
-      sections: prev.sections.filter((_: any, index: number) => index !== sectionIndex)
-    }));
+      sections: prev.sections.filter((_, index: number) => index !== sectionIndex)
+    }) : null);
     // Update item selections to remove items from deleted section
     const newSelections = new Map<string, boolean>();
     itemSelections.forEach((selected, key) => {
@@ -239,8 +304,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   // Scope item management functions
   const addScopeItem = (sectionIndex: number) => {
     const newItem = {
-      name: 'New Scope Item',
-      hours: 40
+      name: APP_DEFAULTS.scopeItem.defaultName,
+      hours: APP_DEFAULTS.scopeItem.defaultHours
     };
 
     setEditableData((prev: any) => ({
@@ -325,6 +390,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   };
 
   const moveItemDown = (sectionIndex: number, itemIndex: number) => {
+    if (!editableData) return;
+    
     const sectionLength = editableData.sections[sectionIndex]?.items.length || 0;
     if (itemIndex >= sectionLength - 1) return;
     
@@ -371,11 +438,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return Array.from(itemSelections.values()).filter(selected => selected).length;
   };
 
-  const getTotalHours = () => {
+  const getTotalHours = useMemo(() => {
     if (!editableData) return 0;
     let total = 0;
-    editableData.sections.forEach((section: any, sectionIndex: number) => {
-      section.items.forEach((item: any, itemIndex: number) => {
+    editableData.sections.forEach((section: ProjectSection, sectionIndex: number) => {
+      section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
         const key = `${sectionIndex}-${itemIndex}`;
         if (itemSelections.get(key)) {
           total += item.hours || 0;
@@ -383,14 +450,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       });
     });
     return total;
-  };
+  }, [editableData, itemSelections]);
 
-  const getSectionTotals = () => {
+    const getSectionTotals = useMemo(() => {
     if (!editableData) return [];
-    return editableData.sections.map((section: any, sectionIndex: number) => {
+    return editableData.sections.map((section: ProjectSection, sectionIndex: number) => {
       let sectionHours = 0;
       let sectionItems = 0;
-      section.items.forEach((item: any, itemIndex: number) => {
+      section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
         const key = `${sectionIndex}-${itemIndex}`;
         if (itemSelections.get(key)) {
           sectionHours += item.hours || 0;
@@ -402,8 +469,29 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         hours: sectionHours,
         items: sectionItems
       };
-         }).filter((section: any) => section.items > 0); // Only show sections with selected items
+    }).filter((section: SectionTotal) => section.items > 0); // Only show sections with selected items
+  }, [editableData, itemSelections]);
+
+  // Helper function to calculate sprint capacity
+  const calculateSprintCapacity = () => {
+    if (!editableData || !selectedTemplate) return 0;
+    
+    const sprintDays = editableData.sprintLength || APP_DEFAULTS.sprint.length;
+    const efficiencyPercent = editableData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency;
+    const efficiency = efficiencyPercent / APP_DEFAULTS.sprintPlanning.percentageConversion;
+    
+    return selectedDevelopers * sprintDays * APP_DEFAULTS.sprintPlanning.hoursPerDay * efficiency;
   };
+
+  const calculateSprints = useCallback(() => {
+    if (getTotalHours === 0) return 0;
+    
+    const capacityPerSprint = calculateSprintCapacity();
+    if (capacityPerSprint === 0) return 0;
+    
+    // Calculate number of sprints needed (round up)
+    return Math.ceil(getTotalHours / capacityPerSprint);
+  }, [editableData, selectedTemplate, selectedDevelopers, itemSelections]);
 
   const handleSizeSelection = (size: 'small' | 'medium' | 'large') => {
     if (!templateData) return;
@@ -429,7 +517,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   // Loading state
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-6 min-h-screen flex items-center justify-center">
+      <div className="max-w-7xl mx-auto p-6 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-gray-600">Loading template...</p>
@@ -441,12 +529,12 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     // Landing Page - Choose how to start
   if (currentState === 'landing') {
     return (
-      <div className="max-w-6xl mx-auto p-6 min-h-screen">
+      <div className="max-w-7xl mx-auto p-6 min-h-screen">
         {/* Separate Header Box - Match admin panel structure */}
         <div className="rounded-lg shadow-md mb-6">
           <div className="p-8 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Project Scoping Tool</h1>
-            <p className="text-gray-600">Start a new project or continue working on an existing one.</p>
+            <h1 className={APP_DEFAULTS.typography.h1}>Project Scoping Tool</h1>
+                          <p className={APP_DEFAULTS.typography.body}>Start a new project or continue working on an existing one.</p>
           </div>
         </div>
 
@@ -463,7 +551,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Layers className="w-10 h-10 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Start with Template</h3>
+                <h2 className={APP_DEFAULTS.typography.h2}>Start with Template</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                   Choose from pre-configured project templates that include common scope items and settings for different project types.
                 </p>
@@ -483,7 +571,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
                   <FolderOpen className="w-10 h-10 text-green-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Open Project File</h3>
+                <h2 className={APP_DEFAULTS.typography.h2}>Open Project File</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
                   Continue working on a project you've already started by loading your saved project file with your previous selections.
                 </p>
@@ -491,18 +579,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   <span>Browse Files</span>
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                 </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Help Text */}
-          {!showTemplates && (
+            {/* Help Text */}
+            {!showTemplates && (
             <div className="text-center mt-12">
               <p className="text-gray-500 text-sm max-w-2xl mx-auto">
                 New to project scoping? Start with a template to get pre-configured scope items for your project type. If you've been working on a project, open your saved project file to continue where you left off.
-              </p>
-            </div>
-          )}
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Template Selection - Shown inline when templates are visible */}
@@ -521,12 +609,12 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     // Scoping Interface - Customization page with editable fields
   if (currentState === 'scoping' && selectedTemplate && editableData) {
     return (
-      <div className="max-w-6xl mx-auto p-6 min-h-screen">
+      <div className="max-w-7xl mx-auto p-6 min-h-screen">
         {/* Separate Header Box - Match admin panel structure */}
         <div className="rounded-lg shadow-md mb-6">
           <div className="p-8 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Project Configuration</h1>
-            <p className="text-gray-600">Configure your project settings and select the scope items that apply.</p>
+            <h1 className={APP_DEFAULTS.typography.h1}>Project Configuration</h1>
+                          <p className={APP_DEFAULTS.typography.body}>Configure your project settings and select the scope items that apply.</p>
           </div>
         </div>
 
@@ -535,17 +623,17 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-semibold text-gray-800">Project Configuration</h3>
+              <h3 className={APP_DEFAULTS.typography.h3}>Project Configuration</h3>
               {hasUnsavedChanges && (
-                <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1">
                   Unsaved changes
-                </p>
+              </p>
               )}
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={handleBackToLanding}
-                className="flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                className={`flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ${APP_DEFAULTS.typography.button}`}
               >
                 <X className="w-4 h-4 mr-1" />
                 Exit
@@ -568,13 +656,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Project Information - Always at top */}
           <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-              <h4 className="font-bold text-xl">Project Information</h4>
+                              <h4 className={APP_DEFAULTS.typography.h4}>Project Information</h4>
+                <p className={APP_DEFAULTS.typography.tagline}>Define your project name and description</p>
             </div>
             
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                  <label className={APP_DEFAULTS.typography.label}>Project Name</label>
                   <input
                     type="text"
                     value={editableData.projectType || ''}
@@ -584,7 +673,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className={APP_DEFAULTS.typography.label}>Description</label>
                   <textarea
                     rows={3}
                     value={editableData.description || ''}
@@ -593,16 +682,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     placeholder="Project description and key features"
                   />
                 </div>
-              </div>
-            </div>
+                </div>
+                </div>
           </div>
 
           {/* Size Selector - Only show when coming from template */}
           {cameFromTemplate && (
             <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
               <div className="bg-gray-200 text-gray-800 p-6">
-                <h4 className="font-bold text-xl">Prime Profile Selection</h4>
-                <p className="text-gray-600 mt-1 text-sm">Choose your project scope to automatically select relevant items</p>
+                <h4 className={APP_DEFAULTS.typography.h4}>Prime Profile Selection</h4>
+                <p className={APP_DEFAULTS.typography.tagline}>Choose your project size to automatically select the right scope for your needs</p>
               </div>
               
               <div className="p-6">
@@ -621,8 +710,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Small</div>
-                      <div className="text-sm">Essential features only</div>
+                                             <div className="text-lg font-bold mb-2">Small</div>
+                                              <div className={APP_DEFAULTS.typography.body}>Essential features only</div>
                     </div>
                   </button>
                   
@@ -640,8 +729,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Medium</div>
-                      <div className="text-sm">Standard feature set</div>
+                                             <div className="text-lg font-bold mb-2">Medium</div>
+                                              <div className={APP_DEFAULTS.typography.body}>Standard feature set</div>
                     </div>
                   </button>
                   
@@ -659,8 +748,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-2xl font-bold mb-2">Large</div>
-                      <div className="text-sm">Comprehensive features</div>
+                                             <div className="text-lg font-bold mb-2">Large</div>
+                                              <div className={APP_DEFAULTS.typography.body}>Comprehensive features</div>
                     </div>
                   </button>
                 </div>
@@ -669,11 +758,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 {selectedSize && (
                   <div className="mt-6 pt-4 border-t border-gray-300">
                     <div className="flex items-center justify-between">
-                      <div>
+                <div>
                         <p className="text-sm text-gray-600">
                           View details of the selected prime profile.
                         </p>
-                      </div>
+                </div>
                       <button
                         onClick={() => setShowCustomize(!showCustomize)}
                         disabled={isEditMode}
@@ -695,36 +784,35 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           </>
                         )}
                       </button>
-                    </div>
-                  </div>
-                )}
               </div>
+            </div>
+                )}
+          </div>
             </div>
           )}
 
-          {/* Sections - Editable like admin panel */}
+          {/* Project Scope Section */}
           {showCustomize && (
-            <>
-              {/* Edit Mode Toggle - Show when in view-only mode */}
-              {!isEditMode && (
-                <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-                  <div className="bg-gray-200 text-gray-800 p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-bold text-xl">Scope Details</h4>
-                        <p className="text-gray-600 mt-1 text-sm"><span className="italic">Optional:</span> Customize the prime profile for your project.</p>
-                      </div>
-                      <button
-                        onClick={() => setIsEditMode(true)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
-                      >
-                        Customize
-                      </button>
-                    </div>
+            <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className={APP_DEFAULTS.typography.h4}>Project Scope</h4>
+                    <p className={APP_DEFAULTS.typography.tagline}>Review and customize the scope items for your project</p>
                   </div>
+                  {!isEditMode && (
+                    <button
+                      onClick={() => setIsEditMode(true)}
+                                              className={`px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 ${APP_DEFAULTS.typography.button} transition-colors`}
+                    >
+                      Customize
+                    </button>
+                  )}
                 </div>
-              )}
-              {editableData.sections.length === 0 ? (
+              </div>
+              
+              <div className="p-6">
+          {editableData.sections.length === 0 ? (
             <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
                 <Layers className="w-8 h-8 text-gray-400" />
@@ -732,13 +820,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               <p className="mb-4 font-medium">No sections defined</p>
               <p className="text-sm text-gray-400 mb-6">{isEditMode ? 'Add sections to organize your project scope' : 'No scope items available'}</p>
               {isEditMode && (
-                <button
-                  onClick={addNewSection}
-                  className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add First Section
-                </button>
+              <button
+                onClick={addNewSection}
+                className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Section
+              </button>
               )}
             </div>
           ) : (
@@ -749,7 +837,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   <div className={`${isEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-bold text-xl">{sectionData.name || 'Unnamed Section'}</h4>
+                                                 <h4 className={APP_DEFAULTS.typography.h4}>{sectionData.name || 'Unnamed Section'}</h4>
                       </div>
                       {isEditMode && editableData.sections.length > 1 && (
                         <button
@@ -765,24 +853,24 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
                   {/* Section Configuration Form */}
                   {isEditMode && (
-                    <div className="border-b border-gray-300 p-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Section Name</label>
-                        <input
-                          type="text"
-                          value={sectionData.name || ''}
-                          onChange={(e) => updateSectionInfo(sectionIndex, 'name', e.target.value)}
-                          className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter section name"
-                        />
-                      </div>
+                  <div className="border-b border-gray-300 p-6">
+                    <div>
+                      <label className={APP_DEFAULTS.typography.label}>Section Name</label>
+                      <input
+                        type="text"
+                        value={sectionData.name || ''}
+                        onChange={(e) => updateSectionInfo(sectionIndex, 'name', e.target.value)}
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter section name"
+                      />
                     </div>
+                  </div>
                   )}
                   
                   {/* Scope Items */}
                   <div className="p-6">
                     <div className="mb-6">
-                      <h5 className="font-bold text-gray-800 text-lg flex items-center">
+                      <h5 className={`${APP_DEFAULTS.typography.h5} flex items-center`}>
                         <Plus className="w-5 h-5 mr-2 text-green-600" />
                         Selected Scope Items: ({
                           sectionData.items.filter((_: any, itemIndex: number) => 
@@ -796,15 +884,15 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       {sectionData.items.map((item: any, itemIndex: number) => {
                         const key = `${sectionIndex}-${itemIndex}`;
                         const isSelected = itemSelections.get(key) || false;
-                        return (
+                                                  return (
                             <div 
                               key={key} 
                             className={`flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm transition-all ${
                               !isEditMode 
                                 ? 'border-gray-200 bg-gray-50 opacity-75'
                                 : isSelected 
-                                  ? 'border-blue-500 bg-blue-50' 
-                                  : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                                ? 'border-blue-500 bg-blue-50' 
+                                : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                             }`}
                           >
                             {/* Selection Checkbox - Larger clickable area */}
@@ -816,8 +904,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                               }`}
                               onClick={(e) => {
                                 if (isEditMode) {
-                                  e.stopPropagation();
-                                  toggleItemSelection(sectionIndex, itemIndex);
+                                e.stopPropagation();
+                                toggleItemSelection(sectionIndex, itemIndex);
                                 }
                               }}
                               title={isEditMode ? (isSelected ? "Deselect item" : "Select item") : "View only"}
@@ -831,38 +919,38 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
                             {/* Reorder Controls */}
                             {isEditMode && (
-                              <div className="flex flex-col gap-1">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    moveItemUp(sectionIndex, itemIndex);
-                                  }}
-                                  disabled={itemIndex === 0}
-                                  className={`p-1 rounded transition-colors ${
-                                    itemIndex === 0 
-                                      ? 'text-gray-300 cursor-not-allowed' 
-                                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                                  }`}
-                                  title="Move up"
-                                >
-                                  <ChevronUp className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    moveItemDown(sectionIndex, itemIndex);
-                                  }}
-                                  disabled={itemIndex === sectionData.items.length - 1}
-                                  className={`p-1 rounded transition-colors ${
-                                    itemIndex === sectionData.items.length - 1
-                                      ? 'text-gray-300 cursor-not-allowed' 
-                                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                                  }`}
-                                  title="Move down"
-                                >
-                                  <ChevronDown className="w-4 h-4" />
-                                </button>
-                              </div>
+                            <div className="flex flex-col gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveItemUp(sectionIndex, itemIndex);
+                                }}
+                                disabled={itemIndex === 0}
+                                className={`p-1 rounded transition-colors ${
+                                  itemIndex === 0 
+                                    ? 'text-gray-300 cursor-not-allowed' 
+                                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                                }`}
+                                title="Move up"
+                              >
+                                <ChevronUp className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveItemDown(sectionIndex, itemIndex);
+                                }}
+                                disabled={itemIndex === sectionData.items.length - 1}
+                                className={`p-1 rounded transition-colors ${
+                                  itemIndex === sectionData.items.length - 1
+                                    ? 'text-gray-300 cursor-not-allowed' 
+                                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                                }`}
+                                title="Move down"
+                              >
+                                <ChevronDown className="w-4 h-4" />
+                              </button>
+                            </div>
                             )}
 
                             {/* Item Name */}
@@ -877,7 +965,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                   !isEditMode 
                                     ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-default'
                                     : `border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        isSelected ? 'bg-blue-50' : 'bg-white'
+                                  isSelected ? 'bg-blue-50' : 'bg-white'
                                       }`
                                 }`}
                                 placeholder="Scope item name"
@@ -897,25 +985,25 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                   !isEditMode 
                                     ? 'border-gray-200 bg-gray-100 text-gray-600 cursor-default'
                                     : `border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                                        isSelected ? 'bg-blue-50' : 'bg-white'
+                                  isSelected ? 'bg-blue-50' : 'bg-white'
                                       }`
                                 }`}
                               />
-                              <span className="text-xs font-medium text-gray-600">hrs</span>
+                              <span className={APP_DEFAULTS.typography.meta}>hrs</span>
                             </div>
 
                             {/* Delete Button */}
                             {isEditMode && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeScopeItem(sectionIndex, itemIndex);
-                                }}
-                                className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                                title="Remove item"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeScopeItem(sectionIndex, itemIndex);
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                              title="Remove item"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                             )}
                           </div>
                         );
@@ -928,13 +1016,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           </div>
                           <p className="mb-4 font-medium">No scope items in this section yet</p>
                           {isEditMode && (
-                            <button
-                              onClick={() => addScopeItem(sectionIndex)}
-                              className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
-                            >
-                              <Plus className="w-4 h-4 mr-2" />
-                              Add First Item
-                            </button>
+                          <button
+                            onClick={() => addScopeItem(sectionIndex)}
+                            className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add First Item
+                          </button>
                           )}
                         </div>
                       )}
@@ -958,7 +1046,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           )}
           
-          {/* Add Section Button - Only show if there are existing sections */}
+                    {/* Add Section Button - Only show if there are existing sections */}
           {isEditMode && editableData.sections.length > 0 && (
             <div className="mt-8 flex justify-center">
               <button
@@ -970,53 +1058,163 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </button>
             </div>
           )}
-
-          
-            </>
+              </div>
+            </div>
           )}
 
-          {/* Enhanced Project Summary - Always visible */}
+          {/* Project Summary - Always visible */}
           <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-              <h3 className="text-xl font-bold">Project Summary</h3>
-              <p className="text-gray-600 mt-1 text-sm">Development hours breakdown by section</p>
+              <h3 className={APP_DEFAULTS.typography.h3}>Project Summary</h3>
+              <p className={APP_DEFAULTS.typography.tagline}>Review total hours, adjust team size, and estimate project timeline</p>
             </div>
             
-            <div className="p-6 bg-white">
-              {getSectionTotals().length > 0 ? (
-                <>
-                  {/* Section Totals */}
-                  <div className="space-y-3 mb-6">
-                    {getSectionTotals().map((section: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
+            <div className="p-6 bg-white space-y-8">
+              {/* 1. Development Hours Section */}
+              <div>
+                <h4 className={APP_DEFAULTS.typography.h4}>Development Hours</h4>
+                
+                {getSectionTotals.length > 0 ? (
+                  <>
+                    {/* Section Totals */}
+                    <div className="space-y-3 mb-6">
+                      {getSectionTotals.map((section: SectionTotal, index: number) => (
+                        <div key={index} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <span className="font-medium text-gray-800">{section.name}</span>
+                            <span className={`${APP_DEFAULTS.typography.dataLabel} ml-2`}>({section.items} items)</span>
+              </div>
+                          <div className="font-semibold text-gray-800">
+                            {section.hours} hours
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Grand Total */}
+                    <div className="border-t border-gray-200 pt-4">
+                      <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                         <div className="flex items-center">
-                          <span className="font-medium text-gray-800">{section.name}</span>
-                          <span className="text-gray-500 text-sm ml-2">({section.items} items)</span>
-                        </div>
-                        <div className="font-semibold text-gray-800">
-                          {section.hours} hours
-                        </div>
+                          <span className={APP_DEFAULTS.typography.dataValue}>Total Development Hours</span>
+                                                      <span className={`${APP_DEFAULTS.typography.dataLabel} ml-2`}>({getSelectedItemsCount()} items selected)</span>
+                                                  </div>
+                          <div className={APP_DEFAULTS.typography.dataLarge}>
+                            {getTotalHours} hours
+                          </div>
                       </div>
-                    ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-lg font-medium">No scope items selected</p>
+                    <p className={`${APP_DEFAULTS.typography.body} mt-1`}>Select scope items to see development hours breakdown</p>
                   </div>
+                )}
+              </div>
+
+              {/* 2. Team Size & Sprint Planning Section */}
+              {selectedTemplate && (
+                <div className="border-t border-gray-200 pt-8">
+                                      <h4 className={APP_DEFAULTS.typography.h4}>Team Size & Sprint Planning</h4>
                   
-                  {/* Grand Total */}
-                  <div className="border-t-2 border-gray-200 pt-4">
-                    <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                      <div className="flex items-center">
-                        <span className="text-lg font-bold text-gray-800">Total Development Hours</span>
-                        <span className="text-gray-600 text-sm ml-2">({getSelectedItemsCount()} items selected)</span>
+                  {/* Team Size Configuration */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                                          <h5 className={APP_DEFAULTS.typography.h5}>Team Size</h5>
+                    
+                                              <label className={APP_DEFAULTS.typography.label}>
+                      Number of Developers: {selectedDevelopers}
+                    </label>
+                    
+                    <input
+                      type="range"
+                      min={selectedTemplate.minDevelopers}
+                      max={selectedTemplate.maxDevelopers}
+                      step="1"
+                      value={selectedDevelopers}
+                      onChange={(e) => setSelectedDevelopers(parseInt(e.target.value))}
+                      className="w-full mb-2"
+                    />
+                    
+                                              <div className={`flex justify-between ${APP_DEFAULTS.typography.meta}`}>
+                      <span>{selectedTemplate.minDevelopers}</span>
+                      <span>{selectedTemplate.maxDevelopers}</span>
+                    </div>
+                  </div>
+
+                  {/* Sprint Configuration */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                                          <h5 className={APP_DEFAULTS.typography.h5}>Sprint Settings</h5>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                                                  <label className={APP_DEFAULTS.typography.label}>
+                            Sprint Duration (working days)
+                          </label>
+                                                  <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            value={editableData.sprintLength || APP_DEFAULTS.sprint.length}
+                            onChange={(e) => updateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-md ${APP_DEFAULTS.typography.body} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                        />
                       </div>
-                      <div className="text-2xl font-bold text-gray-800">
-                        {getTotalHours()} hours
+                      <div>
+                                                  <label className={APP_DEFAULTS.typography.label}>
+                            Sprint Efficiency (%)
+                          </label>
+                                                  <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={editableData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                            onChange={(e) => updateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+                            className={`w-full px-3 py-2 border border-gray-300 rounded-md ${APP_DEFAULTS.typography.body} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                        />
                       </div>
                     </div>
                   </div>
-                </>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p className="text-lg font-medium">No scope items selected</p>
-                  <p className="text-sm mt-1">Select scope items to see development hours breakdown</p>
+
+                  {/* Sprint Timeline Results */}
+                  {getTotalHours > 0 && (() => {
+                    const totalProjectHours = getTotalHours;
+                    const sprintCount = calculateSprints();
+                    const capacityPerSprint = calculateSprintCapacity();
+                    const totalSprintCapacity = Math.round(sprintCount * capacityPerSprint);
+                    const remainderHours = totalSprintCapacity - totalProjectHours;
+                    const remainderPercentage = Math.round((remainderHours / totalSprintCapacity) * 100);
+
+                                          return (
+                        <div className="space-y-4">
+                          {/* Estimated Sprint Count - Same styling as Total Development Hours */}
+                          <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                            <div>
+                              <span className={APP_DEFAULTS.typography.dataValue}>Estimated Sprint Count</span>
+                            </div>
+                            <div className={APP_DEFAULTS.typography.dataLarge}>
+                              {sprintCount} sprint{sprintCount !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          
+                          {/* Sprint Capacity Details - Lighter box */}
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <div className={`space-y-2 ${APP_DEFAULTS.typography.body}`}>
+                              <div className="flex justify-between text-gray-700">
+                                <span>Total Sprint Capacity:</span>
+                                <span className="font-medium">{totalSprintCapacity} hours</span>
+                              </div>
+                              <div className="flex justify-between text-gray-700">
+                                <span>Total Development Hours:</span>
+                                <span className="font-medium">{totalProjectHours} hours</span>
+                              </div>
+                              <div className="flex justify-between text-gray-700 border-t border-gray-200 pt-2">
+                                <span>Remaining Capacity:</span>
+                                <span className="font-medium">{remainderHours} hours ({remainderPercentage}%)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                  })()}
                 </div>
               )}
             </div>
@@ -1031,7 +1229,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
                   <span className="text-yellow-600 text-xl">⚠️</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800">Unsaved Changes</h3>
+                <h3 className={APP_DEFAULTS.typography.warning}>Unsaved Changes</h3>
               </div>
               
               <p className="text-gray-600 mb-6">

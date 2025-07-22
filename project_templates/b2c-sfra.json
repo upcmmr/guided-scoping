@@ -1,7 +1,9 @@
 {
   "projectType": "B2C Commerce",
   "description": "B2C Commerce SFRA Project",
-  "numberOfDevelopers": 6,
+  "minDevelopers": 4,
+  "standardDevelopers": 6,
+  "maxDevelopers": 10,
   "sprintLength": 10,
   "sprintEfficiency": 60,
   "sections": [

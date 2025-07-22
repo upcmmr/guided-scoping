@@ -1,7 +1,9 @@
 {
   "projectType": "B2C E-commerce Platform",
   "description": "Standard B2C e-commerce project with integrated payment processing, customer management, and content delivery systems",
-  "numberOfDevelopers": 6,
+  "minDevelopers": 4,
+  "standardDevelopers": 6,
+  "maxDevelopers": 12,
   "sprintLength": 14,
   "sprintEfficiency": 80,
   "sections": [

@@ -40,4 +40,60 @@ body {
   width: 100%;
   margin: 0 auto;
   text-align: left;
+}
+
+/* Custom slider styling - uses CSS custom properties set from config */
+:root {
+  --slider-primary-color: #3b82f6;
+  --slider-background-color: #e5e7eb;
+  --slider-thumb-border-color: #ffffff;
+  --slider-track-height: 6px;
+  --slider-track-border-radius: 3px;
+  --slider-thumb-size: 20px;
+  --slider-thumb-border-width: 2px;
+  --slider-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --slider-hover-box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  --slider-thumb-scale: 1.1;
+}
+
+input[type="range"].slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: var(--slider-track-height);
+  border-radius: var(--slider-track-border-radius);
+  outline: none;
+}
+
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  border-radius: 50%;
+  background: var(--slider-primary-color);
+  cursor: pointer;
+  border: var(--slider-thumb-border-width) solid var(--slider-thumb-border-color);
+  box-shadow: var(--slider-box-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="range"].slider::-webkit-slider-thumb:hover {
+  transform: scale(var(--slider-thumb-scale));
+  box-shadow: var(--slider-hover-box-shadow);
+}
+
+input[type="range"].slider::-moz-range-thumb {
+  width: var(--slider-thumb-size);
+  height: var(--slider-thumb-size);
+  border-radius: 50%;
+  background: var(--slider-primary-color);
+  cursor: pointer;
+  border: var(--slider-thumb-border-width) solid var(--slider-thumb-border-color);
+  box-shadow: var(--slider-box-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="range"].slider::-moz-range-thumb:hover {
+  transform: scale(var(--slider-thumb-scale));
+  box-shadow: var(--slider-hover-box-shadow);
 } 

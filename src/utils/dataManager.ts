@@ -2,31 +2,7 @@
 // DATA MANAGER - Handles JSON file operations for project templates
 // ============================================================================
 
-// Default configuration data (used only for reset functionality)
-const initialScopeData = {
-  "projectType": "B2C E-commerce Platform",
-  "description": "Standard B2C e-commerce project with common integrations and features",
-  "numberOfDevelopers": 4,
-  "sprintLength": 14,
-  "sprintEfficiency": 80,
-  "sections": [
-    {
-      "name": "Section 1",
-      "items": [
-        { "name": "Basic API Integration", "hours": 40, "small": true, "medium": true, "large": true },
-        { "name": "Database Setup", "hours": 24, "small": true, "medium": true, "large": true },
-        { "name": "User Authentication", "hours": 32, "small": false, "medium": true, "large": true }
-      ]
-    },
-    {
-      "name": "Section 2", 
-      "items": [
-        { "name": "UI Components", "hours": 48, "small": true, "medium": true, "large": true },
-        { "name": "Responsive Design", "hours": 24, "small": false, "medium": true, "large": true }
-      ]
-    }
-  ]
-};
+import { APP_DEFAULTS } from '../config/defaults';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -48,7 +24,9 @@ export interface ScopeSection {
 export interface ProjectConfig {
   projectType: string;
   description: string;
-  numberOfDevelopers: number;
+  minDevelopers: number;
+  standardDevelopers: number;
+  maxDevelopers: number;
   sprintLength: number;
   sprintEfficiency: number; // percentage (0-100)
   sections: ScopeSection[];
@@ -66,11 +44,13 @@ export type ScopeData = ProjectConfig;
 export const getEmptyScopeData = (): ScopeData => {
   console.log('Starting with empty scope data');
   return {
-    projectType: '',
-    description: '',
-    numberOfDevelopers: 3,
-    sprintLength: 14,
-    sprintEfficiency: 80,
+    projectType: APP_DEFAULTS.project.name,
+    description: APP_DEFAULTS.project.description,
+    minDevelopers: APP_DEFAULTS.developers.min,
+    standardDevelopers: APP_DEFAULTS.developers.standard,
+    maxDevelopers: APP_DEFAULTS.developers.max,
+    sprintLength: APP_DEFAULTS.sprint.length,
+    sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
     sections: []
   };
 };
@@ -80,7 +60,7 @@ export const getEmptyScopeData = (): ScopeData => {
  */
 export const getDefaultScopeData = (): ScopeData => {
   console.log('Loading default scope data from bundled config');
-  return JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
+  return JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
 };
 
 /**
@@ -154,7 +134,7 @@ export const loadScopeDataFromFile = async (): Promise<ScopeData> => {
  */
 export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
   try {
-    const jsonContent = JSON.stringify(data, null, 2);
+    const jsonContent = JSON.stringify(data, null, APP_DEFAULTS.file.jsonIndentation);
     
     // Check if File System Access API is supported (modern browsers)
     if ('showSaveFilePicker' in window) {
@@ -205,11 +185,11 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
  */
 export const resetToInitialConfig = (): ScopeData => {
   try {
-    const data = JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
+    const data = JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
     console.log('Reset to initial configuration');
     return data;
   } catch (error) {
     console.error('Error resetting to initial config:', error);
-    return JSON.parse(JSON.stringify(initialScopeData)) as ScopeData;
+    return JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
   }
 }; 

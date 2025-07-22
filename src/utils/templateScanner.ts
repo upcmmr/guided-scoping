@@ -2,11 +2,15 @@
 // TEMPLATE SCANNER - Handles scanning and loading project templates
 // ============================================================================
 
+import { APP_DEFAULTS } from '../config/defaults';
+
 export interface TemplateMetadata {
   filename: string;
   projectType: string;
   description: string;
-  numberOfDevelopers: number;
+  minDevelopers: number;
+  standardDevelopers: number;
+  maxDevelopers: number;
   sprintLength: number;
   sprintEfficiency: number;
   sectionsCount: number;
@@ -59,17 +63,18 @@ export const loadTemplateMetadata = async (filename: string): Promise<TemplateMe
     
     return {
       filename,
-      projectType: template.projectType || 'Unknown Project',
-      description: template.description || 'No description available',
-      numberOfDevelopers: template.numberOfDevelopers || 1,
-      sprintLength: template.sprintLength || 14,
-      sprintEfficiency: template.sprintEfficiency || 80,
+      projectType: template.projectType || APP_DEFAULTS.templateFallbacks.projectType,
+      description: template.description || APP_DEFAULTS.templateFallbacks.description,
+      minDevelopers: template.minDevelopers || APP_DEFAULTS.templateFallbacks.minDevelopers,
+      standardDevelopers: template.standardDevelopers || APP_DEFAULTS.templateFallbacks.standardDevelopers,
+      maxDevelopers: template.maxDevelopers || APP_DEFAULTS.templateFallbacks.maxDevelopers,
+      sprintLength: template.sprintLength || APP_DEFAULTS.templateFallbacks.sprintLength,
+      sprintEfficiency: template.sprintEfficiency || APP_DEFAULTS.templateFallbacks.sprintEfficiency,
       sectionsCount,
       totalItems,
     };
-  } catch (error) {
-    console.error(`Error loading template metadata for ${filename}:`, error);
-    return null;
+      } catch (error) {
+      return null;
   }
 };
 
@@ -92,7 +97,7 @@ export const loadAllTemplateMetadata = async (): Promise<TemplateMetadata[]> => 
     console.log('Loaded template metadata:', validMetadata);
     return validMetadata;
   } catch (error) {
-    console.error('Error loading template metadata:', error);
+    // Silently fail and return empty array for production
     return [];
   }
 };
@@ -108,10 +113,8 @@ export const loadCompleteTemplate = async (filename: string): Promise<any> => {
       throw new Error(`Template not found: ${filename}`);
     }
     
-    console.log(`Loaded complete template data for: ${filename}`);
     return template;
   } catch (error) {
-    console.error(`Error loading complete template for ${filename}:`, error);
-    throw error;
+    throw new Error(`Failed to load template: ${filename}`);
   }
 }; 

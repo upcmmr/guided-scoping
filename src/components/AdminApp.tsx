@@ -13,24 +13,20 @@ import {
   type ScopeSection,
   type ScopeItem
 } from '../utils/dataManager';
+import { APP_DEFAULTS, getDefaultScopeItem, getNewSectionName } from '../config/defaults';
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
 /** Create a new scope item with default values */
-const createNewScopeItem = (name = 'New Scope Item', hours = 40) => ({
-  name,
-  hours,
-  small: false,
-  medium: false,
-  large: false
-});
+const createNewScopeItem = (name?: string, hours?: number) => 
+  getDefaultScopeItem(name, hours);
 
 /** Create a new section with default structure */
 const createNewSection = (sectionNumber: number) => ({
-  name: `Section ${sectionNumber}`,
-  items: [createNewScopeItem('Sample Scope Item')]
+  name: getNewSectionName(sectionNumber - 1), // -1 because sectionNumber is 1-based
+  items: [createNewScopeItem()]
 });
 
 // ============================================================================
@@ -63,11 +59,13 @@ const useAdminConfiguration = () => {
 
   const createNewConfig = () => {
     setScopeData({
-      projectType: '',
-      description: '',
-      numberOfDevelopers: 3,
-      sprintLength: 14,
-      sprintEfficiency: 80,
+      projectType: APP_DEFAULTS.project.name,
+      description: APP_DEFAULTS.project.description,
+      minDevelopers: APP_DEFAULTS.developers.min,
+      standardDevelopers: APP_DEFAULTS.developers.standard,
+      maxDevelopers: APP_DEFAULTS.developers.max,
+      sprintLength: APP_DEFAULTS.sprint.length,
+      sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
       sections: []
     });
     setHasUnsavedChanges(false);
@@ -328,15 +326,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center">
             <FolderPlus className="w-10 h-10 text-blue-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">Project Configuration</h3>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <h2 className={APP_DEFAULTS.typography.h2}>Project Configuration</h2>
+                      <p className={`${APP_DEFAULTS.typography.body} mb-8 max-w-md mx-auto`}>
             Get started by loading an existing project template or creating a new project template.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onLoadFromFile}
-              className="flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-base font-medium shadow-md transition-colors"
+                              className={`flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 ${APP_DEFAULTS.typography.buttonLarge} shadow-md transition-colors`}
             >
               <FolderPlus className="w-5 h-5 mr-2" />
               Load Project Template
@@ -344,7 +342,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             
             <button
               onClick={onCreateNewConfig}
-              className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-medium shadow-md transition-colors"
+                              className={`flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 ${APP_DEFAULTS.typography.buttonLarge} shadow-md transition-colors`}
             >
               <Plus className="w-5 h-5 mr-2" />
               New Project Template
@@ -362,13 +360,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     {/* Header */}
     <div className="flex items-center justify-between mb-6">
       <div>
-        <h3 className="text-xl font-semibold text-gray-800">Project Template Configuration</h3>
-        <p className="text-sm text-gray-600 mt-1">Manage project template settings.</p>
+        <h3 className={APP_DEFAULTS.typography.h3}>Project Template Configuration</h3>
+        <p className={APP_DEFAULTS.typography.tagline}>Manage project template settings.</p>
       </div>
       <div className="flex space-x-2">
         <button
           onClick={onExitToWelcome}
-          className="flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                          className={`flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ${APP_DEFAULTS.typography.button}`}
         >
           <X className="w-4 h-4 mr-1" />
           Exit
@@ -388,17 +386,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     </div>
 
-    {/* Project-Level Configuration */}
-    <div className="border-2 border-grey-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+    {/* 1. Template Information */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
       <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="font-bold text-xl">Project Settings</h4>
-        <p className="text-gray-600 mt-1 text-sm">Configure project-level metadata and team settings.</p>
+        <h4 className={APP_DEFAULTS.typography.h4}>Template Information</h4>
+        <p className={APP_DEFAULTS.typography.tagline}>Basic template details and description</p>
       </div>
       
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="md:col-span-2 lg:col-span-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className={APP_DEFAULTS.typography.label}>Template Name</label>
             <input
               type="text"
               value={scopeData.projectType || ''}
@@ -408,57 +406,114 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-            <input
-              type="text"
+            <label className={APP_DEFAULTS.typography.label}>Description</label>
+            <textarea
+              rows={3}
               value={scopeData.description || ''}
               onChange={(e) => onUpdateProjectInfo('description', e.target.value)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Project description and key features"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Developers</label>
-            <input
-              type="number"
-              min="1"
-              max="50"
-              value={scopeData.numberOfDevelopers || 3}
-              onChange={(e) => onUpdateProjectInfo('numberOfDevelopers', parseInt(e.target.value) || 3)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="3"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sprint Length (days)</label>
-            <input
-              type="number"
-              min="1"
-              max="30"
-              value={scopeData.sprintLength || 14}
-              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || 14)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="14"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={scopeData.sprintEfficiency || 80}
-              onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || 80)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="80"
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+              placeholder="Template description and key features"
             />
           </div>
         </div>
       </div>
     </div>
 
-    {/* Sections */}
-    {scopeData.sections.length === 0 ? (
+    {/* 2. Developers */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className={APP_DEFAULTS.typography.h4}>Developer Requirements</h4>
+        <p className={APP_DEFAULTS.typography.tagline}>Define team size ranges for different project scales</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className={APP_DEFAULTS.typography.label}>Minimum Developers</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.developers.formMinLimit}
+              max={APP_DEFAULTS.developers.formMaxLimit}
+              value={scopeData.minDevelopers || APP_DEFAULTS.developers.min}
+              onChange={(e) => onUpdateProjectInfo('minDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.min)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.developers.min.toString()}
+            />
+          </div>
+          <div>
+            <label className={APP_DEFAULTS.typography.label}>Standard Developers</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.developers.formMinLimit}
+              max={APP_DEFAULTS.developers.formMaxLimit}
+              value={scopeData.standardDevelopers || APP_DEFAULTS.developers.standard}
+              onChange={(e) => onUpdateProjectInfo('standardDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.standard)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.developers.standard.toString()}
+            />
+          </div>
+          <div>
+            <label className={APP_DEFAULTS.typography.label}>Maximum Developers</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.developers.formMinLimit}
+              max={APP_DEFAULTS.developers.formMaxLimit}
+              value={scopeData.maxDevelopers || APP_DEFAULTS.developers.max}
+              onChange={(e) => onUpdateProjectInfo('maxDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.max)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.developers.max.toString()}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* 3. Sprint Details */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className={APP_DEFAULTS.typography.h4}>Sprint Configuration</h4>
+        <p className={APP_DEFAULTS.typography.tagline}>Sprint timing and efficiency parameters</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+                                <label className={APP_DEFAULTS.typography.label}>Sprint Length (working days)</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.sprint.lengthMinLimit}
+              max={APP_DEFAULTS.sprint.lengthMaxLimit}
+              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
+              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.sprint.length.toString()}
+            />
+          </div>
+          <div>
+            <label className={APP_DEFAULTS.typography.label}>Sprint Efficiency (%)</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.sprint.efficiencyMinLimit}
+              max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
+              value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+              onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Project Scope Section */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className={APP_DEFAULTS.typography.h4}>Project Scope</h4>
+        <p className={APP_DEFAULTS.typography.tagline}>Define and organize the scope sections and items for this template</p>
+      </div>
+      
+      <div className="p-6">
+        {scopeData.sections.length === 0 ? (
       <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
           <FolderPlus className="w-8 h-8 text-gray-400" />
@@ -481,7 +536,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="bg-gray-200 text-gray-800 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-xl">{sectionData.name || 'Unnamed Section'}</h4>
+                                     <h4 className={APP_DEFAULTS.typography.h4}>{sectionData.name || 'Unnamed Section'}</h4>
                 </div>
                 {scopeData.sections.length > 1 && (
                   <button
@@ -498,7 +553,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* Section Configuration Form */}
             <div className="border-b border-gray-300 p-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Section Name</label>
+                <label className={APP_DEFAULTS.typography.label}>Section Name</label>
                 <input
                   type="text"
                   value={sectionData.name || ''}
@@ -512,7 +567,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* Scope Items */}
             <div className="p-6">
               <div className="mb-6">
-                <h5 className="font-bold text-gray-800 text-lg flex items-center">
+                <h5 className={`${APP_DEFAULTS.typography.h5} flex items-center`}>
                   <Plus className="w-5 h-5 mr-2 text-green-600" />
                   Scope Items ({sectionData.items.length})
                 </h5>
@@ -557,7 +612,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         type="text"
                         value={item.name || ''}
                         onChange={(e) => onAdminNameChange(sectionIndex, index, e.target.value)}
-                        className="w-full p-3 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-full p-3 border-2 border-gray-200 rounded-lg ${APP_DEFAULTS.typography.body} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                         placeholder="Scope item name"
                       />
                     </div>
@@ -568,9 +623,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         min="0"
                         value={item.hours || 0}
                         onChange={(e) => onAdminHoursChange(sectionIndex, index, e.target.value)}
-                        className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className={`w-20 p-3 border-2 border-gray-200 rounded-lg ${APP_DEFAULTS.typography.body} text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                       />
-                      <span className="text-xs font-medium text-gray-600">hrs</span>
+                                             <span className={APP_DEFAULTS.typography.meta}>hrs</span>
                     </div>
 
                     {/* Size Checkboxes */}
@@ -583,7 +638,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             onChange={(e) => onSizeCheckboxChange(sectionIndex, index, size, e.target.checked)}
                             className="mr-1 w-4 h-4 text-blue-600 focus:ring-blue-500 focus:ring-2"
                           />
-                          <span className="text-xs text-gray-600 capitalize">{size}</span>
+                                                     <span className={`${APP_DEFAULTS.typography.body} capitalize`}>{size}</span>
                         </label>
                       ))}
                     </div>
@@ -645,6 +700,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </button>
       </div>
     )}
+      </div>
+    </div>
   </div>
 
   {/* Exit Warning Dialog */}
@@ -655,7 +712,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
             <span className="text-yellow-600 text-xl">⚠️</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800">Unsaved Changes</h3>
+          <h3 className={APP_DEFAULTS.typography.warning}>Unsaved Changes</h3>
         </div>
         
         <p className="text-gray-600 mb-6">
@@ -697,11 +754,11 @@ const AdminApp: React.FC = () => {
   const adminHook = useAdminConfiguration();
 
   return (
-    <div className="max-w-6xl mx-auto p-6 min-h-screen">
+    <div className="max-w-7xl mx-auto p-6 min-h-screen">
       <div className="rounded-lg shadow-md mb-6">
         <div className="p-8 border-b border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Scoping Tool Administration</h1>
-          <p className="text-gray-600">Manage project template definitions and configurations.</p>
+          <h1 className={APP_DEFAULTS.typography.h1}>Scoping Tool Administration</h1>
+                      <p className={APP_DEFAULTS.typography.body}>Manage project template definitions and configurations.</p>
         </div>
       </div>
 

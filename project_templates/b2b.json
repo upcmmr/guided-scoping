@@ -1,7 +1,9 @@
 {
     "projectType": "B2B Commerce",
     "description": "B2B Commerce Project",
-    "numberOfDevelopers": 6,
+    "minDevelopers": 3,
+    "standardDevelopers": 6,
+    "maxDevelopers": 10,
     "sprintLength": 10,
     "sprintEfficiency": 60,
     "sections": [

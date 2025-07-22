@@ -2,10 +2,12 @@
 // PROJECT MANAGER - Handles JSON file operations for user project files
 // ============================================================================
 
+import { APP_DEFAULTS } from '../config/defaults';
+
 export interface UserProject {
   projectType: string;
   description: string;
-  numberOfDevelopers: number;
+  numberOfDevelopers: number; // Keep for backwards compatibility
   sprintLength: number;
   sprintEfficiency: number;
   sections: Array<{
@@ -47,7 +49,7 @@ export const saveUserProject = async (
     const userProject: UserProject = {
       projectType: projectData.projectType,
       description: projectData.description,
-      numberOfDevelopers: projectData.numberOfDevelopers,
+      numberOfDevelopers: projectData.standardDevelopers || projectData.numberOfDevelopers || APP_DEFAULTS.userProject.defaultNumberOfDevelopers,
       sprintLength: projectData.sprintLength,
       sprintEfficiency: projectData.sprintEfficiency,
       sections: transformedSections,
@@ -56,13 +58,13 @@ export const saveUserProject = async (
       lastModified: new Date().toISOString()
     };
 
-    const jsonContent = JSON.stringify(userProject, null, 2);
+    const jsonContent = JSON.stringify(userProject, null, APP_DEFAULTS.file.jsonIndentation);
     
     // Check if File System Access API is supported (modern browsers)
     if ('showSaveFilePicker' in window) {
       try {
         const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || 'project'}.json`,
+          suggestedName: `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`,
           types: [{
             description: 'Project files',
             accept: { 'application/json': ['.json'] }
@@ -73,7 +75,7 @@ export const saveUserProject = async (
         await writable.write(jsonContent);
         await writable.close();
         
-        console.log('User project saved to JSON file successfully');
+        // File saved successfully
         return true;
       } catch (err: any) {
         if (err.name !== 'AbortError') {
@@ -88,16 +90,15 @@ export const saveUserProject = async (
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || 'project'}.json`;
+          a.download = `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    console.log('User project downloaded as JSON file');
+    // File downloaded successfully
     return true;
   } catch (error) {
-    console.error('Error saving user project:', error);
     return false;
   }
 };
@@ -127,7 +128,7 @@ export const loadUserProject = async (): Promise<UserProject | null> => {
         return data;
       } catch (err: any) {
         if (err.name === 'AbortError') {
-          console.log('File selection cancelled');
+          // File selection cancelled
         } else {
           console.error('Error loading project file:', err);
         }
