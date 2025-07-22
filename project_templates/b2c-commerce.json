@@ -209,5 +209,17 @@
         }
       ]
     }
+  ],
+  "resourceSections": [
+    {
+      "id": "onshore",
+      "name": "Onshore Lead Resources",
+      "roles": []
+    },
+    {
+      "id": "offshore",
+      "name": "Offshore Lead Resources", 
+      "roles": []
+    }
   ]
 }

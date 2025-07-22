@@ -103,6 +103,18 @@ export const APP_DEFAULTS = {
           { name: "Responsive Design", hours: 24, small: false, medium: true, large: true }
         ]
       }
+    ],
+    resourceSections: [
+      {
+        id: 'onshore',
+        name: 'Onshore Lead Resources',
+        roles: []
+      },
+      {
+        id: 'offshore',
+        name: 'Offshore Lead Resources', 
+        roles: []
+      }
     ]
   },
 
@@ -117,6 +129,22 @@ export const APP_DEFAULTS = {
   sprintPlanning: {
     hoursPerDay: 8, // Standard work day hours
     percentageConversion: 100, // Convert percentage to decimal (efficiency% / 100)
+  },
+
+  // Team Structure Configuration
+  teamStructure: {
+    defaultResourceSections: [
+      {
+        id: 'onshore',
+        name: 'Onshore Lead Resources',
+        roles: []
+      },
+      {
+        id: 'offshore',
+        name: 'Offshore Lead Resources', 
+        roles: []
+      }
+    ]
   },
 
   // UI Styling Constants

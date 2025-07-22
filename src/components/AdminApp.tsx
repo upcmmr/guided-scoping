@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { Plus, X, FolderPlus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, X, FolderPlus, Trash2, ChevronUp, ChevronDown, Save, Upload, Download, Settings, Home, AlertTriangle, FileText } from 'lucide-react';
 import { 
   loadScopeDataFromFile,
   getEmptyScopeData,
@@ -29,6 +29,22 @@ const createNewSection = (sectionNumber: number) => ({
   items: [createNewScopeItem()]
 });
 
+/** Create a new team role with default values */
+const createNewTeamRole = (name?: string) => ({
+  id: `role_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  name: name || 'New Role',
+  smb: 0,
+  standard: 1,
+  enterprise: 1
+});
+
+/** Create a new resource section with default structure */
+const createNewResourceSection = (name?: string) => ({
+  id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  name: name || 'New Resource Section',
+  roles: []
+});
+
 // ============================================================================
 // ADMIN CONFIGURATION HOOK
 // ============================================================================
@@ -42,6 +58,112 @@ const useAdminConfiguration = () => {
   // Project-level management functions
   const updateProjectInfo = (field: string, value: string | number) => {
     setScopeData((prev) => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+  };
+
+  // ============================================================================
+  // TEAM ROLE MANAGEMENT FUNCTIONS
+  // ============================================================================
+
+  const addTeamRole = (resourceSectionIndex: number, name?: string) => {
+    const newRole = createNewTeamRole(name);
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => 
+        secIndex === resourceSectionIndex 
+          ? { ...section, roles: [...section.roles, newRole] }
+          : section
+      ) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const removeTeamRole = (resourceSectionIndex: number, roleIndex: number) => {
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => 
+        secIndex === resourceSectionIndex 
+          ? { ...section, roles: section.roles.filter((_, roleIdx) => roleIdx !== roleIndex) }
+          : section
+      ) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateTeamRole = (resourceSectionIndex: number, roleIndex: number, updates: Partial<any>) => {
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => 
+        secIndex === resourceSectionIndex ? {
+          ...section,
+          roles: section.roles.map((role, roleIdx) => 
+            roleIdx === roleIndex ? { ...role, ...updates } : role
+          )
+        } : section
+      ) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const moveRoleUp = (resourceSectionIndex: number, roleIndex: number) => {
+    if (roleIndex === 0) return;
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => {
+        if (secIndex === resourceSectionIndex) {
+          const newRoles = [...section.roles];
+          [newRoles[roleIndex - 1], newRoles[roleIndex]] = [newRoles[roleIndex], newRoles[roleIndex - 1]];
+          return { ...section, roles: newRoles };
+        }
+        return section;
+      }) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const moveRoleDown = (resourceSectionIndex: number, roleIndex: number) => {
+    const currentSection = scopeData.resourceSections?.[resourceSectionIndex];
+    if (!currentSection || roleIndex === currentSection.roles.length - 1) return;
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => {
+        if (secIndex === resourceSectionIndex) {
+          const newRoles = [...section.roles];
+          [newRoles[roleIndex], newRoles[roleIndex + 1]] = [newRoles[roleIndex + 1], newRoles[roleIndex]];
+          return { ...section, roles: newRoles };
+        }
+        return section;
+      }) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateResourceSectionName = (resourceSectionIndex: number, name: string) => {
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.map((section, secIndex) => 
+        secIndex === resourceSectionIndex 
+          ? { ...section, name }
+          : section
+      ) || []
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const addResourceSection = (name?: string) => {
+    const newSection = createNewResourceSection(name);
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: [...(prev.resourceSections || []), newSection]
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const removeResourceSection = (resourceSectionIndex: number) => {
+    setScopeData((prev) => ({
+      ...prev,
+      resourceSections: prev.resourceSections?.filter((_, secIndex) => secIndex !== resourceSectionIndex) || []
+    }));
     setHasUnsavedChanges(true);
   };
 
@@ -69,7 +191,8 @@ const useAdminConfiguration = () => {
       maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
       sprintLength: APP_DEFAULTS.sprint.length,
       sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
-      sections: []
+      sections: [],
+      resourceSections: APP_DEFAULTS.teamStructure.defaultResourceSections
     });
     setHasUnsavedChanges(false);
     setIsLoaded(true);
@@ -259,7 +382,16 @@ const useAdminConfiguration = () => {
     showExitWarning,
     handleSaveAndExit,
     handleExitWithoutSaving,
-    handleCancelExit
+    handleCancelExit,
+    // Team role management functions
+    addTeamRole,
+    removeTeamRole,
+    updateTeamRole,
+    moveRoleUp,
+    moveRoleDown,
+    updateResourceSectionName,
+    addResourceSection,
+    removeResourceSection
   };
 };
 
@@ -291,6 +423,15 @@ interface AdminPanelProps {
   onSizeCheckboxChange: (sectionIndex: number, itemIndex: number, size: string, checked: boolean) => void;
   onSaveChanges: () => void;
   onLoadFromFile: () => void;
+  // Team role management props
+  onAddTeamRole: (resourceSectionIndex: number, name?: string) => void;
+  onRemoveTeamRole: (resourceSectionIndex: number, roleIndex: number) => void;
+  onUpdateTeamRole: (resourceSectionIndex: number, roleIndex: number, updates: Partial<any>) => void;
+  onMoveRoleUp: (resourceSectionIndex: number, roleIndex: number) => void;
+  onMoveRoleDown: (resourceSectionIndex: number, roleIndex: number) => void;
+  onUpdateResourceSectionName: (resourceSectionIndex: number, name: string) => void;
+  onAddResourceSection: (name?: string) => void;
+  onRemoveResourceSection: (resourceSectionIndex: number) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ 
@@ -316,7 +457,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onAdminNameChange,
   onSizeCheckboxChange,
   onSaveChanges,
-  onLoadFromFile
+  onLoadFromFile,
+  // Team role management props
+  onAddTeamRole,
+  onRemoveTeamRole,
+  onUpdateTeamRole,
+  onMoveRoleUp,
+  onMoveRoleDown,
+  onUpdateResourceSectionName,
+  onAddResourceSection,
+  onRemoveResourceSection
 }) => {
   // Check if we should show the welcome screen or the configuration form
   const shouldShowWelcome = !isLoaded && scopeData.projectType.trim() === '' && scopeData.description.trim() === '';
@@ -337,17 +487,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onLoadFromFile}
-              className={`flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-lg font-medium shadow-md transition-colors`}
+              className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
             >
-              <FolderPlus className="w-5 h-5 mr-2" />
+              <Upload className="w-4 h-4 mr-2" />
               Load Project Template
             </button>
             
             <button
               onClick={onCreateNewConfig}
-              className={`flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-lg font-medium shadow-md transition-colors`}
+              className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="w-4 h-4 mr-2" />
               New Project Template
             </button>
           </div>
@@ -369,21 +519,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="flex space-x-2">
         <button
           onClick={onExitToWelcome}
-          className={`flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-base font-medium`}
+          className="flex items-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium shadow-md transition-colors"
         >
-          <X className="w-4 h-4 mr-1" />
+          <Home className="w-4 h-4 mr-2" />
           Exit
         </button>
         
         <button
           onClick={onSaveChanges}
           disabled={!hasUnsavedChanges}
-          className={`flex items-center px-3 py-2 rounded text-sm transition-colors ${
+          className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium shadow-md transition-colors ${
             hasUnsavedChanges 
               ? 'bg-blue-600 text-white hover:bg-blue-700' 
               : 'bg-gray-400 text-gray-700 cursor-not-allowed'
           }`}
         >
+          <Save className="w-4 h-4 mr-2" />
           Save Project Template
         </button>
       </div>
@@ -439,7 +590,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <p className="text-sm text-gray-400 mb-6">Add sections to organize your project scope</p>
         <button
           onClick={onAddNewSection}
-          className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+          className="flex items-center mx-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
         >
           <Plus className="w-4 h-4 mr-2" />
           Add First Section
@@ -458,7 +609,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 {scopeData.sections.length > 1 && (
                   <button
                     onClick={() => onRemoveSection(sectionIndex)}
-                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+                    className="flex items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Delete Section
@@ -485,7 +636,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             <div className="p-6">
               <div className="mb-6">
                 <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
-                  <Plus className="w-5 h-5 mr-2 text-green-600" />
+                  <FileText className="w-4 h-4 mr-2 text-green-600" />
                   Scope Items ({sectionData.items.length})
                 </h5>
               </div>
@@ -562,7 +713,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                     <button
                       onClick={() => onRemoveScopeItem(sectionIndex, index)}
-                      className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                      className="flex items-center px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
                       title="Remove item"
                     >
                       <X className="w-4 h-4" />
@@ -592,7 +743,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="mt-6 flex justify-center">
                   <button
                     onClick={() => onAddScopeItem(sectionIndex)}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                    className="flex items-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add Item
@@ -612,7 +763,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           onClick={onAddNewSection}
           className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4 mr-2" />
           Add New Section
         </button>
       </div>
@@ -629,324 +780,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       
       <div className="p-6 space-y-6">
         {/* Team Structure Models */}
-        <div className="border-t border-gray-300 pt-6 mt-6">
+        <div>
           
-
-
-          <div className="space-y-8">
-            {/* Onshore Resources Section */}
-            <div className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
-              {/* Section Header */}
-              <div className="bg-gray-200 text-gray-800 p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-800 mb-2">Onshore Lead Resources</h4>
-                  </div>
-                  <button
-                    onClick={() => {/* Remove this section */}}
-                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Section
-                  </button>
-                </div>
-              </div>
-
-              {/* Section Name Configuration */}
-              <div className="border-b border-gray-300 p-6">
-                <div>
-                  <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
-                  <input
-                    type="text"
-                    defaultValue="Onshore Lead Resources"
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter section name"
-                  />
-                </div>
-              </div>
-              
-              {/* Team Roles */}
-              <div className="p-6">
-                <div className="mb-6">
-                  <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
-                    <Plus className="w-5 h-5 mr-2 text-green-600" />
-                    Team Roles (5)
-                  </h5>
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { key: 'onshoreEngagementManager', label: 'Engagement Manager' },
-                    { key: 'onshoreProjectManager', label: 'Project Manager' },
-                    { key: 'onshoreTechnicalArchitect', label: 'Technical Architect' },
-                    { key: 'onshoreSolutionArchitect', label: 'Solution Architect' },
-                    { key: 'onshoreQAManager', label: 'QA Manager' }
-                  ].map((resource, index) => (
-                    <div key={resource.key} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
-                      {/* Reorder Controls */}
-                      <div className="flex flex-col gap-1">
-                        <button
-                          disabled={index === 0}
-                          className={`p-1 rounded transition-colors ${
-                            index === 0 
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                          }`}
-                          title="Move up"
-                        >
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button
-                          disabled={index === 4}
-                          className={`p-1 rounded transition-colors ${
-                            index === 4
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                          }`}
-                          title="Move down"
-                        >
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Role Name */}
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          defaultValue={resource.label}
-                          className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Role name"
-                        />
-                      </div>
-
-                      {/* SMB Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="0"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">SMB</span>
-                      </div>
-
-                      {/* Standard Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="1"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">Std</span>
-                      </div>
-
-                      {/* Enterprise Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="2"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">Ent</span>
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => {/* Remove this role */}}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                        title="Remove role"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Add Role Button */}
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={() => {/* Add new onshore role */}}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Role
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Offshore Resources Section */}
-            <div className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
-              {/* Section Header */}
-              <div className="bg-gray-200 text-gray-800 p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-800 mb-2">Offshore Lead Resources</h4>
-                  </div>
-                  <button
-                    onClick={() => {/* Remove this section */}}
-                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Section
-                  </button>
-                </div>
-              </div>
-
-              {/* Section Name Configuration */}
-              <div className="border-b border-gray-300 p-6">
-                <div>
-                  <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
-                  <input
-                    type="text"
-                    defaultValue="Offshore Lead Resources"
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter section name"
-                  />
-                </div>
-              </div>
-              
-              {/* Team Roles */}
-              <div className="p-6">
-                <div className="mb-6">
-                  <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
-                    <Plus className="w-5 h-5 mr-2 text-green-600" />
-                    Team Roles (5)
-                  </h5>
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { key: 'offshoreEngagementManager', label: 'Engagement Manager' },
-                    { key: 'offshoreProjectManager', label: 'Project Manager' },
-                    { key: 'offshoreTechnicalArchitect', label: 'Technical Architect' },
-                    { key: 'offshoreSolutionArchitect', label: 'Solution Architect' },
-                    { key: 'offshoreQAManager', label: 'QA Manager' }
-                  ].map((resource, index) => (
-                    <div key={resource.key} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
-                      {/* Reorder Controls */}
-                      <div className="flex flex-col gap-1">
-                        <button
-                          disabled={index === 0}
-                          className={`p-1 rounded transition-colors ${
-                            index === 0 
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                          }`}
-                          title="Move up"
-                        >
-                          <ChevronUp className="w-4 h-4" />
-                        </button>
-                        <button
-                          disabled={index === 4}
-                          className={`p-1 rounded transition-colors ${
-                            index === 4
-                              ? 'text-gray-300 cursor-not-allowed' 
-                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
-                          }`}
-                          title="Move down"
-                        >
-                          <ChevronDown className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Role Name */}
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          defaultValue={resource.label}
-                          className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Role name"
-                        />
-                      </div>
-
-                      {/* SMB Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="0"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">SMB</span>
-                      </div>
-
-                      {/* Standard Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="1"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">Std</span>
-                      </div>
-
-                      {/* Enterprise Count */}
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.5"
-                          defaultValue="2"
-                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <span className="text-sm text-gray-500">Ent</span>
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => {/* Remove this role */}}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
-                        title="Remove role"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Add Role Button */}
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={() => {/* Add new offshore role */}}
-                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Role
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Add Section Button */}
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={() => {/* Add new resource section */}}
-              className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add New Resource Section
-            </button>
-          </div>
-
-          {/* Developer & QA Configuration Subsection */}
-          <div className="mt-8 border-t border-gray-300 pt-8">
-            <h5 className="text-lg font-semibold text-gray-700 mb-6">Developer & QA Configuration</h5>
+          {/* Developer & QA Consultant Configuration Subsection */}
+          <div className="mb-8 border-b border-gray-300 pb-8">
+            <h5 className="text-lg font-semibold text-gray-700 mb-6">Developer & QA Consultant Configuration</h5>
             <p className="text-gray-600 mb-6 text-sm">Define team size ranges and QA team composition</p>
             
             <div className="space-y-6">
@@ -1050,6 +888,194 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
           </div>
 
+          <div className="space-y-8">
+            {/* Resource Sections - Dynamic from template data */}
+            {scopeData.resourceSections?.map((resourceSection, sectionIndex) => (
+              <div key={resourceSection.id} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                {/* Section Header */}
+                <div className="bg-gray-200 text-gray-800 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xl font-bold text-gray-800 mb-2">{resourceSection.name}</h4>
+                    </div>
+                    {scopeData.resourceSections && scopeData.resourceSections.length > 1 && (
+                      <button
+                        onClick={() => onRemoveResourceSection(sectionIndex)}
+                        className="flex items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Section
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Section Name Configuration */}
+                <div className="border-b border-gray-300 p-6">
+                  <div>
+                    <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                    <input
+                      type="text"
+                      value={resourceSection.name}
+                      onChange={(e) => onUpdateResourceSectionName(sectionIndex, e.target.value)}
+                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter section name"
+                    />
+                  </div>
+                </div>
+                
+                {/* Team Roles */}
+                <div className="p-6">
+                  <div className="mb-6">
+                    <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
+                      <Settings className="w-4 h-4 mr-2 text-blue-600" />
+                      Team Roles ({resourceSection.roles.length})
+                    </h5>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {resourceSection.roles.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
+                          <Plus className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <p className="mb-4 font-medium">No roles defined in this section yet</p>
+                        <p className="text-sm text-gray-400 mb-6">Add roles to configure team resource allocation</p>
+                        <button
+                          onClick={() => onAddTeamRole(sectionIndex)}
+                          className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add First Role
+                        </button>
+                      </div>
+                    ) : (
+                      resourceSection.roles.map((role, roleIndex) => (
+                        <div key={role.id} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                          {/* Reorder Controls */}
+                          <div className="flex flex-col gap-1">
+                            <button
+                              disabled={roleIndex === 0}
+                              onClick={() => onMoveRoleUp(sectionIndex, roleIndex)}
+                              className={`flex items-center px-2 py-1 rounded-lg text-sm font-medium transition-colors ${
+                                roleIndex === 0 
+                                  ? 'text-gray-300 cursor-not-allowed' 
+                                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                              }`}
+                              title="Move up"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                            </button>
+                            <button
+                              disabled={roleIndex === resourceSection.roles.length - 1}
+                              onClick={() => onMoveRoleDown(sectionIndex, roleIndex)}
+                              className={`flex items-center px-2 py-1 rounded-lg text-sm font-medium transition-colors ${
+                                roleIndex === resourceSection.roles.length - 1
+                                  ? 'text-gray-300 cursor-not-allowed' 
+                                  : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                              }`}
+                              title="Move down"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Role Name */}
+                          <div className="flex-1">
+                                                      <input
+                            type="text"
+                            value={role.name}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { name: e.target.value })}
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Role name"
+                          />
+                          </div>
+
+                          {/* SMB Count */}
+                          <div className="flex items-center gap-3">
+                                                      <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.5"
+                            value={role.smb}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { smb: parseFloat(e.target.value) || 0 })}
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                            <span className="text-sm text-gray-500">SMB</span>
+                          </div>
+
+                          {/* Standard Count */}
+                          <div className="flex items-center gap-3">
+                                                      <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.5"
+                            value={role.standard}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { standard: parseFloat(e.target.value) || 0 })}
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                            <span className="text-sm text-gray-500">Std</span>
+                          </div>
+
+                          {/* Enterprise Count */}
+                          <div className="flex items-center gap-3">
+                                                      <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.5"
+                            value={role.enterprise}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { enterprise: parseFloat(e.target.value) || 0 })}
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                            <span className="text-sm text-gray-500">Ent</span>
+                          </div>
+
+                          {/* Remove Button */}
+                                                  <button
+                            onClick={() => onRemoveTeamRole(sectionIndex, roleIndex)}
+                            className="flex items-center px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
+                            title="Remove role"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  
+                  {/* Add Role Button - Only show if there are existing roles */}
+                  {resourceSection.roles.length > 0 && (
+                    <div className="mt-6 flex justify-center">
+                      <button
+                        onClick={() => onAddTeamRole(sectionIndex)}
+                        className="flex items-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Role
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Section Button */}
+          <div className="mt-8 flex justify-center">
+          <button
+            onClick={() => onAddResourceSection()}
+            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Resource Section
+          </button>
+          </div>
+
+
+
         </div>
       </div>
     </div>
@@ -1104,7 +1130,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4">
         <div className="flex items-center mb-4">
           <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
-            <span className="text-yellow-600 text-xl">⚠️</span>
+            <AlertTriangle className="w-6 h-6 text-yellow-600" />
           </div>
           <h3 className="text-xl font-semibold text-gray-800">Unsaved Changes</h3>
         </div>
@@ -1116,20 +1142,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="flex space-x-3">
           <button
             onClick={onSaveAndExit}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
           >
+            <Save className="w-4 h-4 mr-2" />
             Save & Exit
           </button>
           <button
             onClick={onExitWithoutSaving}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
           >
+            <AlertTriangle className="w-4 h-4 mr-2" />
             Exit Without Saving
           </button>
           <button
             onClick={onCancelExit}
-            className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 text-sm font-medium transition-colors"
+            className="flex-1 flex items-center justify-center px-4 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 text-sm font-medium shadow-md transition-colors"
           >
+            <X className="w-4 h-4 mr-2" />
             Cancel
           </button>
         </div>
@@ -1180,6 +1209,14 @@ const AdminApp: React.FC = () => {
         onSizeCheckboxChange={adminHook.handleSizeCheckboxChange}
         onSaveChanges={adminHook.handleSaveChanges}
         onLoadFromFile={adminHook.handleLoadFromFile}
+        onAddTeamRole={adminHook.addTeamRole}
+        onRemoveTeamRole={adminHook.removeTeamRole}
+        onUpdateTeamRole={adminHook.updateTeamRole}
+        onMoveRoleUp={adminHook.moveRoleUp}
+        onMoveRoleDown={adminHook.moveRoleDown}
+        onUpdateResourceSectionName={adminHook.updateResourceSectionName}
+        onAddResourceSection={adminHook.addResourceSection}
+        onRemoveResourceSection={adminHook.removeResourceSection}
       />
     </div>
   );

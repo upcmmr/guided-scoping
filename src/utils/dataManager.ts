@@ -21,6 +21,20 @@ export interface ScopeSection {
   items: ScopeItem[];
 }
 
+export interface TeamRole {
+  id: string;
+  name: string;
+  smb: number;
+  standard: number;
+  enterprise: number;
+}
+
+export interface ResourceSection {
+  id: string;
+  name: string;
+  roles: TeamRole[];
+}
+
 export interface ProjectConfig {
   projectType: string;
   description: string;
@@ -33,6 +47,7 @@ export interface ProjectConfig {
   sprintLength: number;
   sprintEfficiency: number; // percentage (0-100)
   sections: ScopeSection[];
+  resourceSections: ResourceSection[];
 }
 
 export type ScopeData = ProjectConfig;
@@ -57,7 +72,8 @@ export const getEmptyScopeData = (): ScopeData => {
     maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
     sprintLength: APP_DEFAULTS.sprint.length,
     sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
-    sections: []
+    sections: [],
+    resourceSections: APP_DEFAULTS.teamStructure.defaultResourceSections
   };
 };
 
