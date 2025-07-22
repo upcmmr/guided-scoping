@@ -392,7 +392,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     {/* 1. Template Information */}
     <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
       <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">Template Information</h4>
+        <h4 className="text-xl font-bold text-gray-800 mb-2">1. Template Information</h4>
         <p className="text-gray-600 mt-1 text-base">Basic template details and description</p>
       </div>
       
@@ -422,158 +422,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     </div>
 
-    {/* 2. Team Configuration */}
+    {/* 2. Project Scope */}
     <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
       <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">Default Team Configuration</h4>
-        <p className="text-gray-600 mt-1 text-base">Define development team size ranges and QA team composition</p>
-      </div>
-      
-      <div className="p-6 space-y-6">
-        {/* Number of Developers Row */}
-        <div>
-          <label className="block text-base font-medium text-gray-700 mb-4">Number of Developers</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
-              <input
-                type="number"
-                min={APP_DEFAULTS.developers.formMinLimit}
-                max={APP_DEFAULTS.developers.formMaxLimit}
-                value={scopeData.minDevelopers || APP_DEFAULTS.developers.min}
-                onChange={(e) => onUpdateProjectInfo('minDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.min)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={APP_DEFAULTS.developers.min.toString()}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Typical</label>
-              <input
-                type="number"
-                min={APP_DEFAULTS.developers.formMinLimit}
-                max={APP_DEFAULTS.developers.formMaxLimit}
-                value={scopeData.standardDevelopers || APP_DEFAULTS.developers.standard}
-                onChange={(e) => onUpdateProjectInfo('standardDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.standard)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={APP_DEFAULTS.developers.standard.toString()}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
-              <input
-                type="number"
-                min={APP_DEFAULTS.developers.formMinLimit}
-                max={APP_DEFAULTS.developers.formMaxLimit}
-                value={scopeData.maxDevelopers || APP_DEFAULTS.developers.max}
-                onChange={(e) => onUpdateProjectInfo('maxDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.max)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={APP_DEFAULTS.developers.max.toString()}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* QA Team Row */}
-        <div>
-          <label className="block text-base font-medium text-gray-700 mb-4">QA team as a percentage of Development team</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min={APP_DEFAULTS.qa.factorMinLimit}
-                  max={APP_DEFAULTS.qa.factorMaxLimit}
-                  step="1"
-                  value={scopeData.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
-                  onChange={(e) => onUpdateProjectInfo('minQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.minTeamFactor)}
-                  className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={APP_DEFAULTS.qa.minTeamFactor.toString()}
-                />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Typical</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min={APP_DEFAULTS.qa.factorMinLimit}
-                  max={APP_DEFAULTS.qa.factorMaxLimit}
-                  step="1"
-                  value={scopeData.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor}
-                  onChange={(e) => onUpdateProjectInfo('standardQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.standardTeamFactor)}
-                  className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={APP_DEFAULTS.qa.standardTeamFactor.toString()}
-                />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min={APP_DEFAULTS.qa.factorMinLimit}
-                  max={APP_DEFAULTS.qa.factorMaxLimit}
-                  step="1"
-                  value={scopeData.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
-                  onChange={(e) => onUpdateProjectInfo('maxQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.maxTeamFactor)}
-                  className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder={APP_DEFAULTS.qa.maxTeamFactor.toString()}
-                />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* 3. Sprint Details */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">Sprint Configuration</h4>
-        <p className="text-gray-600 mt-1 text-base">Sprint timing and efficiency parameters</p>
-      </div>
-      
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Length (working days)</label>
-            <input
-              type="number"
-              min={APP_DEFAULTS.sprint.lengthMinLimit}
-              max={APP_DEFAULTS.sprint.lengthMaxLimit}
-              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
-              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder={APP_DEFAULTS.sprint.length.toString()}
-            />
-          </div>
-          <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
-            <div className="relative">
-              <input
-                type="number"
-                min={APP_DEFAULTS.sprint.efficiencyMinLimit}
-                max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
-                value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
-                onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
-                className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
-              />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Project Scope Section */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">Project Scope</h4>
+        <h4 className="text-xl font-bold text-gray-800 mb-2">2. Default Project Scope</h4>
         <p className="text-gray-600 mt-1 text-base">Define and organize the scope sections and items for this template</p>
       </div>
       
@@ -767,6 +619,483 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     )}
       </div>
     </div>
+
+    {/* 3. Default Team Configuration */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className="text-xl font-bold text-gray-800 mb-2">3. Default Team Configuration</h4>
+        <p className="text-gray-600 mt-1 text-base">Define resource allocation for different team models across various business types</p>
+      </div>
+      
+      <div className="p-6 space-y-6">
+        {/* Team Structure Models */}
+        <div className="border-t border-gray-300 pt-6 mt-6">
+          
+
+
+          <div className="space-y-8">
+            {/* Onshore Resources Section */}
+            <div className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              {/* Section Header */}
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-800 mb-2">Onshore Lead Resources</h4>
+                  </div>
+                  <button
+                    onClick={() => {/* Remove this section */}}
+                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Section
+                  </button>
+                </div>
+              </div>
+
+              {/* Section Name Configuration */}
+              <div className="border-b border-gray-300 p-6">
+                <div>
+                  <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                  <input
+                    type="text"
+                    defaultValue="Onshore Lead Resources"
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter section name"
+                  />
+                </div>
+              </div>
+              
+              {/* Team Roles */}
+              <div className="p-6">
+                <div className="mb-6">
+                  <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
+                    <Plus className="w-5 h-5 mr-2 text-green-600" />
+                    Team Roles (5)
+                  </h5>
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { key: 'onshoreEngagementManager', label: 'Engagement Manager' },
+                    { key: 'onshoreProjectManager', label: 'Project Manager' },
+                    { key: 'onshoreTechnicalArchitect', label: 'Technical Architect' },
+                    { key: 'onshoreSolutionArchitect', label: 'Solution Architect' },
+                    { key: 'onshoreQAManager', label: 'QA Manager' }
+                  ].map((resource, index) => (
+                    <div key={resource.key} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                      {/* Reorder Controls */}
+                      <div className="flex flex-col gap-1">
+                        <button
+                          disabled={index === 0}
+                          className={`p-1 rounded transition-colors ${
+                            index === 0 
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                          }`}
+                          title="Move up"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          disabled={index === 4}
+                          className={`p-1 rounded transition-colors ${
+                            index === 4
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                          }`}
+                          title="Move down"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Role Name */}
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          defaultValue={resource.label}
+                          className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Role name"
+                        />
+                      </div>
+
+                      {/* SMB Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="0"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">SMB</span>
+                      </div>
+
+                      {/* Standard Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="1"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">Std</span>
+                      </div>
+
+                      {/* Enterprise Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="2"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">Ent</span>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => {/* Remove this role */}}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                        title="Remove role"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Add Role Button */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => {/* Add new onshore role */}}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Role
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Offshore Resources Section */}
+            <div className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              {/* Section Header */}
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-800 mb-2">Offshore Lead Resources</h4>
+                  </div>
+                  <button
+                    onClick={() => {/* Remove this section */}}
+                    className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Section
+                  </button>
+                </div>
+              </div>
+
+              {/* Section Name Configuration */}
+              <div className="border-b border-gray-300 p-6">
+                <div>
+                  <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                  <input
+                    type="text"
+                    defaultValue="Offshore Lead Resources"
+                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter section name"
+                  />
+                </div>
+              </div>
+              
+              {/* Team Roles */}
+              <div className="p-6">
+                <div className="mb-6">
+                  <h5 className="text-base font-semibold text-gray-700 mb-2 flex items-center">
+                    <Plus className="w-5 h-5 mr-2 text-green-600" />
+                    Team Roles (5)
+                  </h5>
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { key: 'offshoreEngagementManager', label: 'Engagement Manager' },
+                    { key: 'offshoreProjectManager', label: 'Project Manager' },
+                    { key: 'offshoreTechnicalArchitect', label: 'Technical Architect' },
+                    { key: 'offshoreSolutionArchitect', label: 'Solution Architect' },
+                    { key: 'offshoreQAManager', label: 'QA Manager' }
+                  ].map((resource, index) => (
+                    <div key={resource.key} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                      {/* Reorder Controls */}
+                      <div className="flex flex-col gap-1">
+                        <button
+                          disabled={index === 0}
+                          className={`p-1 rounded transition-colors ${
+                            index === 0 
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                          }`}
+                          title="Move up"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          disabled={index === 4}
+                          className={`p-1 rounded transition-colors ${
+                            index === 4
+                              ? 'text-gray-300 cursor-not-allowed' 
+                              : 'text-gray-600 hover:text-blue-600 hover:bg-blue-100'
+                          }`}
+                          title="Move down"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Role Name */}
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          defaultValue={resource.label}
+                          className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Role name"
+                        />
+                      </div>
+
+                      {/* SMB Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="0"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">SMB</span>
+                      </div>
+
+                      {/* Standard Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="1"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">Std</span>
+                      </div>
+
+                      {/* Enterprise Count */}
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.5"
+                          defaultValue="2"
+                          className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <span className="text-sm text-gray-500">Ent</span>
+                      </div>
+
+                      {/* Remove Button */}
+                      <button
+                        onClick={() => {/* Remove this role */}}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                        title="Remove role"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Add Role Button */}
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => {/* Add new offshore role */}}
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Role
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Add Section Button */}
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => {/* Add new resource section */}}
+              className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add New Resource Section
+            </button>
+          </div>
+
+          {/* Developer & QA Configuration Subsection */}
+          <div className="mt-8 border-t border-gray-300 pt-8">
+            <h5 className="text-lg font-semibold text-gray-700 mb-6">Developer & QA Configuration</h5>
+            <p className="text-gray-600 mb-6 text-sm">Define team size ranges and QA team composition</p>
+            
+            <div className="space-y-6">
+              {/* Number of Developers Row */}
+              <div>
+                <label className="block text-base font-medium text-gray-700 mb-4">Number of Developers</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
+                    <input
+                      type="number"
+                      min={APP_DEFAULTS.developers.formMinLimit}
+                      max={APP_DEFAULTS.developers.formMaxLimit}
+                      value={scopeData.minDevelopers || APP_DEFAULTS.developers.min}
+                      onChange={(e) => onUpdateProjectInfo('minDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.min)}
+                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={APP_DEFAULTS.developers.min.toString()}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Typical</label>
+                    <input
+                      type="number"
+                      min={APP_DEFAULTS.developers.formMinLimit}
+                      max={APP_DEFAULTS.developers.formMaxLimit}
+                      value={scopeData.standardDevelopers || APP_DEFAULTS.developers.standard}
+                      onChange={(e) => onUpdateProjectInfo('standardDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.standard)}
+                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={APP_DEFAULTS.developers.standard.toString()}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
+                    <input
+                      type="number"
+                      min={APP_DEFAULTS.developers.formMinLimit}
+                      max={APP_DEFAULTS.developers.formMaxLimit}
+                      value={scopeData.maxDevelopers || APP_DEFAULTS.developers.max}
+                      onChange={(e) => onUpdateProjectInfo('maxDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.max)}
+                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={APP_DEFAULTS.developers.max.toString()}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* QA Team Row */}
+              <div>
+                <label className="block text-base font-medium text-gray-700 mb-4">QA team as a percentage of Development team</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min={APP_DEFAULTS.qa.factorMinLimit}
+                        max={APP_DEFAULTS.qa.factorMaxLimit}
+                        step="1"
+                        value={scopeData.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
+                        onChange={(e) => onUpdateProjectInfo('minQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.minTeamFactor)}
+                        className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder={APP_DEFAULTS.qa.minTeamFactor.toString()}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Typical</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min={APP_DEFAULTS.qa.factorMinLimit}
+                        max={APP_DEFAULTS.qa.factorMaxLimit}
+                        step="1"
+                        value={scopeData.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor}
+                        onChange={(e) => onUpdateProjectInfo('standardQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.standardTeamFactor)}
+                        className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder={APP_DEFAULTS.qa.standardTeamFactor.toString()}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">Maximum</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min={APP_DEFAULTS.qa.factorMinLimit}
+                        max={APP_DEFAULTS.qa.factorMaxLimit}
+                        step="1"
+                        value={scopeData.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
+                        onChange={(e) => onUpdateProjectInfo('maxQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.maxTeamFactor)}
+                        className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder={APP_DEFAULTS.qa.maxTeamFactor.toString()}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+    {/* 4. Sprint Configuration */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className="text-xl font-bold text-gray-800 mb-2">4. Default Sprint Configuration</h4>
+        <p className="text-gray-600 mt-1 text-base">Sprint timing and efficiency parameters</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Length (working days)</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.sprint.lengthMinLimit}
+              max={APP_DEFAULTS.sprint.lengthMaxLimit}
+              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
+              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.sprint.length.toString()}
+            />
+          </div>
+          <div>
+            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
+            <div className="relative">
+              <input
+                type="number"
+                min={APP_DEFAULTS.sprint.efficiencyMinLimit}
+                max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
+                value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+                className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   {/* Exit Warning Dialog */}
