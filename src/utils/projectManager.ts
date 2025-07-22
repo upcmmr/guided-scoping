@@ -10,6 +10,9 @@ export interface UserProject {
   description: string;
   version: string;
   numberOfDevelopers: number; // Keep for backwards compatibility
+  minQaTeamFactor?: number;
+  standardQaTeamFactor?: number;
+  maxQaTeamFactor?: number;
   sprintLength: number;
   sprintEfficiency: number;
   sections: Array<{

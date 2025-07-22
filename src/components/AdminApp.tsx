@@ -14,6 +14,7 @@ import {
   type ScopeItem
 } from '../utils/dataManager';
 import { APP_DEFAULTS, getDefaultScopeItem, getNewSectionName } from '../config/defaults';
+import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getCardClasses, getCardHeaderClasses, getHeadingClasses, getBodyClasses, iconSizes } from '../utils/styleUtils';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -191,20 +192,7 @@ const useAdminConfiguration = () => {
   };
 
   const createNewConfig = () => {
-    setScopeData({
-      projectType: APP_DEFAULTS.project.name,
-      description: APP_DEFAULTS.project.description,
-      minDevelopers: APP_DEFAULTS.developers.min,
-      standardDevelopers: APP_DEFAULTS.developers.standard,
-      maxDevelopers: APP_DEFAULTS.developers.max,
-      minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
-      standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
-      maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
-      sprintLength: APP_DEFAULTS.sprint.length,
-      sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
-      sections: [],
-      resourceSections: APP_DEFAULTS.teamStructure.defaultResourceSections
-    });
+    setScopeData(getEmptyScopeData());
     setHasUnsavedChanges(false);
     setIsLoaded(true);
   };
@@ -501,17 +489,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onLoadFromFile}
-              className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+              className={getButtonClasses('primary')}
             >
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className={`${iconSizes.small} mr-2`} />
               Load Project Template
             </button>
             
             <button
               onClick={onCreateNewConfig}
-              className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+              className={getButtonClasses('success')}
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className={`${iconSizes.small} mr-2`} />
               New Project Template
             </button>
           </div>
@@ -533,54 +521,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="flex space-x-2">
         <button
           onClick={onExitToWelcome}
-          className="flex items-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm font-medium shadow-md transition-colors"
+          className={getButtonClasses('secondary')}
         >
-          <Home className="w-4 h-4 mr-2" />
+          <Home className={`${iconSizes.small} mr-2`} />
           Exit
         </button>
         
         <button
           onClick={onSaveChanges}
           disabled={!hasUnsavedChanges}
-          className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium shadow-md transition-colors ${
-            hasUnsavedChanges 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'bg-gray-400 text-gray-700 cursor-not-allowed'
-          }`}
+          className={hasUnsavedChanges ? getButtonClasses('primary') : 'flex items-center px-4 py-3 bg-gray-400 text-gray-700 cursor-not-allowed rounded-lg text-sm font-medium shadow-md transition-colors'}
         >
-          <Save className="w-4 h-4 mr-2" />
+          <Save className={`${iconSizes.small} mr-2`} />
           Save Project Template
         </button>
       </div>
     </div>
 
     {/* 1. Template Information */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">1. Template Information</h4>
-        <p className="text-gray-600 mt-1 text-base">Basic template details and description</p>
-      </div>
+                <div className={getCardClasses()}>
+              <div className={getCardHeaderClasses()}>
+                <h4 className={`${getHeadingClasses('h4')} mb-2`}>1. Template Information</h4>
+                <p className={`${getBodyClasses('base')} mt-1`}>Basic template details and description</p>
+              </div>
       
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">Template Name</label>
+            <label className={getLabelClasses()}>Template Name</label>
             <input
               type="text"
               value={scopeData.projectType || ''}
               onChange={(e) => onUpdateProjectInfo('projectType', e.target.value)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., B2C E-commerce Platform"
+              className={getInputClasses()}
+              placeholder={APP_DEFAULTS.messages.placeholders.templateName}
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-base font-medium text-gray-700 mb-2">Description</label>
+            <label className={getLabelClasses()}>Description</label>
             <textarea
               rows={3}
               value={scopeData.description || ''}
               onChange={(e) => onUpdateProjectInfo('description', e.target.value)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
-              placeholder="Template description and key features"
+              className={getTextareaClasses()}
+              placeholder={APP_DEFAULTS.messages.placeholders.templateDescription}
             />
           </div>
         </div>
@@ -594,7 +578,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* Profile Headers */}
             <div className="grid gap-3 text-sm font-medium text-gray-700" style={{gridTemplateColumns: '80px 1fr 2fr 2fr'}}>
               <div>Profile</div>
-              <div>Name</div>
+              <div>Name (max 12 chars)</div>
               <div>Scope Description</div>
               <div>Team Description</div>
             </div>
@@ -609,6 +593,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   onChange={(e) => onUpdateSizeDefinition('smallSize', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 1"
+                  maxLength={12}
                 />
               </div>
               <div>
@@ -641,6 +626,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   onChange={(e) => onUpdateSizeDefinition('mediumSize', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 2"
+                  maxLength={12}
                 />
               </div>
               <div>
@@ -673,6 +659,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   onChange={(e) => onUpdateSizeDefinition('largeSize', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 3"
+                  maxLength={12}
                 />
               </div>
               <div>
@@ -700,11 +687,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
 
     {/* 2. Project Scope */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">2. Default Project Scope</h4>
-        <p className="text-gray-600 mt-1 text-base">Define and organize the scope sections and items for this template</p>
-      </div>
+          <div className={getCardClasses()}>
+        <div className={getCardHeaderClasses()}>
+          <h4 className={`${getHeadingClasses('h4')} mb-2`}>2. Default Project Scope</h4>
+          <p className={`${getBodyClasses('base')} mt-1`}>Define and organize the scope sections and items for this template</p>
+        </div>
       
       <div className="p-6">
         {scopeData.sections.length === 0 ? (
@@ -712,13 +699,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
           <FolderPlus className="w-8 h-8 text-gray-400" />
         </div>
-        <p className="mb-4 font-medium">No sections defined</p>
-        <p className="text-sm text-gray-400 mb-6">Add sections to organize your project scope</p>
+        <p className="mb-4 font-medium">{APP_DEFAULTS.messages.emptyStates.noSections}</p>
+        <p className={`${getBodyClasses('muted')} mb-6`}>{APP_DEFAULTS.messages.emptyStates.noSectionsDescription}</p>
         <button
           onClick={onAddNewSection}
-          className="flex items-center mx-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+          className={`${getButtonClasses('success')} mx-auto`}
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className={`${iconSizes.small} mr-2`} />
           Add First Section
         </button>
       </div>
@@ -733,13 +720,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   <h4 className="text-xl font-bold text-gray-800 mb-2">{sectionData.name || 'Unnamed Section'}</h4>
                 </div>
                 {scopeData.sections.length > 1 && (
-                  <button
-                    onClick={() => onRemoveSection(sectionIndex)}
-                    className="flex items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Section
-                  </button>
+                                      <button
+                      onClick={() => onRemoveSection(sectionIndex)}
+                      className={getButtonClasses('danger')}
+                    >
+                      <Trash2 className={`${iconSizes.small} mr-2`} />
+                      Delete Section
+                    </button>
                 )}
               </div>
             </div>
@@ -747,12 +734,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             {/* Section Configuration Form */}
             <div className="border-b border-gray-300 p-6">
               <div>
-                <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                <label className={getLabelClasses()}>Section Name</label>
                 <input
                   type="text"
                   value={sectionData.name || ''}
                   onChange={(e) => onUpdateSectionInfo(sectionIndex, 'name', e.target.value)}
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className={getInputClasses()}
                   placeholder="Enter section name"
                 />
               </div>
@@ -806,7 +793,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         type="text"
                         value={item.name || ''}
                         onChange={(e) => onAdminNameChange(sectionIndex, index, e.target.value)}
-                        className={`w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                        className={getInputClasses()}
                         placeholder="Scope item name"
                       />
                     </div>
@@ -859,9 +846,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <p className="mb-4 font-medium">No scope items in this section yet</p>
                     <button
                       onClick={() => onAddScopeItem(sectionIndex)}
-                      className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+                      className={`${getButtonClasses('primary')} mx-auto`}
                     >
-                      <Plus className="w-4 h-4 mr-2" />
+                      <Plus className={`${iconSizes.small} mr-2`} />
                       Add First Item
                     </button>
                   </div>
@@ -889,24 +876,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     {/* Add Section Button - Only show if there are existing sections */}
     {scopeData.sections.length > 0 && (
       <div className="mt-8 flex justify-center">
-        <button
-          onClick={onAddNewSection}
-          className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add New Section
-        </button>
+                      <button
+                onClick={onAddNewSection}
+                className={getButtonClasses('success')}
+              >
+                <Plus className={`${iconSizes.small} mr-2`} />
+                Add New Section
+              </button>
       </div>
     )}
       </div>
     </div>
 
     {/* 3. Default Team Configuration */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">3. Default Team Configuration</h4>
-        <p className="text-gray-600 mt-1 text-base">Define resource allocation for different team models across various business types</p>
-      </div>
+            <div className={getCardClasses()}>
+          <div className={getCardHeaderClasses()}>
+            <h4 className={`${getHeadingClasses('h4')} mb-2`}>3. Default Team Configuration</h4>
+            <p className={`${getBodyClasses('base')} mt-1`}>Define resource allocation for different team models across various business types</p>
+          </div>
       
       <div className="p-6 space-y-6">
         {/* Team Structure Models */}
@@ -914,13 +901,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           
           {/* Developer & QA Consultant Configuration Subsection */}
           <div className="mb-8 border-b border-gray-300 pb-8">
-            <h5 className="text-lg font-semibold text-gray-700 mb-6">Developer & QA Consultant Configuration</h5>
-            <p className="text-gray-600 mb-6 text-sm">Define team size ranges and QA team composition</p>
+                          <h5 className={`${getHeadingClasses('h5')} mb-6`}>Developer & QA Consultant Configuration</h5>
+              <p className={`${getBodyClasses('small')} mb-6`}>Define team size ranges and QA team composition</p>
             
             <div className="space-y-6">
               {/* Number of Developers Row */}
               <div>
-                <label className="block text-base font-medium text-gray-700 mb-4">Number of Developers</label>
+                                  <label className={`${getLabelClasses()} mb-4`}>Number of Developers</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-2">Minimum</label>
@@ -1031,9 +1018,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     {scopeData.resourceSections && scopeData.resourceSections.length > 1 && (
                       <button
                         onClick={() => onRemoveResourceSection(sectionIndex)}
-                        className="flex items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium shadow-md transition-colors"
+                        className={getButtonClasses('danger')}
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className={`${iconSizes.small} mr-2`} />
                         Delete Section
                       </button>
                     )}
@@ -1071,13 +1058,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                         <p className="mb-4 font-medium">No roles defined in this section yet</p>
                         <p className="text-sm text-gray-400 mb-6">Add roles to configure team resource allocation</p>
-                        <button
-                          onClick={() => onAddTeamRole(sectionIndex)}
-                          className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add First Role
-                        </button>
+                                              <button
+                        onClick={() => onAddTeamRole(sectionIndex)}
+                        className={`${getButtonClasses('primary')} mx-auto`}
+                      >
+                        <Plus className={`${iconSizes.small} mr-2`} />
+                        Add First Role
+                      </button>
                       </div>
                     ) : (
                       resourceSection.roles.map((role, roleIndex) => (
@@ -1181,9 +1168,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="mt-6 flex justify-center">
                       <button
                         onClick={() => onAddTeamRole(sectionIndex)}
-                        className="flex items-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                        className={getButtonClasses('success')}
                       >
-                        <Plus className="w-4 h-4 mr-2" />
+                        <Plus className={`${iconSizes.small} mr-2`} />
                         Add Role
                       </button>
                     </div>
@@ -1197,9 +1184,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="mt-8 flex justify-center">
           <button
             onClick={() => onAddResourceSection()}
-            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+            className={getButtonClasses('success')}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className={`${iconSizes.small} mr-2`} />
             Add New Resource Section
           </button>
           </div>

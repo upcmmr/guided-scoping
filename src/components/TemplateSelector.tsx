@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Clock, Zap, Layers, CheckCircle2, ChevronRight } from 'lucide-react';
 import { loadAllTemplateMetadata, type TemplateMetadata } from '../utils/templateScanner';
 import { APP_DEFAULTS } from '../config/defaults';
+import { getButtonClasses, getHeadingClasses, getBodyClasses, iconSizes, animations } from '../utils/styleUtils';
 
 interface TemplateSelectorProps {
   onTemplateSelected: (template: TemplateMetadata) => void;
@@ -48,8 +49,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <div>
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Select a Template</h1>
-        <p className="text-base text-gray-600 mt-2">
+                    <h1 className={getHeadingClasses('h2')}>Select a Template</h1>
+        <p className={`${getBodyClasses('base')} mt-2`}>
               Select a template that best matches your project type to get started with accurate scoping.
             </p>
           </div>
@@ -59,8 +60,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
       {/* Loading State */}
       {loading && (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="text-gray-600 mt-4">Loading project templates...</p>
+          <div className={animations.spinner}></div>
+          <p className={`${getBodyClasses('base')} mt-4`}>{APP_DEFAULTS.messages.loading.templates}</p>
         </div>
       )}
 
@@ -71,7 +72,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
             <span className="text-red-600 text-2xl">⚠️</span>
           </div>
           <p className="text-red-600 font-medium mb-2">Error Loading Templates</p>
-          <p className="text-gray-600">{error}</p>
+          <p className={getBodyClasses('base')}>{error}</p>
         </div>
       )}
 
@@ -137,8 +138,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
           <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
             <Layers className="w-8 h-8 text-gray-400" />
           </div>
-          <p className="text-gray-600 font-medium mb-2">No Templates Found</p>
-          <p className="text-gray-500">No project templates are available in the templates folder.</p>
+          <p className={`${getBodyClasses('base')} font-medium mb-2`}>{APP_DEFAULTS.messages.emptyStates.noTemplates}</p>
+          <p className={getBodyClasses('muted')}>{APP_DEFAULTS.messages.emptyStates.noTemplatesDescription}</p>
         </div>
       )}
 
@@ -150,7 +151,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
               const template = templates.find(t => t.filename === selectedTemplate);
               if (template) handleTemplateSelect(template);
             }}
-            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base font-medium shadow-lg transition-colors"
+            className={getButtonClasses('primary')}
           >
             Continue with Template
             <ChevronRight className="w-5 h-5 ml-2" />

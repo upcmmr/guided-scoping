@@ -197,6 +197,184 @@ export const APP_DEFAULTS = {
       boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
       hoverBoxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
       thumbScale: 1.1, // Scale factor on hover
+    },
+    // Design System Configuration
+    designSystem: {
+      // Button System
+      buttons: {
+        primary: {
+          padding: 'px-6 py-3',
+          bg: 'bg-blue-600',
+          bgHover: 'hover:bg-blue-700',
+          text: 'text-white',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          fontWeight: 'font-medium',
+          shadow: 'shadow-md',
+          transition: 'transition-colors'
+        },
+        secondary: {
+          padding: 'px-4 py-3',
+          bg: 'bg-gray-600',
+          bgHover: 'hover:bg-gray-700',
+          text: 'text-white',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          fontWeight: 'font-medium',
+          shadow: 'shadow-md',
+          transition: 'transition-colors'
+        },
+        success: {
+          padding: 'px-6 py-3',
+          bg: 'bg-green-600',
+          bgHover: 'hover:bg-green-700',
+          text: 'text-white',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          fontWeight: 'font-medium',
+          shadow: 'shadow-md',
+          transition: 'transition-colors'
+        },
+        danger: {
+          padding: 'px-4 py-3',
+          bg: 'bg-red-600',
+          bgHover: 'hover:bg-red-700',
+          text: 'text-white',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          fontWeight: 'font-medium',
+          shadow: 'shadow-md',
+          transition: 'transition-colors'
+        },
+        outline: {
+          padding: 'px-4 py-3',
+          bg: 'bg-white',
+          bgHover: 'hover:bg-gray-50',
+          text: 'text-gray-700',
+          border: 'border-2 border-gray-300',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          fontWeight: 'font-medium',
+          shadow: 'shadow-md',
+          transition: 'transition-colors'
+        }
+      },
+      // Form System
+      forms: {
+        input: {
+          padding: 'p-3',
+          border: 'border-2 border-gray-300',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          focus: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        },
+        textarea: {
+          padding: 'p-3',
+          border: 'border-2 border-gray-300',
+          borderRadius: 'rounded-lg',
+          fontSize: 'text-sm',
+          focus: 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+          resize: 'resize-y'
+        },
+        label: {
+          fontSize: 'text-base',
+          fontWeight: 'font-medium',
+          color: 'text-gray-700',
+          margin: 'mb-2'
+        }
+      },
+      // Card System
+      cards: {
+        default: {
+          border: 'border-2 border-gray-200',
+          borderRadius: 'rounded-xl',
+          shadow: 'shadow-lg',
+          overflow: 'overflow-hidden'
+        },
+        header: {
+          bg: 'bg-gray-200',
+          text: 'text-gray-800',
+          padding: 'p-6'
+        }
+      },
+      // Typography
+      typography: {
+        headings: {
+          h1: 'text-4xl font-bold text-gray-800',
+          h2: 'text-3xl font-bold text-gray-800',
+          h3: 'text-2xl font-bold text-gray-800',
+          h4: 'text-xl font-bold text-gray-800',
+          h5: 'text-lg font-semibold text-gray-700'
+        },
+        body: {
+          base: 'text-base text-gray-600',
+          small: 'text-sm text-gray-600',
+          muted: 'text-sm text-gray-500'
+        }
+      }
+    }
+  },
+
+  // UI Text and Messages
+  messages: {
+    loading: {
+      templates: 'Loading project templates...',
+      project: 'Loading template...',
+      saving: 'Saving...'
+    },
+    errors: {
+      templateLoad: 'Failed to load project templates. Please try again.',
+      templateNotFound: 'Template not found',
+      projectLoad: 'Failed to load project file.',
+      projectSave: 'Failed to save project file.',
+      invalidJson: 'Error parsing JSON file',
+      fileAccess: 'Error accessing file system'
+    },
+    success: {
+      projectSaved: 'Project template saved to JSON file successfully',
+      projectDownloaded: 'Project template downloaded as JSON file',
+      reset: 'Reset to initial configuration'
+    },
+    warnings: {
+      unsavedChanges: 'You have unsaved changes. Are you sure you want to continue?',
+      fileCancel: 'File selection cancelled'
+    },
+    placeholders: {
+      templateName: 'Enter template name',
+      templateDescription: 'Describe this template type...',
+      accountName: 'Enter account name',
+      projectName: 'Enter project name',
+      projectVersion: '1.0.0',
+      projectDescription: 'Describe your project...',
+      sectionName: 'Enter section name',
+      scopeItemName: 'Enter scope item name',
+      roleName: 'Enter role name',
+      resourceSectionName: 'Enter resource section name'
+    },
+    emptyStates: {
+      noSections: 'No sections defined',
+      noSectionsDescription: 'Add sections to organize your project scope',
+      noTemplates: 'No Templates Found',
+      noTemplatesDescription: 'No project templates are available in the templates folder.',
+      noRoles: 'No roles defined',
+      noRolesDescription: 'Add roles to define team structure'
+    }
+  },
+
+  // Component Configuration
+  components: {
+    maxCharacterLimits: {
+      profileName: 12,
+      projectName: 100,
+      sectionName: 50,
+      roleName: 30
+    },
+    pagination: {
+      itemsPerPage: 10
+    },
+    animation: {
+      transitionDuration: '200ms',
+      easing: 'ease-in-out'
     }
   }
 };

@@ -9,6 +9,7 @@ import { loadCompleteTemplate } from '../utils/templateScanner';
 import type { TemplateMetadata } from '../utils/templateScanner';
 import { saveUserProject, loadUserProject } from '../utils/projectManager';
 import { APP_DEFAULTS, getNewSectionName } from '../config/defaults';
+import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getHeadingClasses, getBodyClasses, iconSizes, animations } from '../utils/styleUtils';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -570,8 +571,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         {/* Separate Header Box - Match admin panel structure */}
         <div className="rounded-lg shadow-md mb-6">
           <div className="p-8 border-b border-gray-200">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool</h1>
-        <p className="text-base text-gray-600">Start a new project or continue working on an existing one.</p>
+                              <h1 className={`${getHeadingClasses('h1')} mb-2`}>Guided Scoping Tool</h1>
+          <p className={getBodyClasses('base')}>Start a new project or continue working on an existing one.</p>
           </div>
         </div>
 
@@ -588,8 +589,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Layers className="w-10 h-10 text-blue-600" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-4">Start with Template</h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Start with Template</h2>
+                <p className={`${getBodyClasses('base')} mb-6 leading-relaxed`}>
                   Choose from pre-configured project templates that include common scope items and settings for different project types.
                 </p>
                 <div className="flex items-center justify-center text-blue-600 font-medium">
@@ -608,8 +609,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
                   <FolderOpen className="w-10 h-10 text-green-600" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-4">Open Project File</h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
+                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Open Project File</h2>
+                <p className={`${getBodyClasses('base')} mb-6 leading-relaxed`}>
                   Continue working on a project you've already started by loading your saved project file with your previous selections.
                 </p>
                 <div className="flex items-center justify-center text-green-600 font-medium">
@@ -670,20 +671,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             <div className="flex space-x-2">
               <button
                 onClick={handleBackToLanding}
-                className="flex items-center px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-base font-medium"
+                className={getButtonClasses('secondary')}
               >
-                <X className="w-4 h-4 mr-1" />
+                <X className={`${iconSizes.small} mr-1`} />
                 Exit
               </button>
               
               <button
                 onClick={handleSaveProject}
                 disabled={!hasUnsavedChanges}
-                className={`flex items-center px-3 py-2 rounded text-sm transition-colors ${
-                  hasUnsavedChanges 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                    : 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                }`}
+                className={hasUnsavedChanges ? getButtonClasses('primary') : 'flex items-center px-3 py-2 bg-gray-400 text-gray-700 cursor-not-allowed rounded-lg text-sm font-medium transition-colors'}
               >
                 Save Project
               </button>
@@ -700,46 +697,46 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
                 <div className="md:col-span-2">
-                  <label className="block text-base font-medium text-gray-700 mb-2">Account Name</label>
+                  <label className={getLabelClasses()}>Account Name</label>
                   <input
                     type="text"
                     value={editableData?.accountName || ''}
                     onChange={(e) => updateProjectInfo('accountName', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., Acme Corp"
+                    className={getInputClasses()}
+                    placeholder={APP_DEFAULTS.messages.placeholders.accountName}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-base font-medium text-gray-700 mb-2">Project Name</label>
+                  <label className={getLabelClasses()}>Project Name</label>
                   <input
                     type="text"
                     value={editableData?.projectType || ''}
                     onChange={(e) => updateProjectInfo('projectType', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., B2C E-commerce Platform"
+                    className={getInputClasses()}
+                    placeholder={APP_DEFAULTS.messages.placeholders.projectName}
                   />
                 </div>
                 <div className="md:col-span-1">
-                  <label className="block text-base font-medium text-gray-700 mb-2">Version Number</label>
+                  <label className={getLabelClasses()}>Version Number</label>
                   <input
                     type="number"
                     min="1"
                     step="1"
                     value={editableData?.version || '1'}
                     onChange={(e) => updateProjectInfo('version', e.target.value)}
-                    className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="1"
+                    className={getInputClasses()}
+                    placeholder={APP_DEFAULTS.messages.placeholders.projectVersion}
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-base font-medium text-gray-700 mb-2">Description</label>
+                <label className={getLabelClasses()}>Description</label>
                 <textarea
                   rows={3}
                   value={editableData?.description || ''}
                   onChange={(e) => updateProjectInfo('description', e.target.value)}
-                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
-                  placeholder="Project description and key features"
+                  className={getTextareaClasses()}
+                  placeholder={APP_DEFAULTS.messages.placeholders.projectDescription}
                 />
               </div>
             </div>
@@ -824,7 +821,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 </div>
                       <button
                         onClick={() => setShowCustomize(!showCustomize)}
-                        className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+                        className={getButtonClasses('secondary')}
                       >
                         {showCustomize ? (
                           <>
@@ -872,7 +869,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               {isEditMode && (
               <button
                 onClick={addNewSection}
-                className="flex items-center mx-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                                        className={`${getButtonClasses('success')} mx-auto`}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add First Section
@@ -892,9 +889,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       {isEditMode && editableData.sections.length > 1 && (
                         <button
                           onClick={() => removeSection(sectionIndex)}
-                          className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
+                          className={getButtonClasses('danger')}
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
+                          <Trash2 className={`${iconSizes.small} mr-2`} />
                           Delete Section
                         </button>
                       )}
@@ -905,13 +902,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   {isEditMode && (
                   <div className="border-b border-gray-300 p-6">
                     <div>
-                      <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                      <label className={getLabelClasses()}>Section Name</label>
                       <input
                         type="text"
                         value={sectionData.name || ''}
                         onChange={(e) => updateSectionInfo(sectionIndex, 'name', e.target.value)}
-                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter section name"
+                        className={getInputClasses()}
+                        placeholder={APP_DEFAULTS.messages.placeholders.sectionName}
                       />
                     </div>
                   </div>
@@ -1068,9 +1065,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           {isEditMode && (
                           <button
                             onClick={() => addScopeItem(sectionIndex)}
-                            className="flex items-center mx-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-md transition-colors"
+                            className={`${getButtonClasses('primary')} mx-auto`}
                           >
-                            <Plus className="w-4 h-4 mr-2" />
+                            <Plus className={`${iconSizes.small} mr-2`} />
                             Add First Item
                           </button>
                           )}
@@ -1081,13 +1078,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     {/* Add Item Button */}
                     {isEditMode && sectionData.items.length > 0 && (
                       <div className="mt-6 flex justify-center">
-                        <button
-                          onClick={() => addScopeItem(sectionIndex)}
-                          className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Item
-                        </button>
+                                              <button
+                        onClick={() => addScopeItem(sectionIndex)}
+                        className={getButtonClasses('success')}
+                      >
+                        <Plus className={`${iconSizes.small} mr-2`} />
+                        Add Item
+                      </button>
                       </div>
                     )}
                   </div>
@@ -1101,9 +1098,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             <div className="mt-8 flex justify-center">
               <button
                 onClick={addNewSection}
-                className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium shadow-md transition-colors"
+                className={getButtonClasses('success')}
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className={`${iconSizes.small} mr-2`} />
                 Add New Section
               </button>
             </div>
@@ -1130,7 +1127,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       <h4 className="text-xl font-bold text-gray-800">Development Hours</h4>
                       <button
                         onClick={() => setShowHoursDetails(!showHoursDetails)}
-                        className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+                        className={getButtonClasses('secondary')}
                       >
                         {showHoursDetails ? (
                           <>
@@ -1191,7 +1188,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     <h4 className="text-xl font-bold text-gray-800">Sprint Planning</h4>
                     <button
                       onClick={() => setShowSprintDetails(!showSprintDetails)}
-                      className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+                                              className={getButtonClasses('secondary')}
                     >
                       {showSprintDetails ? (
                         <>
