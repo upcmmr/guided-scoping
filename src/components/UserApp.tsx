@@ -74,6 +74,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [selectedDevelopers, setSelectedDevelopers] = useState<number>(APP_DEFAULTS.developers.standard);
   const [selectedQaPercentage, setSelectedQaPercentage] = useState<number>(APP_DEFAULTS.qa.standardTeamFactor);
   const [selectedTeamModel, setSelectedTeamModel] = useState<'light' | 'standard' | 'heavy' | null>(null);
+  const [showSprintDetails, setShowSprintDetails] = useState(false);
+  const [showHoursDetails, setShowHoursDetails] = useState(false);
 
   // Sync CSS custom properties with config values
   useEffect(() => {
@@ -711,11 +713,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 <div className="md:col-span-1">
                   <label className="block text-base font-medium text-gray-700 mb-2">Version Number</label>
                   <input
-                    type="text"
-                    value={editableData?.version || ''}
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={editableData?.version || '1'}
                     onChange={(e) => updateProjectInfo('version', e.target.value)}
                     className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g., 1.0.0"
+                    placeholder="1"
                   />
                 </div>
               </div>
@@ -821,7 +825,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                         ) : (
                           <>
                             <ChevronDown className="w-4 h-4 mr-2" />
-                            See Details
+                            Show Details
                           </>
                         )}
                       </button>
@@ -1104,34 +1108,54 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Project Summary - Always visible */}
           <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-              <h4 className="text-xl font-bold text-gray-800 mb-2">4. Project Configuration</h4>
+              <h4 className="text-xl font-bold text-gray-800 mb-2">3. Project Configuration</h4>
               <p className="text-gray-600 mt-1 text-base">Review total hours, adjust team size, and estimate project timeline</p>
             </div>
             
             <div className="p-6 bg-white space-y-8">
-              {/* 1. Development Hours Section */}
-              <div>
-                <h4 className="text-xl font-bold text-gray-800 mb-2">Development Hours</h4>
-                
-                {getSectionTotals.length > 0 ? (
-                  <>
-                    {/* Section Totals */}
-                    <div className="space-y-3 mb-6">
-                      {getSectionTotals.map((section: SectionTotal, index: number) => (
-                        <div key={index} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center">
-                            <span className="font-medium text-gray-800">{section.name}</span>
-                            <span className="text-base text-gray-600 ml-2">({section.items} items)</span>
-              </div>
-                          <div className="font-semibold text-gray-800">
-                            {section.hours} hours
-                          </div>
-                        </div>
-                      ))}
+              {getSectionTotals.length > 0 ? (
+                <>
+                  {/* 1. Development Hours Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h4 className="text-xl font-bold text-gray-800">Development Hours</h4>
+                      <button
+                        onClick={() => setShowHoursDetails(!showHoursDetails)}
+                        className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+                      >
+                        {showHoursDetails ? (
+                          <>
+                            <ChevronUp className="w-4 h-4 mr-2" />
+                            Hide Details
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4 mr-2" />
+                            Show Details
+                          </>
+                        )}
+                      </button>
                     </div>
                     
-                    {/* Grand Total */}
-                    <div className="border-t border-gray-200 pt-4">
+                    {/* Section Totals - Only show when details are visible */}
+                    {showHoursDetails && (
+                      <div className="space-y-3 mb-6">
+                        {getSectionTotals.map((section: SectionTotal, index: number) => (
+                          <div key={index} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center">
+                              <span className="font-medium text-gray-800">{section.name}</span>
+                              <span className="text-base text-gray-600 ml-2">({section.items} items)</span>
+                </div>
+                            <div className="font-semibold text-gray-800">
+                              {section.hours} hours
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Grand Total - Always visible */}
+                    <div className={`${showHoursDetails ? 'border-t border-gray-200 pt-4' : ''}`}>
                       <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                         <div className="flex items-center">
                           <span className="text-lg font-medium text-gray-800">Total Development Hours</span>
@@ -1142,110 +1166,133 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           </div>
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p className="text-lg font-medium">No scope items selected</p>
-                    <p className="text-base text-gray-600 mt-1">Select scope items to see development hours breakdown</p>
                   </div>
-                )}
-              </div>
+                </>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <p className="text-lg font-medium">No scope selected</p>
+                  <p className="text-base text-gray-600 mt-1">Select scope to reveal project configuration</p>
+                </div>
+              )}
 
               {/* 2. Sprint Planning Section */}
-              {selectedTemplate && (
+              {selectedTemplate && getSectionTotals.length > 0 && (
                 <div className="border-t border-gray-200 pt-8">
-                                      <h4 className="text-xl font-bold text-gray-800 mb-2">Sprint Planning</h4>
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="text-xl font-bold text-gray-800">Sprint Planning</h4>
+                    <button
+                      onClick={() => setShowSprintDetails(!showSprintDetails)}
+                      className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+                    >
+                      {showSprintDetails ? (
+                        <>
+                          <ChevronUp className="w-4 h-4 mr-2" />
+                          Hide Details
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4 mr-2" />
+                          Show Details
+                        </>
+                      )}
+                    </button>
+                  </div>
                   
-                  {/* Sprint Configuration */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                                          <h5 className="text-base font-semibold text-gray-700 mb-2">Sprint Settings</h5>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                                                  <label className="block text-base font-medium text-gray-700 mb-2">
-                            Sprint Duration (working days)
-                          </label>
-                                                  <input
-                            type="number"
-                            min="1"
-                            max="30"
-                            value={editableData?.sprintLength || APP_DEFAULTS.sprint.length}
-                            onChange={(e) => updateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
-                            className={`w-full px-3 py-2 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                        />
-                      </div>
-                      <div>
-                                                  <label className="block text-base font-medium text-gray-700 mb-2">
-                            Sprint Efficiency (%)
-                          </label>
-                        <div className="relative">
-                                                    <input
-                              type="number"
-                              min="1"
-                              max="100"
-                              value={editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
-                              onChange={(e) => updateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
-                              className={`w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
-                          />
-                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                  {/* Configuration Details - Toggleable */}
+                  {showSprintDetails && (
+                    <>
+                      {/* Sprint Configuration */}
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                                              <h5 className="text-base font-semibold text-gray-700 mb-2">Sprint Settings</h5>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                                                      <label className="block text-base font-medium text-gray-700 mb-2">
+                                Sprint Duration (working days)
+                              </label>
+                                                      <input
+                                type="number"
+                                min="1"
+                                max="30"
+                                value={editableData?.sprintLength || APP_DEFAULTS.sprint.length}
+                                onChange={(e) => updateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+                                className={`w-full px-3 py-2 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                            />
+                          </div>
+                          <div>
+                                                      <label className="block text-base font-medium text-gray-700 mb-2">
+                                Sprint Efficiency (%)
+                              </label>
+                            <div className="relative">
+                                                        <input
+                                  type="number"
+                                  min="1"
+                                  max="100"
+                                  value={editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                                  onChange={(e) => updateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+                                  className={`w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+                              />
+                              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Team Size Configuration - Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    {/* Developer Team Size */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <h5 className="text-base font-semibold text-gray-700 mb-2">Developer Team Size</h5>
-                      
-                      <label className="block text-base font-medium text-gray-700 mb-2">
-                        Number of Developers: {selectedDevelopers}
-                      </label>
-                      
-                      <input
-                        type="range"
-                        min={selectedTemplate.minDevelopers}
-                        max={selectedTemplate.maxDevelopers}
-                        step="1"
-                        value={selectedDevelopers}
-                        onChange={(e) => setSelectedDevelopers(parseInt(e.target.value))}
-                        className="w-full mb-2 focus:outline-none slider"
-                      />
-                      
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>{selectedTemplate.minDevelopers}</span>
-                        <span>{selectedTemplate.maxDevelopers}</span>
-                      </div>
-                    </div>
+                      {/* Team Size Configuration - Side by Side */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        {/* Developer Team Size */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <h5 className="text-base font-semibold text-gray-700 mb-2">Developer Team Size</h5>
+                          
+                          <label className="block text-base font-medium text-gray-700 mb-2">
+                            Number of Developers: {selectedDevelopers}
+                          </label>
+                          
+                          <input
+                            type="range"
+                            min={selectedTemplate.minDevelopers}
+                            max={selectedTemplate.maxDevelopers}
+                            step="1"
+                            value={selectedDevelopers}
+                            onChange={(e) => setSelectedDevelopers(parseInt(e.target.value))}
+                            className="w-full mb-2 focus:outline-none slider"
+                          />
+                          
+                          <div className="flex justify-between text-sm text-gray-500">
+                            <span>{selectedTemplate.minDevelopers}</span>
+                            <span>{selectedTemplate.maxDevelopers}</span>
+                          </div>
+                        </div>
 
-                    {/* QA Team Size */}
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <h5 className="text-base font-semibold text-gray-700 mb-2">QA Team Size</h5>
-                      
-                      <label className="block text-base font-medium text-gray-700 mb-2">
-                        QA Consultants: {selectedQaPercentage}% ({Math.ceil((selectedDevelopers * selectedQaPercentage) / 100)} consultants)
-                      </label>
-                      
-                      <input
-                        type="range"
-                        min={selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
-                        max={selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
-                        step="10"
-                        value={selectedQaPercentage}
-                        onChange={(e) => {
-                          const newValue = parseInt(e.target.value);
-                          setSelectedQaPercentage(newValue);
-                          updateProjectInfo('standardQaTeamFactor', newValue);
-                        }}
-                        className="w-full mb-2 focus:outline-none slider"
-                      />
-                      
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>{selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}%</span>
-                        <span>{selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}%</span>
+                        {/* QA Team Size */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                          <h5 className="text-base font-semibold text-gray-700 mb-2">QA Team Size</h5>
+                          
+                          <label className="block text-base font-medium text-gray-700 mb-2">
+                            QA Consultants: {selectedQaPercentage}% ({Math.ceil((selectedDevelopers * selectedQaPercentage) / 100)} consultants)
+                          </label>
+                          
+                          <input
+                            type="range"
+                            min={selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
+                            max={selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
+                            step="10"
+                            value={selectedQaPercentage}
+                            onChange={(e) => {
+                              const newValue = parseInt(e.target.value);
+                              setSelectedQaPercentage(newValue);
+                              updateProjectInfo('standardQaTeamFactor', newValue);
+                            }}
+                            className="w-full mb-2 focus:outline-none slider"
+                          />
+                          
+                          <div className="flex justify-between text-sm text-gray-500">
+                            <span>{selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}%</span>
+                            <span>{selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}%</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
                   {/* Sprint Timeline Results */}
                   {getTotalHours > 0 && (() => {
@@ -1258,33 +1305,38 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
                                           return (
                         <div className="space-y-4">
-                          {/* Estimated Sprint Count - Same styling as Total Development Hours */}
+                          {/* Estimated Sprint Count - Always visible */}
                           <div className="flex justify-between items-center py-3 px-4 bg-gray-50 rounded-lg border-2 border-gray-200">
                             <div>
                               <span className="text-lg font-medium text-gray-800">Estimated Sprint Count</span>
+                              <span className="text-base text-gray-600 ml-2">
+                                (Sprint duration: {editableData?.sprintLength || APP_DEFAULTS.sprint.length} working days, Sprint efficiency: {editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}%, Number developers: {selectedDevelopers})
+                              </span>
                             </div>
                             <div className="text-3xl font-bold text-gray-800">
                               {sprintCount} sprint{sprintCount !== 1 ? 's' : ''}
                             </div>
                           </div>
                           
-                          {/* Sprint Capacity Details - Lighter box */}
-                          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <div className="space-y-2 text-base text-gray-600">
-                              <div className="flex justify-between">
-                                <span>Total Sprint Capacity:</span>
-                                <span className="font-medium">{totalSprintCapacity} hours</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Total Development Hours:</span>
-                                <span className="font-medium">{totalProjectHours} hours</span>
-                              </div>
-                              <div className="flex justify-between border-t border-gray-200 pt-2">
-                                <span>Remaining Capacity:</span>
-                                <span className="font-medium">{remainderHours} hours ({remainderPercentage}%)</span>
+                          {/* Sprint Capacity Details - Only show when details are visible */}
+                          {showSprintDetails && (
+                            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                              <div className="space-y-2 text-base text-gray-600">
+                                <div className="flex justify-between">
+                                  <span>Total Sprint Capacity:</span>
+                                  <span className="font-medium">{totalSprintCapacity} hours</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Total Development Hours:</span>
+                                  <span className="font-medium">{totalProjectHours} hours</span>
+                                </div>
+                                <div className="flex justify-between border-t border-gray-200 pt-2">
+                                  <span>Remaining Capacity:</span>
+                                  <span className="font-medium">{remainderHours} hours ({remainderPercentage}%)</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                   })()}
@@ -1292,7 +1344,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               )}
 
               {/* 3. Team Model Section */}
-              {selectedTemplate && (
+              {selectedTemplate && getSectionTotals.length > 0 && (
                 <div className="border-t border-gray-200 pt-8">
                   <h4 className="text-xl font-bold text-gray-800 mb-2">Team Model</h4>
                   
