@@ -27,6 +27,9 @@ export interface ProjectConfig {
   minDevelopers: number;
   standardDevelopers: number;
   maxDevelopers: number;
+  minQaTeamFactor: number; // Minimum QA team size as percentage of development team
+  standardQaTeamFactor: number; // Typical QA team size as percentage of development team
+  maxQaTeamFactor: number; // Maximum QA team size as percentage of development team
   sprintLength: number;
   sprintEfficiency: number; // percentage (0-100)
   sections: ScopeSection[];
@@ -49,6 +52,9 @@ export const getEmptyScopeData = (): ScopeData => {
     minDevelopers: APP_DEFAULTS.developers.min,
     standardDevelopers: APP_DEFAULTS.developers.standard,
     maxDevelopers: APP_DEFAULTS.developers.max,
+    minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
+    standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
+    maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
     sprintLength: APP_DEFAULTS.sprint.length,
     sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
     sections: []

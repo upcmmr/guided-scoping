@@ -4,6 +4,9 @@
   "minDevelopers": 4,
   "standardDevelopers": 6,
   "maxDevelopers": 10,
+  "minQaTeamFactor": 20,
+  "standardQaTeamFactor": 30,
+  "maxQaTeamFactor": 50,
   "sprintLength": 10,
   "sprintEfficiency": 60,
   "sections": [

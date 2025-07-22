@@ -61,7 +61,24 @@ input[type="range"].slider {
   appearance: none;
   height: var(--slider-track-height);
   border-radius: var(--slider-track-border-radius);
+  background: var(--slider-background-color);
   outline: none;
+}
+
+input[type="range"].slider::-webkit-slider-track {
+  -webkit-appearance: none;
+  appearance: none;
+  height: var(--slider-track-height);
+  border-radius: var(--slider-track-border-radius);
+  background: var(--slider-background-color);
+  border: none;
+}
+
+input[type="range"].slider::-moz-range-track {
+  height: var(--slider-track-height);
+  border-radius: var(--slider-track-border-radius);
+  background: var(--slider-background-color);
+  border: none;
 }
 
 input[type="range"].slider::-webkit-slider-thumb {

@@ -5,8 +5,10 @@
 import { APP_DEFAULTS } from '../config/defaults';
 
 export interface UserProject {
+  accountName: string;
   projectType: string;
   description: string;
+  version: string;
   numberOfDevelopers: number; // Keep for backwards compatibility
   sprintLength: number;
   sprintEfficiency: number;
@@ -47,8 +49,10 @@ export const saveUserProject = async (
     }));
 
     const userProject: UserProject = {
+      accountName: projectData.accountName || '',
       projectType: projectData.projectType,
       description: projectData.description,
+      version: projectData.version || '1.0.0',
       numberOfDevelopers: projectData.standardDevelopers || projectData.numberOfDevelopers || APP_DEFAULTS.userProject.defaultNumberOfDevelopers,
       sprintLength: projectData.sprintLength,
       sprintEfficiency: projectData.sprintEfficiency,

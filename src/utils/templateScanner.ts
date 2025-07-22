@@ -11,6 +11,9 @@ export interface TemplateMetadata {
   minDevelopers: number;
   standardDevelopers: number;
   maxDevelopers: number;
+  minQaTeamFactor: number;
+  standardQaTeamFactor: number;
+  maxQaTeamFactor: number;
   sprintLength: number;
   sprintEfficiency: number;
   sectionsCount: number;
@@ -68,6 +71,9 @@ export const loadTemplateMetadata = async (filename: string): Promise<TemplateMe
       minDevelopers: template.minDevelopers || APP_DEFAULTS.templateFallbacks.minDevelopers,
       standardDevelopers: template.standardDevelopers || APP_DEFAULTS.templateFallbacks.standardDevelopers,
       maxDevelopers: template.maxDevelopers || APP_DEFAULTS.templateFallbacks.maxDevelopers,
+      minQaTeamFactor: template.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
+      standardQaTeamFactor: template.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
+      maxQaTeamFactor: template.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
       sprintLength: template.sprintLength || APP_DEFAULTS.templateFallbacks.sprintLength,
       sprintEfficiency: template.sprintEfficiency || APP_DEFAULTS.templateFallbacks.sprintEfficiency,
       sectionsCount,

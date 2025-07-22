@@ -48,8 +48,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <div>
-            <h1 className={APP_DEFAULTS.typography.h1}>Select a Template</h1>
-                          <p className={`${APP_DEFAULTS.typography.body} mt-2`}>
+                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Select a Template</h1>
+        <p className="text-base text-gray-600 mt-2">
               Select a template that best matches your project type to get started with accurate scoping.
             </p>
           </div>
@@ -91,10 +91,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
               {/* Template Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className={APP_DEFAULTS.typography.h3}>
-                    {template.projectType}
-                  </h3>
-                                      <p className={`${APP_DEFAULTS.typography.body} leading-relaxed`}>
+                                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                {template.projectType}
+              </h3>
+              <p className="text-base text-gray-600 leading-relaxed">
                     {template.description}
                   </p>
                 </div>

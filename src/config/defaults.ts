@@ -5,48 +5,6 @@
 // All hardcoded business values should be referenced from this file.
 
 export const APP_DEFAULTS = {
-  // Typography Standards - Consistent text styling across the application
-  typography: {
-    // Page Headers (Main page titles)
-    h1: 'text-4xl font-bold text-gray-800 mb-2',
-    
-    // Section Headers (Major sections)
-    h2: 'text-3xl font-bold text-gray-800 mb-4',
-    
-    // Subsection Headers (Main content areas)
-    h3: 'text-2xl font-bold text-gray-800 mb-3',
-    
-    // Component Headers (Individual components/cards)
-    h4: 'text-xl font-bold text-gray-800 mb-2',
-    
-    // Sub-component Headers (Inside components)
-    h5: 'text-base font-semibold text-gray-700 mb-2',
-    
-    // Labels and Form Fields
-    label: 'block text-base font-medium text-gray-700 mb-2',
-    labelSmall: 'block text-sm font-medium text-gray-600 mb-1',
-    
-    // Body Text
-    body: 'text-base text-gray-600',
-    bodyLarge: 'text-lg text-gray-600',
-    
-    // Taglines and Descriptions
-    tagline: 'text-gray-600 mt-1 text-base',
-    
-    // Interactive Elements
-    button: 'text-base font-medium',
-    buttonLarge: 'text-lg font-medium',
-    
-    // Data Display
-    dataLarge: 'text-3xl font-bold text-gray-800',
-    dataValue: 'text-lg font-medium text-gray-800',
-    dataLabel: 'text-base text-gray-600',
-    
-    // Status and Meta
-    meta: 'text-sm text-gray-500',
-    warning: 'text-xl font-semibold text-gray-800',
-  },
-
   // Project/Template Defaults
   project: {
     name: '',
@@ -62,6 +20,16 @@ export const APP_DEFAULTS = {
     // Form validation limits
     formMinLimit: 1,
     formMaxLimit: 50,
+  },
+
+  // QA Team Configuration
+  qa: {
+    minTeamFactor: 20, // Minimum QA team size as percentage of development team (20%)
+    standardTeamFactor: 30, // Typical QA team size as percentage of development team (30%)
+    maxTeamFactor: 50, // Maximum QA team size as percentage of development team (50%)
+    // Form validation limits
+    factorMinLimit: 0,
+    factorMaxLimit: 100,
   },
 
   // Sprint Configuration Defaults
@@ -114,6 +82,9 @@ export const APP_DEFAULTS = {
     minDevelopers: 2,
     standardDevelopers: 4,
     maxDevelopers: 8,
+    minQaTeamFactor: 20,
+    standardQaTeamFactor: 30,
+    maxQaTeamFactor: 50,
     sprintLength: 14,
     sprintEfficiency: 80,
     sections: [
