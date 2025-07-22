@@ -587,9 +587,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             >
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <Layers className="w-10 h-10 text-blue-600" />
+                  <Plus className="w-10 h-10 text-blue-600" />
                 </div>
-                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Start with Template</h2>
+                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Start with a Template</h2>
                 <p className={`${getBodyClasses('base')} mb-6 leading-relaxed`}>
                   Choose from pre-configured project templates that include common scope items and settings for different project types.
                 </p>

@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState, useEffect } from 'react';
-import { Plus, X, FolderPlus, Trash2, ChevronUp, ChevronDown, Save, Upload, Download, Settings, Home, AlertTriangle, FileText } from 'lucide-react';
+import { Plus, X, FolderPlus, FolderOpen, Trash2, ChevronUp, ChevronDown, Save, Upload, Download, Settings, Home, AlertTriangle, FileText, ArrowLeft } from 'lucide-react';
 import { 
   loadScopeDataFromFile,
   getEmptyScopeData,
@@ -474,37 +474,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const shouldShowWelcome = !isLoaded && scopeData.projectType.trim() === '' && scopeData.description.trim() === '';
 
   if (shouldShowWelcome) {
-    // Show welcome screen with Load/New buttons
+    // Show welcome screen with Load/New buttons - matches user layout
     return (
-      <div className="border-2 border-gray-300 rounded-lg shadow-md p-6 mb-6">
-        <div className="text-center py-16">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center">
-            <FolderPlus className="w-10 h-10 text-blue-600" />
-          </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Project Configuration</h2>
-          <p className="text-base text-gray-600 mb-8 max-w-md mx-auto">
-            Get started by loading an existing project template or creating a new project template.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={onLoadFromFile}
-              className={getButtonClasses('primary')}
-            >
-              <Upload className={`${iconSizes.small} mr-2`} />
-              Load Project Template
-            </button>
-            
-            <button
+      <>
+        {/* Main Content Container */}
+        <div className="border-2 border-gray-300 rounded-lg shadow-md p-6 mb-6">
+          {/* Options Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Create New Template Option */}
+            <div 
+              className="border-2 border-gray-200 rounded-xl p-8 cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all group"
               onClick={onCreateNewConfig}
-              className={getButtonClasses('success')}
             >
-              <Plus className={`${iconSizes.small} mr-2`} />
-              New Project Template
-            </button>
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <Plus className="w-10 h-10 text-blue-600" />
+                </div>
+                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Create New Template</h2>
+                <p className={`${getBodyClasses('base')} mb-6 leading-relaxed`}>
+                  Create a new project template from scratch with custom scope sections, team roles, and configuration settings.
+                </p>
+                <div className="flex items-center justify-center text-blue-600 font-medium">
+                  <span>Create New Template</span>
+                  <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                </div>
+              </div>
+            </div>
+
+            {/* Open Template Option */}
+            <div 
+              className="border-2 border-gray-200 rounded-xl p-8 cursor-pointer hover:border-green-300 hover:shadow-lg transition-all group"
+              onClick={onLoadFromFile}
+            >
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <FolderOpen className="w-10 h-10 text-green-600" />
+                </div>
+                <h2 className={`${getHeadingClasses('h2')} mb-4`}>Open Template File</h2>
+                <p className={`${getBodyClasses('base')} mb-6 leading-relaxed`}>
+                  Continue working on a template you've already started by loading your saved template file with your previous configurations.
+                </p>
+                <div className="flex items-center justify-center text-green-600 font-medium">
+                  <span>Browse Files</span>
+                  <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer Help Text */}
+          <div className="text-center mt-12">
+            <p className={`${getBodyClasses('muted')} max-w-2xl mx-auto`}>
+              Templates define the scope items, team structures, and default configurations that users can select from when creating their projects.
+            </p>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -1297,7 +1322,7 @@ const AdminApp: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 min-h-screen">
       <div className="rounded-lg shadow-md mb-6">
         <div className="p-8 border-b border-gray-200">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Scoping Tool Administration</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool - Template Configuration</h1>
           <p className="text-base text-gray-600">Manage project template definitions and configurations.</p>
         </div>
       </div>
