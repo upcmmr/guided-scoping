@@ -1,6 +1,21 @@
 {
   "projectType": "B2C Commerce",
   "description": "B2C Commerce SFRA Project",
+  "smallSize": {
+    "name": "Small",
+    "description": "Small-scale implementation with basic features",
+    "teamDescription": "Lean team structure with essential roles"
+  },
+  "mediumSize": {
+    "name": "Medium",
+    "description": "Standard implementation with core functionality",
+    "teamDescription": "Balanced team with specialized roles"
+  },
+  "largeSize": {
+    "name": "Large",
+    "description": "Comprehensive implementation with advanced features",
+    "teamDescription": "Full-scale team with expert specialists"
+  },
   "minDevelopers": 4,
   "standardDevelopers": 6,
   "maxDevelopers": 10,

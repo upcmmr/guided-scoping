@@ -61,6 +61,17 @@ const useAdminConfiguration = () => {
     setHasUnsavedChanges(true);
   };
 
+  const updateSizeDefinition = (sizeType: 'smallSize' | 'mediumSize' | 'largeSize', field: 'name' | 'description' | 'teamDescription', value: string) => {
+    setScopeData(prev => ({
+      ...prev,
+      [sizeType]: {
+        ...prev[sizeType],
+        [field]: value
+      }
+    }));
+    setHasUnsavedChanges(true);
+  };
+
   // ============================================================================
   // TEAM ROLE MANAGEMENT FUNCTIONS
   // ============================================================================
@@ -363,6 +374,7 @@ const useAdminConfiguration = () => {
     hasUnsavedChanges,
     isLoaded,
     updateProjectInfo,
+    updateSizeDefinition,
     createNewConfig,
     addNewSection,
     removeSection,
@@ -405,6 +417,7 @@ interface AdminPanelProps {
   isLoaded: boolean;
   showExitWarning: boolean;
   onUpdateProjectInfo: (field: string, value: string | number) => void;
+  onUpdateSizeDefinition: (sizeType: 'smallSize' | 'mediumSize' | 'largeSize', field: 'name' | 'description' | 'teamDescription', value: string) => void;
   onCreateNewConfig: () => void;
   onExitToWelcome: () => void;
   onSaveAndExit: () => void;
@@ -440,6 +453,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   isLoaded,
   showExitWarning,
   onUpdateProjectInfo,
+  onUpdateSizeDefinition,
   onCreateNewConfig,
   onExitToWelcome,
   onSaveAndExit,
@@ -548,7 +562,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
       
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div>
             <label className="block text-base font-medium text-gray-700 mb-2">Template Name</label>
             <input
@@ -568,6 +582,118 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
               placeholder="Template description and key features"
             />
+          </div>
+        </div>
+
+                {/* Project Profile Definitions */}
+        <div className="border-t border-gray-300 pt-6">
+          <h5 className="text-lg font-semibold text-gray-700 mb-3">Project Profile Definitions</h5>
+          <p className="text-gray-600 mb-4 text-sm">Define what each project profile means for this template</p>
+          
+          <div className="space-y-3">
+            {/* Profile Headers */}
+            <div className="grid gap-3 text-sm font-medium text-gray-700" style={{gridTemplateColumns: '80px 1fr 2fr 2fr'}}>
+              <div>Profile</div>
+              <div>Name</div>
+              <div>Scope Description</div>
+              <div>Team Description</div>
+            </div>
+            
+            {/* Profile 1 */}
+            <div className="grid gap-3" style={{gridTemplateColumns: '80px 1fr 2fr 2fr'}}>
+              <div className="flex items-center text-sm font-medium text-gray-600">Profile 1</div>
+              <div>
+                <input
+                  type="text"
+                  value={scopeData.smallSize?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'name', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Profile 1"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.smallSize?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'description', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Basic implementation with essential features"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.smallSize?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'teamDescription', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Lean team structure with essential roles"
+                />
+              </div>
+            </div>
+
+            {/* Profile 2 */}
+            <div className="grid gap-3" style={{gridTemplateColumns: '80px 1fr 2fr 2fr'}}>
+              <div className="flex items-center text-sm font-medium text-gray-600">Profile 2</div>
+              <div>
+                <input
+                  type="text"
+                  value={scopeData.mediumSize?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'name', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Profile 2"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.mediumSize?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'description', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Standard implementation with core functionality"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.mediumSize?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'teamDescription', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Balanced team with specialized roles"
+                />
+              </div>
+            </div>
+
+            {/* Profile 3 */}
+            <div className="grid gap-3" style={{gridTemplateColumns: '80px 1fr 2fr 2fr'}}>
+              <div className="flex items-center text-sm font-medium text-gray-600">Profile 3</div>
+              <div>
+                <input
+                  type="text"
+                  value={scopeData.largeSize?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'name', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Profile 3"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.largeSize?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'description', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Comprehensive implementation with advanced features"
+                />
+              </div>
+              <div>
+                <textarea
+                  rows={2}
+                  value={scopeData.largeSize?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'teamDescription', e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+                  placeholder="Full-scale team with expert specialists"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -696,17 +822,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       <span className="text-sm text-gray-500">hrs</span>
                     </div>
 
-                    {/* Size Checkboxes */}
+                    {/* Profile Checkboxes */}
                     <div className="flex items-center gap-4">
-                      {['small', 'medium', 'large'].map((size) => (
-                        <label key={size} className="flex items-center">
+                      {[
+                        { key: 'small', label: scopeData.smallSize?.name || 'Profile 1' },
+                        { key: 'medium', label: scopeData.mediumSize?.name || 'Profile 2' },
+                        { key: 'large', label: scopeData.largeSize?.name || 'Profile 3' }
+                      ].map((profile) => (
+                        <label key={profile.key} className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={item[size as keyof ScopeItem] as boolean}
-                            onChange={(e) => onSizeCheckboxChange(sectionIndex, index, size, e.target.checked)}
+                            checked={item[profile.key as keyof ScopeItem] as boolean}
+                            onChange={(e) => onSizeCheckboxChange(sectionIndex, index, profile.key, e.target.checked)}
                             className="mr-1 w-4 h-4 text-blue-600 focus:ring-blue-500 focus:ring-2"
                           />
-                          <span className="text-base text-gray-600 capitalize">{size}</span>
+                          <span className="text-sm text-gray-600">{profile.label}</span>
                         </label>
                       ))}
                     </div>
@@ -986,51 +1116,51 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             type="text"
                             value={role.name}
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { name: e.target.value })}
-                            className="w-full p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Role name"
                           />
                           </div>
 
-                          {/* SMB Count */}
+                          {/* Profile 1 Count */}
                           <div className="flex items-center gap-3">
-                                                      <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            value={role.smb}
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.5"
+                                                          value={role.smb}
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { smb: parseFloat(e.target.value) || 0 })}
-                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                            <span className="text-sm text-gray-500">SMB</span>
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-500">{scopeData.smallSize?.name || 'Profile 1'}</span>
                           </div>
 
-                          {/* Standard Count */}
+                          {/* Profile 2 Count */}
                           <div className="flex items-center gap-3">
-                                                      <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            value={role.standard}
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.5"
+                                                          value={role.standard}
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { standard: parseFloat(e.target.value) || 0 })}
-                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                            <span className="text-sm text-gray-500">Std</span>
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-500">{scopeData.mediumSize?.name || 'Profile 2'}</span>
                           </div>
 
-                          {/* Enterprise Count */}
+                          {/* Profile 3 Count */}
                           <div className="flex items-center gap-3">
-                                                      <input
-                            type="number"
-                            min="0"
-                            max="10"
-                            step="0.5"
-                            value={role.enterprise}
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.5"
+                                                          value={role.enterprise}
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { enterprise: parseFloat(e.target.value) || 0 })}
-                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-base text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                            <span className="text-sm text-gray-500">Ent</span>
+                            className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-500">{scopeData.largeSize?.name || 'Profile 3'}</span>
                           </div>
 
                           {/* Remove Button */}
@@ -1191,6 +1321,7 @@ const AdminApp: React.FC = () => {
         isLoaded={adminHook.isLoaded}
         showExitWarning={adminHook.showExitWarning}
         onUpdateProjectInfo={adminHook.updateProjectInfo}
+        onUpdateSizeDefinition={adminHook.updateSizeDefinition}
         onCreateNewConfig={adminHook.createNewConfig}
         onExitToWelcome={adminHook.exitToWelcome}
         onSaveAndExit={adminHook.handleSaveAndExit}

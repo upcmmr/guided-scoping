@@ -35,9 +35,18 @@ export interface ResourceSection {
   roles: TeamRole[];
 }
 
+export interface SizeDefinition {
+  name: string;
+  description: string;
+  teamDescription: string;
+}
+
 export interface ProjectConfig {
   projectType: string;
   description: string;
+  smallSize: SizeDefinition;
+  mediumSize: SizeDefinition;
+  largeSize: SizeDefinition;
   minDevelopers: number;
   standardDevelopers: number;
   maxDevelopers: number;
@@ -64,6 +73,9 @@ export const getEmptyScopeData = (): ScopeData => {
   return {
     projectType: APP_DEFAULTS.project.name,
     description: APP_DEFAULTS.project.description,
+    smallSize: APP_DEFAULTS.projectSizes.small,
+    mediumSize: APP_DEFAULTS.projectSizes.medium,
+    largeSize: APP_DEFAULTS.projectSizes.large,
     minDevelopers: APP_DEFAULTS.developers.min,
     standardDevelopers: APP_DEFAULTS.developers.standard,
     maxDevelopers: APP_DEFAULTS.developers.max,

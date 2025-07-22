@@ -12,6 +12,25 @@ export const APP_DEFAULTS = {
     defaultFilename: 'project',
   },
 
+  // Project Size Definitions
+  projectSizes: {
+    small: {
+      name: 'Small',
+      description: 'Small-scale implementation with basic features',
+      teamDescription: 'Lean team structure with essential roles'
+    },
+    medium: {
+      name: 'Medium', 
+      description: 'Standard implementation with core functionality',
+      teamDescription: 'Balanced team with specialized roles'
+    },
+    large: {
+      name: 'Large',
+      description: 'Comprehensive implementation with advanced features',
+      teamDescription: 'Full-scale team with expert specialists'
+    }
+  },
+
   // Developer Team Size Defaults
   developers: {
     min: 4,
@@ -79,6 +98,21 @@ export const APP_DEFAULTS = {
   initialTemplate: {
     projectType: "B2C E-commerce Platform",
     description: "Standard B2C e-commerce project with common integrations and features",
+    smallSize: {
+      name: "Small",
+      description: "Small-scale implementation with basic features",
+      teamDescription: "Lean team structure with essential roles"
+    },
+    mediumSize: {
+      name: "Medium",
+      description: "Standard implementation with core functionality",
+      teamDescription: "Balanced team with specialized roles"
+    },
+    largeSize: {
+      name: "Large",
+      description: "Comprehensive implementation with advanced features",
+      teamDescription: "Full-scale team with expert specialists"
+    },
     minDevelopers: 2,
     standardDevelopers: 4,
     maxDevelopers: 8,

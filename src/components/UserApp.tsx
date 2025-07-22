@@ -31,11 +31,20 @@ interface ProjectSection {
   items: ProjectScopeItem[];
 }
 
+interface SizeDefinition {
+  name: string;
+  description: string;
+  teamDescription: string;
+}
+
 interface ProjectData {
   accountName: string;
   projectType: string;
   description: string;
   version: string;
+  smallSize?: SizeDefinition;
+  mediumSize?: SizeDefinition;
+  largeSize?: SizeDefinition;
   numberOfDevelopers?: number;
   minDevelopers?: number;
   standardDevelopers?: number;
@@ -760,8 +769,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                                             <div className="text-lg font-bold mb-2">Small</div>
-                                              <div className="text-base text-gray-600">Essential features only</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Small'}</div>
+                      <div className="text-base text-gray-600">{templateData?.smallSize?.description || 'Essential features only'}</div>
                     </div>
                   </button>
                   
@@ -779,8 +788,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                                             <div className="text-lg font-bold mb-2">Medium</div>
-                                              <div className="text-base text-gray-600">Standard feature set</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Medium'}</div>
+                      <div className="text-base text-gray-600">{templateData?.mediumSize?.description || 'Standard feature set'}</div>
                     </div>
                   </button>
                   
@@ -798,8 +807,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                                             <div className="text-lg font-bold mb-2">Large</div>
-                                              <div className="text-base text-gray-600">Comprehensive features</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Large'}</div>
+                      <div className="text-base text-gray-600">{templateData?.largeSize?.description || 'Comprehensive features'}</div>
                     </div>
                   </button>
                 </div>
@@ -1358,8 +1367,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       }`}
                     >
                       <div className="text-center">
-                        <div className="text-lg font-bold mb-2">Light</div>
-                        <div className="text-base text-gray-600">Minimal oversight and process</div>
+                        <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Light'}</div>
+                        <div className="text-base text-gray-600">{templateData?.smallSize?.teamDescription || 'Minimal oversight and process'}</div>
                       </div>
                     </button>
                     
@@ -1372,8 +1381,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       }`}
                     >
                       <div className="text-center">
-                        <div className="text-lg font-bold mb-2">Standard</div>
-                        <div className="text-base text-gray-600">Balanced approach with regular checkpoints</div>
+                        <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Standard'}</div>
+                        <div className="text-base text-gray-600">{templateData?.mediumSize?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
                       </div>
                     </button>
                     
@@ -1386,8 +1395,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                       }`}
                     >
                       <div className="text-center">
-                        <div className="text-lg font-bold mb-2">Heavy</div>
-                        <div className="text-base text-gray-600">Comprehensive governance and documentation</div>
+                        <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Heavy'}</div>
+                        <div className="text-base text-gray-600">{templateData?.largeSize?.teamDescription || 'Comprehensive governance and documentation'}</div>
                       </div>
                     </button>
                   </div>
