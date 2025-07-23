@@ -1331,8 +1331,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Project Summary - Always visible */}
           <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-                              <h4 className="text-xl font-bold text-gray-800 mb-2">3. Build Configuration</h4>
-              <p className="text-gray-600 mt-1 text-base">Review total hours, adjust team size, and estimate project timeline</p>
+                                              <h4 className="text-xl font-bold text-gray-800 mb-2">3. Sprint Configuration</h4>
+                <p className="text-gray-600 mt-1 text-base">Review total hours, adjust team size, and estimate project timeline</p>
             </div>
             
             <div className="p-6 bg-white space-y-8">
@@ -1384,7 +1384,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           <span className="text-lg font-medium text-gray-800">Total Development Hours</span>
                                                       <span className="text-base text-gray-600 ml-2">({getSelectedItemsCount()} items selected)</span>
                                                   </div>
-                          <div className="text-3xl font-bold text-gray-800">
+                          <div className="text-lg font-medium text-gray-800">
                             {getTotalHours} hours
                           </div>
                       </div>
@@ -1536,7 +1536,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 (Sprint duration: {editableData?.sprintLength || APP_DEFAULTS.sprint.length} working days, Sprint efficiency: {editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}%, Number developers: {selectedDevelopers})
                               </span>
                             </div>
-                            <div className="text-3xl font-bold text-gray-800">
+                            <div className="text-lg font-medium text-gray-800">
                               {sprintCount} sprint{sprintCount !== 1 ? 's' : ''}
                             </div>
                           </div>
@@ -1612,8 +1612,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
                         : selectedTeamModel === 'standard'
-                        ? 'border-blue-500 bg-blue-50 text-blue-800'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                        ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
                     }`}
                   >
                     <div className="text-center">
@@ -1741,10 +1741,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                                                         {/* Role Summary */}
                                    {resourceSection.roles && resourceSection.roles.length > 0 && (
                                      <div className="mb-6">
-                                       <h5 className={`text-base font-semibold text-gray-700 mb-2 flex items-center`}>
-                                         <Plus className="w-5 h-5 mr-2 text-green-600" />
-                                                                                   Team Roles: ({resourceSection.roles.length}) of ({resourceSection.roles.length})
-                                       </h5>
+                                                                               <h5 className={`text-base font-semibold text-gray-700 mb-2 flex items-center`}>
+                                          <Plus className="w-5 h-5 mr-2 text-green-600" />
+                                          Team Roles:
+                                        </h5>
                                      </div>
                                    )}
 

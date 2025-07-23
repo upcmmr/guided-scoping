@@ -913,10 +913,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     </div>
 
-    {/* 3. Default Team Configuration */}
+    {/* 3. Default Sprint Configuration */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className="text-xl font-bold text-gray-800 mb-2">3. Default Sprint Configuration</h4>
+        <p className="text-gray-600 mt-1 text-base">Sprint timing and efficiency parameters</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Length (working days)</label>
+            <input
+              type="number"
+              min={APP_DEFAULTS.sprint.lengthMinLimit}
+              max={APP_DEFAULTS.sprint.lengthMaxLimit}
+              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
+              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={APP_DEFAULTS.sprint.length.toString()}
+            />
+          </div>
+          <div>
+            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
+            <div className="relative">
+              <input
+                type="number"
+                min={APP_DEFAULTS.sprint.efficiencyMinLimit}
+                max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
+                value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+                className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
+              />
+              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* 4. Default Team Configuration */}
             <div className={getCardClasses()}>
           <div className={getCardHeaderClasses()}>
-            <h4 className={`${getHeadingClasses('h4')} mb-2`}>3. Default Team Configuration</h4>
+            <h4 className={`${getHeadingClasses('h4')} mb-2`}>4. Default Team Configuration</h4>
             <p className={`${getBodyClasses('base')} mt-1`}>Define resource allocation for different team models across various business types</p>
           </div>
       
@@ -1223,46 +1263,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     </div>
 
 
-
-    {/* 4. Sprint Configuration */}
-    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gray-200 text-gray-800 p-6">
-        <h4 className="text-xl font-bold text-gray-800 mb-2">4. Default Sprint Configuration</h4>
-        <p className="text-gray-600 mt-1 text-base">Sprint timing and efficiency parameters</p>
-      </div>
-      
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Length (working days)</label>
-            <input
-              type="number"
-              min={APP_DEFAULTS.sprint.lengthMinLimit}
-              max={APP_DEFAULTS.sprint.lengthMaxLimit}
-              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
-              onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
-              className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder={APP_DEFAULTS.sprint.length.toString()}
-            />
-          </div>
-          <div>
-            <label className="block text-base font-medium text-gray-700 mb-2">Sprint Efficiency (%)</label>
-            <div className="relative">
-              <input
-                type="number"
-                min={APP_DEFAULTS.sprint.efficiencyMinLimit}
-                max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
-                value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
-                onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
-                className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
-              />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
   </div>
 
