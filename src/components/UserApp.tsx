@@ -67,6 +67,8 @@ interface ProjectData {
       enterprise: number;
     }>;
   }>;
+  customTeamRoles?: { [roleKey: string]: number };
+  selectedTeamModel?: 'light' | 'standard' | 'heavy';
   templateSource?: string;
 }
 
@@ -97,6 +99,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [selectedTeamModel, setSelectedTeamModel] = useState<'light' | 'standard' | 'heavy' | null>(null);
   const [showTeamDetails, setShowTeamDetails] = useState(false);
   const [isTeamEditMode, setIsTeamEditMode] = useState(false);
+  const [customTeamRoles, setCustomTeamRoles] = useState<Map<string, number>>(new Map());
+  const [teamRoleSelections, setTeamRoleSelections] = useState<Map<string, boolean>>(new Map());
   const [showSprintDetails, setShowSprintDetails] = useState(false);
   const [showHoursDetails, setShowHoursDetails] = useState(false);
 
@@ -157,6 +161,19 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         });
         setItemSelections(restoredSelections);
         
+        // Restore team customization state if available
+        if ('customTeamRoles' in projectData && projectData.customTeamRoles) {
+          const restoredTeamRoles = new Map<string, number>();
+          Object.entries(projectData.customTeamRoles).forEach(([key, value]) => {
+            restoredTeamRoles.set(key, value as number);
+          });
+          setCustomTeamRoles(restoredTeamRoles);
+        }
+        
+        if ('selectedTeamModel' in projectData && projectData.selectedTeamModel) {
+          setSelectedTeamModel(projectData.selectedTeamModel as 'light' | 'standard' | 'heavy');
+        }
+        
         // Set template metadata (create a mock metadata object)
         setSelectedTemplate({
           filename: projectData.templateSource || 'loaded-project',
@@ -205,6 +222,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
         ...completeTemplate
       }); // Create editable copy
+      
+      // Reset team customization state
+      setCustomTeamRoles(new Map());
+      setTeamRoleSelections(new Map());
+      setSelectedTeamModel(null);
+      setIsTeamEditMode(false);
+      setShowTeamDetails(false);
       
       // Initialize all items as unselected
       const initialSelections = new Map<string, boolean>();
@@ -262,9 +286,23 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const handleSaveProject = async () => {
     if (!editableData || !selectedTemplate) return false;
     
+    // Debug logging to help identify the issue
+    console.log('Attempting to save project with data:', {
+      editableData,
+      itemSelections,
+      templateFilename: selectedTemplate.filename
+    });
+    
     try {
+      // Add custom team roles and selected team model to editable data before saving
+      const dataToSave = {
+        ...editableData,
+        customTeamRoles: Object.fromEntries(customTeamRoles),
+        selectedTeamModel: selectedTeamModel
+      };
+      
       const success = await saveUserProject(
-        editableData,
+        dataToSave,
         itemSelections,
         selectedTemplate.filename
       );
@@ -273,7 +311,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         setHasUnsavedChanges(false);
         return true;
       } else {
-        alert('Failed to save project. Please try again.');
+        console.error('Save project returned false - check browser console for details');
+        alert('Failed to save project. Please check the browser console for details and try again.');
         return false;
       }
     } catch (error) {
@@ -437,6 +476,171 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     newSelections.set(currentKey, previousSelected || false);
     newSelections.set(previousKey, currentSelected || false);
     setItemSelections(newSelections);
+    setHasUnsavedChanges(true);
+  };
+
+  // Team role management functions
+  const addTeamResourceSection = () => {
+    if (!editableData) return;
+    
+    const newSection = {
+      id: `section-${Date.now()}`,
+      name: `Resource Section ${(editableData.resourceSections?.length || 0) + 1}`,
+      roles: []
+    };
+    
+    setEditableData((prev: any) => ({
+      ...prev,
+      resourceSections: [...(prev?.resourceSections || []), newSection]
+    }));
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const removeTeamResourceSection = (sectionIndex: number) => {
+    setEditableData((prev: any) => ({
+      ...prev,
+      resourceSections: prev?.resourceSections?.filter((_: any, index: number) => index !== sectionIndex) || []
+    }));
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const addTeamRole = (sectionIndex: number) => {
+    if (!editableData?.resourceSections) return;
+    
+    const newRole = {
+      id: `role-${Date.now()}`,
+      name: 'New Role',
+      smb: 0,
+      standard: 0,
+      enterprise: 0
+    };
+    
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]) {
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          roles: [...(newSections[sectionIndex].roles || []), newRole]
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const removeTeamRole = (sectionIndex: number, roleIndex: number) => {
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]) {
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          roles: newSections[sectionIndex].roles?.filter((_: any, index: number) => index !== roleIndex) || []
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const updateTeamRoleName = (sectionIndex: number, roleIndex: number, newName: string) => {
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]?.roles[roleIndex]) {
+        newSections[sectionIndex].roles[roleIndex] = {
+          ...newSections[sectionIndex].roles[roleIndex],
+          name: newName
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const updateTeamResourceSectionName = (sectionIndex: number, newName: string) => {
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]) {
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          name: newName
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const moveTeamRoleUp = (sectionIndex: number, roleIndex: number) => {
+    if (roleIndex === 0) return;
+    
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]?.roles) {
+        const newRoles = [...newSections[sectionIndex].roles];
+        [newRoles[roleIndex], newRoles[roleIndex - 1]] = [newRoles[roleIndex - 1], newRoles[roleIndex]];
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          roles: newRoles
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const moveTeamRoleDown = (sectionIndex: number, roleIndex: number) => {
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.resourceSections || [])];
+      if (newSections[sectionIndex]?.roles && roleIndex < newSections[sectionIndex].roles.length - 1) {
+        const newRoles = [...newSections[sectionIndex].roles];
+        [newRoles[roleIndex], newRoles[roleIndex + 1]] = [newRoles[roleIndex + 1], newRoles[roleIndex]];
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          roles: newRoles
+        };
+      }
+      
+      return {
+        ...prev,
+        resourceSections: newSections
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const toggleTeamRoleSelection = (sectionIndex: number, roleIndex: number) => {
+    const key = `${sectionIndex}-${roleIndex}`;
+    const newSelections = new Map(teamRoleSelections);
+    newSelections.set(key, !newSelections.get(key));
+    setTeamRoleSelections(newSelections);
     setHasUnsavedChanges(true);
   };
 
@@ -1381,9 +1585,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => setSelectedTeamModel('light')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('light')}
+                    disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedTeamModel === 'light'
+                      isTeamEditMode 
+                        ? selectedTeamModel === 'light'
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : selectedTeamModel === 'light'
                         ? 'border-green-500 bg-green-50 text-green-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
                     }`}
@@ -1395,9 +1604,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => setSelectedTeamModel('standard')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('standard')}
+                    disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedTeamModel === 'standard'
+                      isTeamEditMode 
+                        ? selectedTeamModel === 'standard'
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : selectedTeamModel === 'standard'
                         ? 'border-blue-500 bg-blue-50 text-blue-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                     }`}
@@ -1409,9 +1623,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => setSelectedTeamModel('heavy')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('heavy')}
+                    disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedTeamModel === 'heavy'
+                      isTeamEditMode 
+                        ? selectedTeamModel === 'heavy'
+                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
+                          : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : selectedTeamModel === 'heavy'
                         ? 'border-red-500 bg-red-50 text-red-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
                     }`}
@@ -1423,33 +1642,35 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                 </div>
 
-                {/* Show Team Details Section */}
-                {selectedTeamModel && (
-                  <div className="mt-6 pt-4 border-t border-gray-300">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className={getBodyClasses('small')}>
-                        View the team structure details for your selected model to see recommended roles and resource allocation.
-                      </p>
-                      <button
-                        onClick={() => setShowTeamDetails(!showTeamDetails)}
-                        className={getButtonClasses('secondary')}
-                      >
-                        {showTeamDetails ? (
-                          <>
-                            <ChevronUp className={`${iconSizes.small} mr-2`} />
-                            Hide Details
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className={`${iconSizes.small} mr-2`} />
-                            Show Details
-                          </>
-                        )}
-                      </button>
-                    </div>
+                                  {/* Show Team Details Section */}
+                  {selectedTeamModel && (
+                    <div className="mt-6 pt-4 border-t border-gray-300">
+                      {!isTeamEditMode && (
+                        <div className="flex items-center justify-between mb-4">
+                          <p className={getBodyClasses('small')}>
+                            View the team structure details for your selected model to see recommended roles and resource allocation.
+                          </p>
+                          <button
+                            onClick={() => setShowTeamDetails(!showTeamDetails)}
+                            className={getButtonClasses('secondary')}
+                          >
+                            {showTeamDetails ? (
+                              <>
+                                <ChevronUp className={`${iconSizes.small} mr-2`} />
+                                Hide Details
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className={`${iconSizes.small} mr-2`} />
+                                Show Details
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
 
-                    {/* Team Details Content */}
-                    {showTeamDetails && (
+                                          {/* Team Details Content */}
+                      {(showTeamDetails || isTeamEditMode) && (
                       <div className="border-t border-gray-300 pt-6 mt-6">
                         {!isTeamEditMode && (
                           <div className="mb-6">
@@ -1460,49 +1681,157 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 Click "Customize" to modify roles, adjust team sizes, or add specialized positions.
                               </p>
                               <button
-                                onClick={() => setIsTeamEditMode(true)}
+                                onClick={() => {
+                                  setIsTeamEditMode(true);
+                                  setHasUnsavedChanges(true);
+                                }}
                                 className={`${getButtonClasses('primary')} mx-auto`}
                               >
                                 Customize
                               </button>
                             </div>
                           </div>
-                        )}
+                                                  )}
 
-                        {/* Team Roles Display */}
-                        {templateData?.resourceSections && templateData.resourceSections.length > 0 ? (
+
+
+                                                    {/* Team Roles Display */}
+                        {editableData?.resourceSections && (editableData.resourceSections?.length || 0) > 0 ? (
                           <div className="space-y-6">
-                            {templateData.resourceSections.map((resourceSection: any, sectionIndex: number) => (
+                            {editableData.resourceSections.map((resourceSection: any, sectionIndex: number) => (
                               <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
                                 {/* Resource Section Header */}
                                 <div className={`${isTeamEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
-                                  <h4 className={`${getHeadingClasses('h4')} mb-2`}>{resourceSection.name}</h4>
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <h4 className={`${getHeadingClasses('h4')} mb-2`}>{resourceSection.name}</h4>
+                                    </div>
+                                    {isTeamEditMode && (editableData.resourceSections?.length || 0) > 1 && (
+                                      <button
+                                        onClick={() => removeTeamResourceSection(sectionIndex)}
+                                        className={getButtonClasses('danger')}
+                                      >
+                                        <Trash2 className={`${iconSizes.small} mr-2`} />
+                                        Delete Section
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
 
-                                {/* Roles Content */}
+                                {/* Section Configuration Form */}
+                                {isTeamEditMode && (
+                                  <div className="bg-gray-50 border-t border-gray-300 p-6">
+                                    <div className="grid grid-cols-1 gap-4">
+                                      <div>
+                                        <label className={getLabelClasses()}>Section Name</label>
+                                        <input
+                                          type="text"
+                                          value={resourceSection.name}
+                                          onChange={(e) => updateTeamResourceSectionName(sectionIndex, e.target.value)}
+                                          className={getInputClasses()}
+                                          placeholder="Enter section name"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Role Content */}
                                 <div className="p-6">
+                                                                        {/* Role Summary */}
+                                   {resourceSection.roles && resourceSection.roles.length > 0 && (
+                                     <div className="mb-6">
+                                       <h5 className={`text-base font-semibold text-gray-700 mb-2 flex items-center`}>
+                                         <Plus className="w-5 h-5 mr-2 text-green-600" />
+                                                                                   Team Roles: ({resourceSection.roles.length}) of ({resourceSection.roles.length})
+                                       </h5>
+                                     </div>
+                                   )}
+
                                   {resourceSection.roles && resourceSection.roles.length > 0 ? (
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                       {resourceSection.roles.map((role: any, roleIndex: number) => (
-                                        <div key={roleIndex} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200">
+                                                                                 <div key={roleIndex} className={`flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm transition-all ${
+                                           !isTeamEditMode 
+                                             ? 'border-gray-200 bg-gray-50 opacity-75'
+                                             : 'border-gray-400 bg-gray-100'
+                                         }`}>
+                                           {/* Checkbox - Always Selected */}
+                                           <div className="flex items-center cursor-default">
+                                             <CheckSquare className={`w-6 h-6 ${isTeamEditMode ? 'text-blue-700' : 'text-gray-500'}`} />
+                                           </div>
+
+                                          {/* Up/Down Arrows */}
+                                          {isTeamEditMode && (
+                                            <div className="flex flex-col">
+                                              <button
+                                                onClick={() => moveTeamRoleUp(sectionIndex, roleIndex)}
+                                                disabled={roleIndex === 0}
+                                                className={`p-1 ${roleIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                                              >
+                                                <ChevronUp className="w-4 h-4" />
+                                              </button>
+                                              <button
+                                                onClick={() => moveTeamRoleDown(sectionIndex, roleIndex)}
+                                                disabled={roleIndex === resourceSection.roles.length - 1}
+                                                className={`p-1 ${roleIndex === resourceSection.roles.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:text-gray-800'}`}
+                                              >
+                                                <ChevronDown className="w-4 h-4" />
+                                              </button>
+                                            </div>
+                                          )}
+                                          
+                                          {/* Role Name */}
                                           <div className="flex-1">
-                                            <h5 className="text-base font-semibold text-gray-700">{role.name}</h5>
+                                            {isTeamEditMode ? (
+                                              <input
+                                                type="text"
+                                                value={role.name}
+                                                onChange={(e) => updateTeamRoleName(sectionIndex, roleIndex, e.target.value)}
+                                                className={getInputClasses()}
+                                                placeholder="Role name"
+                                              />
+                                            ) : (
+                                              <span className="text-base text-gray-700">{role.name}</span>
+                                            )}
                                           </div>
                                           
-                                          {/* Role Counts for Different Sizes */}
-                                          <div className="flex gap-4 text-sm">
-                                            <div className="text-center">
-                                              <div className="font-medium text-gray-600">{templateData?.smallSize?.name || 'Small'}</div>
-                                              <div className="text-lg font-bold text-gray-800">{role.smb || 0}</div>
-                                            </div>
-                                            <div className="text-center">
-                                              <div className="font-medium text-gray-600">{templateData?.mediumSize?.name || 'Medium'}</div>
-                                              <div className="text-lg font-bold text-gray-800">{role.standard || 0}</div>
-                                            </div>
-                                            <div className="text-center">
-                                              <div className="font-medium text-gray-600">{templateData?.largeSize?.name || 'Large'}</div>
-                                              <div className="text-lg font-bold text-gray-800">{role.enterprise || 0}</div>
-                                            </div>
+                                          {/* Role Count */}
+                                          <div className="flex items-center gap-2">
+                                            <input
+                                              type="number"
+                                              min="0"
+                                              max="20"
+                                              step="1"
+                                              value={isTeamEditMode ? 
+                                                (customTeamRoles.get(`${resourceSection.id}-${role.id}`) ?? 
+                                                  (selectedTeamModel === 'light' ? (role.smb || 0) :
+                                                   selectedTeamModel === 'standard' ? (role.standard || 0) :
+                                                   (role.enterprise || 0))) :
+                                                (selectedTeamModel === 'light' ? (role.smb || 0) :
+                                                 selectedTeamModel === 'standard' ? (role.standard || 0) :
+                                                 (role.enterprise || 0))
+                                              }
+                                              onChange={(e) => {
+                                                if (isTeamEditMode) {
+                                                  const roleKey = `${resourceSection.id}-${role.id}`;
+                                                  const value = Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
+                                                  setCustomTeamRoles(prev => new Map(prev.set(roleKey, value)));
+                                                }
+                                              }}
+                                              disabled={!isTeamEditMode}
+                                              className={`${getInputClasses()} w-16 text-center ${!isTeamEditMode ? 'bg-gray-100' : ''}`}
+                                              placeholder="0"
+                                            />
+                                                                                         <span className="text-sm text-gray-500">resource(s)</span>
+                                            {isTeamEditMode && (
+                                              <button
+                                                onClick={() => removeTeamRole(sectionIndex, roleIndex)}
+                                                className="text-red-600 hover:text-red-800 p-1"
+                                              >
+                                                <X className="w-4 h-4" />
+                                              </button>
+                                            )}
                                           </div>
                                         </div>
                                       ))}
@@ -1510,12 +1839,40 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                   ) : (
                                     <div className="text-center py-8 text-gray-500">
                                       <p className="mb-2 font-medium">No roles defined for this section</p>
-                                      <p className={getBodyClasses('muted')}>Customize to add team roles</p>
+                                      <p className={`${getBodyClasses('muted')} mb-6`}>
+                                        {isTeamEditMode ? 'Add roles to define your team structure' : 'Customize to add team roles'}
+                                      </p>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Add Role Button */}
+                                  {isTeamEditMode && (
+                                    <div className="mt-6">
+                                      <button
+                                        onClick={() => addTeamRole(sectionIndex)}
+                                        className={`${getButtonClasses('success')} mx-auto`}
+                                      >
+                                        <Plus className={`${iconSizes.small} mr-2`} />
+                                        {resourceSection.roles && resourceSection.roles.length > 0 ? 'Add Role' : 'Add First Role'}
+                                      </button>
                                     </div>
                                   )}
                                 </div>
                               </div>
                             ))}
+                            
+                            {/* Add New Section Button */}
+                            {isTeamEditMode && (
+                              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                                <button
+                                  onClick={addTeamResourceSection}
+                                  className={`${getButtonClasses('success')} mx-auto`}
+                                >
+                                  <Plus className={`${iconSizes.small} mr-2`} />
+                                  Add New Section
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
@@ -1523,7 +1880,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                               <Settings className="w-8 h-8 text-gray-400" />
                             </div>
                             <p className="mb-4 font-medium">No team structure defined</p>
-                            <p className={`${getBodyClasses('muted')} mb-6`}>This template doesn't have team roles configured</p>
+                            <p className={`${getBodyClasses('muted')} mb-6`}>
+                              {isTeamEditMode ? 'Add sections to organize your team structure' : 'This template doesn\'t have team roles configured'}
+                            </p>
+                            {isTeamEditMode && (
+                              <button
+                                onClick={addTeamResourceSection}
+                                className={`${getButtonClasses('success')} mx-auto`}
+                              >
+                                <Plus className={`${iconSizes.small} mr-2`} />
+                                Add First Section
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

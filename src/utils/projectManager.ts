@@ -23,6 +23,8 @@ export interface UserProject {
       selected: boolean; // Individual selection state
     }>;
   }>;
+  customTeamRoles?: { [roleKey: string]: number }; // Custom team role counts
+  selectedTeamModel?: 'light' | 'standard' | 'heavy'; // Selected team model
   templateSource?: string; // Original template filename
   createdAt: string;
   lastModified: string;
@@ -106,6 +108,7 @@ export const saveUserProject = async (
     // File downloaded successfully
     return true;
   } catch (error) {
+    console.error('Error in saveUserProject:', error);
     return false;
   }
 };
