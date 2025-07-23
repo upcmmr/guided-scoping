@@ -3,7 +3,7 @@
 // ============================================================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, Layers, CheckSquare, Square, FolderOpen, Plus, X, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Layers, CheckSquare, Square, FolderOpen, Plus, X, Trash2, ChevronUp, ChevronDown, Settings } from 'lucide-react';
 import TemplateSelector from './TemplateSelector';
 import { loadCompleteTemplate } from '../utils/templateScanner';
 import type { TemplateMetadata } from '../utils/templateScanner';
@@ -56,6 +56,17 @@ interface ProjectData {
   sprintLength: number;
   sprintEfficiency: number;
   sections: ProjectSection[];
+  resourceSections?: Array<{
+    id: string;
+    name: string;
+    roles: Array<{
+      id: string;
+      name: string;
+      smb: number;
+      standard: number;
+      enterprise: number;
+    }>;
+  }>;
   templateSource?: string;
 }
 
@@ -84,6 +95,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [selectedDevelopers, setSelectedDevelopers] = useState<number>(APP_DEFAULTS.developers.standard);
   const [selectedQaPercentage, setSelectedQaPercentage] = useState<number>(APP_DEFAULTS.qa.standardTeamFactor);
   const [selectedTeamModel, setSelectedTeamModel] = useState<'light' | 'standard' | 'heavy' | null>(null);
+  const [showTeamDetails, setShowTeamDetails] = useState(false);
+  const [isTeamEditMode, setIsTeamEditMode] = useState(false);
   const [showSprintDetails, setShowSprintDetails] = useState(false);
   const [showHoursDetails, setShowHoursDetails] = useState(false);
 
@@ -1114,7 +1127,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           {/* Project Summary - Always visible */}
           <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
-              <h4 className="text-xl font-bold text-gray-800 mb-2">3. Project Configuration</h4>
+                              <h4 className="text-xl font-bold text-gray-800 mb-2">3. Build Configuration</h4>
               <p className="text-gray-600 mt-1 text-base">Review total hours, adjust team size, and estimate project timeline</p>
             </div>
             
@@ -1349,60 +1362,177 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 </div>
               )}
 
-              {/* 3. Team Model Section */}
-              {selectedTemplate && getSectionTotals.length > 0 && (
-                <div className="border-t border-gray-200 pt-8">
-                  <h4 className="text-xl font-bold text-gray-800 mb-2">Team Model</h4>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button
-                      onClick={() => setSelectedTeamModel('light')}
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                        selectedTeamModel === 'light'
-                          ? 'border-green-500 bg-green-50 text-green-800'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Light'}</div>
-                        <div className="text-base text-gray-600">{templateData?.smallSize?.teamDescription || 'Minimal oversight and process'}</div>
-                      </div>
-                    </button>
-                    
-                    <button
-                      onClick={() => setSelectedTeamModel('standard')}
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                        selectedTeamModel === 'standard'
-                          ? 'border-blue-500 bg-blue-50 text-blue-800'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Standard'}</div>
-                        <div className="text-base text-gray-600">{templateData?.mediumSize?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
-                      </div>
-                    </button>
-                    
-                    <button
-                      onClick={() => setSelectedTeamModel('heavy')}
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                        selectedTeamModel === 'heavy'
-                          ? 'border-red-500 bg-red-50 text-red-800'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Heavy'}</div>
-                        <div className="text-base text-gray-600">{templateData?.largeSize?.teamDescription || 'Comprehensive governance and documentation'}</div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
+
 
 
             </div>
           </div>
+
+          {/* 4. Team Configuration Section */}
+          {selectedTemplate && getSectionTotals.length > 0 && (
+            <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <h4 className="text-xl font-bold text-gray-800 mb-2">4. Team Configuration</h4>
+                <p className="text-gray-600 mt-1 text-base">Select your team model and customize team structure</p>
+              </div>
+              
+              <div className="p-6">
+                <h4 className="text-xl font-bold text-gray-800 mb-2">Team Model</h4>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={() => setSelectedTeamModel('light')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedTeamModel === 'light'
+                        ? 'border-green-500 bg-green-50 text-green-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Light'}</div>
+                      <div className="text-base text-gray-600">{templateData?.smallSize?.teamDescription || 'Minimal oversight and process'}</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedTeamModel('standard')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedTeamModel === 'standard'
+                        ? 'border-blue-500 bg-blue-50 text-blue-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Standard'}</div>
+                      <div className="text-base text-gray-600">{templateData?.mediumSize?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setSelectedTeamModel('heavy')}
+                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                      selectedTeamModel === 'heavy'
+                        ? 'border-red-500 bg-red-50 text-red-800'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Heavy'}</div>
+                      <div className="text-base text-gray-600">{templateData?.largeSize?.teamDescription || 'Comprehensive governance and documentation'}</div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Show Team Details Section */}
+                {selectedTeamModel && (
+                  <div className="mt-6 pt-4 border-t border-gray-300">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className={getBodyClasses('small')}>
+                        View the team structure details for your selected model to see recommended roles and resource allocation.
+                      </p>
+                      <button
+                        onClick={() => setShowTeamDetails(!showTeamDetails)}
+                        className={getButtonClasses('secondary')}
+                      >
+                        {showTeamDetails ? (
+                          <>
+                            <ChevronUp className={`${iconSizes.small} mr-2`} />
+                            Hide Details
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className={`${iconSizes.small} mr-2`} />
+                            Show Details
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Team Details Content */}
+                    {showTeamDetails && (
+                      <div className="border-t border-gray-300 pt-6 mt-6">
+                        {!isTeamEditMode && (
+                          <div className="mb-6">
+                            <h4 className={`${getHeadingClasses('h4')} mb-2`}>Customize Your Team Structure</h4>
+                            <div className="text-center">
+                              <p className={`${getBodyClasses('base')} mb-4`}>
+                                The team structure below shows the recommended roles for your selected team model. 
+                                Click "Customize" to modify roles, adjust team sizes, or add specialized positions.
+                              </p>
+                              <button
+                                onClick={() => setIsTeamEditMode(true)}
+                                className={`${getButtonClasses('primary')} mx-auto`}
+                              >
+                                Customize
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Team Roles Display */}
+                        {templateData?.resourceSections && templateData.resourceSections.length > 0 ? (
+                          <div className="space-y-6">
+                            {templateData.resourceSections.map((resourceSection: any, sectionIndex: number) => (
+                              <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                                {/* Resource Section Header */}
+                                <div className={`${isTeamEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
+                                  <h4 className={`${getHeadingClasses('h4')} mb-2`}>{resourceSection.name}</h4>
+                                </div>
+
+                                {/* Roles Content */}
+                                <div className="p-6">
+                                  {resourceSection.roles && resourceSection.roles.length > 0 ? (
+                                    <div className="space-y-4">
+                                      {resourceSection.roles.map((role: any, roleIndex: number) => (
+                                        <div key={roleIndex} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200">
+                                          <div className="flex-1">
+                                            <h5 className="text-base font-semibold text-gray-700">{role.name}</h5>
+                                          </div>
+                                          
+                                          {/* Role Counts for Different Sizes */}
+                                          <div className="flex gap-4 text-sm">
+                                            <div className="text-center">
+                                              <div className="font-medium text-gray-600">{templateData?.smallSize?.name || 'Small'}</div>
+                                              <div className="text-lg font-bold text-gray-800">{role.smb || 0}</div>
+                                            </div>
+                                            <div className="text-center">
+                                              <div className="font-medium text-gray-600">{templateData?.mediumSize?.name || 'Medium'}</div>
+                                              <div className="text-lg font-bold text-gray-800">{role.standard || 0}</div>
+                                            </div>
+                                            <div className="text-center">
+                                              <div className="font-medium text-gray-600">{templateData?.largeSize?.name || 'Large'}</div>
+                                              <div className="text-lg font-bold text-gray-800">{role.enterprise || 0}</div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-center py-8 text-gray-500">
+                                      <p className="mb-2 font-medium">No roles defined for this section</p>
+                                      <p className={getBodyClasses('muted')}>Customize to add team roles</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
+                              <Settings className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <p className="mb-4 font-medium">No team structure defined</p>
+                            <p className={`${getBodyClasses('muted')} mb-6`}>This template doesn't have team roles configured</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Exit Warning Dialog */}

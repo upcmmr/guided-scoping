@@ -229,12 +229,42 @@
     {
       "id": "onshore",
       "name": "Onshore Lead Resources",
-      "roles": []
+      "roles": [
+        {
+          "id": "role_1753235836227_c5uqogxtn",
+          "name": "Technical Architect",
+          "smb": 1,
+          "standard": 1,
+          "enterprise": 2
+        },
+        {
+          "id": "role_1753235841279_acup2a0pi",
+          "name": "Solution Architect",
+          "smb": 1,
+          "standard": 1,
+          "enterprise": 1.5
+        }
+      ]
     },
     {
       "id": "offshore",
-      "name": "Offshore Lead Resources", 
-      "roles": []
+      "name": "Offshore Lead Resources",
+      "roles": [
+        {
+          "id": "role_1753235860616_6yu03442a",
+          "name": "Project Manager",
+          "smb": 1,
+          "standard": 1,
+          "enterprise": 1
+        },
+        {
+          "id": "role_1753235867382_nnhs7rbdq",
+          "name": "Technical Architect",
+          "smb": 1,
+          "standard": 1,
+          "enterprise": 2
+        }
+      ]
     }
   ]
 }
