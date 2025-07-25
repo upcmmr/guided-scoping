@@ -6,16 +6,32 @@ import { APP_DEFAULTS } from '../config/defaults';
 
 export interface UserProject {
   accountName: string;
-  projectType: string;
+  projectName: string;
   description: string;
   version: string;
   numberOfDevelopers: number; // Keep for backwards compatibility
-  minQaTeamFactor?: number;
-  standardQaTeamFactor?: number;
-  maxQaTeamFactor?: number;
-  sprintLength: number;
-  sprintEfficiency: number;
-  sections: Array<{
+  teamSections?: {
+    minDevelopers: number;
+    standardDevelopers: number;
+    maxDevelopers: number;
+    minQaTeamFactor: number;
+    standardQaTeamFactor: number;
+    maxQaTeamFactor: number;
+    resourceSections: Array<{
+      name: string;
+      roles: Array<{
+        name: string;
+        profile1: number;
+        profile2: number;
+        profile3: number;
+      }>;
+    }>;
+  };
+  sprintSections?: {
+    sprintLength: number;
+    sprintEfficiency: number;
+  };
+  scopeSections: Array<{
     name: string;
     items: Array<{
       name: string;
@@ -24,7 +40,8 @@ export interface UserProject {
     }>;
   }>;
   customTeamRoles?: { [roleKey: string]: number }; // Custom team role counts
-  selectedTeamModel?: 'light' | 'standard' | 'heavy'; // Selected team model
+  selectedProfile?: 'profile1' | 'profile2' | 'profile3'; // Selected profile
+  selectedTeamModel?: 'profile1' | 'profile2' | 'profile3'; // Selected team model
   templateSource?: string; // Original template filename
   createdAt: string;
   lastModified: string;
@@ -36,44 +53,88 @@ export interface UserProject {
 export const saveUserProject = async (
   projectData: any, 
   selectedItems: Map<string, boolean>,
+  selectedProfile?: 'profile1' | 'profile2' | 'profile3' | null,
+  selectedTeamModel?: 'light' | 'standard' | 'heavy' | null,
   templateSource?: string
 ): Promise<boolean> => {
   try {
-    // Transform sections to remove S/M/L and add selected field
-    const transformedSections = projectData.sections.map((section: any, sectionIndex: number) => ({
+    // Transform scope sections - use actual user selections from the Map
+    const transformedScopeSections = projectData.scopeSections.map((section: any, sectionIndex: number) => ({
       name: section.name,
       items: section.items.map((item: any, itemIndex: number) => {
+        // Always use the actual user selections from the selectedItems Map
+        // This preserves customizations made after profile selection
         const isSelected = selectedItems.get(`${sectionIndex}-${itemIndex}`) || false;
+        
         return {
           name: item.name,
           hours: item.hours,
           selected: isSelected
-          // Explicitly excluding small, medium, large
         };
       })
     }));
 
-    const userProject: UserProject = {
+    // Transform resource sections - convert profile-based counts to single count based on selected team model
+    const transformedResourceSections = projectData.teamSections?.resourceSections?.map((section: any) => ({
+      name: section.name,
+      roles: section.roles.map((role: any) => {
+        let count = 0;
+        
+        if (selectedTeamModel === 'light') {
+          count = role.profile1 || 0;
+        } else if (selectedTeamModel === 'standard') {
+          count = role.profile2 || 0;
+        } else if (selectedTeamModel === 'heavy') {
+          count = role.profile3 || 0;
+        } else {
+          // Default to profile2 (standard) if no team model selected
+          count = role.profile2 || 0;
+        }
+        
+        return {
+          name: role.name,
+          count: count
+        };
+      })
+    })) || [];
+
+    // Create project data in template-like format with same property order as templates
+    const projectSaveData = {
+      // Project definition (replaces template metadata, follows template order)
       accountName: projectData.accountName || '',
-      projectType: projectData.projectType,
-      description: projectData.description,
+      projectName: projectData.projectType || 'Untitled Project',
+      description: projectData.description || '',
       version: projectData.version || '1.0.0',
-      numberOfDevelopers: projectData.standardDevelopers || projectData.numberOfDevelopers || APP_DEFAULTS.userProject.defaultNumberOfDevelopers,
-      sprintLength: projectData.sprintLength,
-      sprintEfficiency: projectData.sprintEfficiency,
-      sections: transformedSections,
+      
+      // Selected profile/model info (conditionally included) - convert UI names to profile IDs
+      ...(selectedProfile && { selectedProfile }),
+      ...(selectedTeamModel && { 
+        selectedTeamModel: selectedTeamModel === 'light' ? 'profile1' : 
+                          selectedTeamModel === 'standard' ? 'profile2' : 
+                          selectedTeamModel === 'heavy' ? 'profile3' : 'profile2' 
+      }),
+      
+      // Follow template order: scopeSections, teamSections, sprintSections
+      scopeSections: transformedScopeSections,
+      teamSections: {
+        ...projectData.teamSections,
+        resourceSections: transformedResourceSections
+      },
+      sprintSections: projectData.sprintSections,
+      
+      // Project-specific metadata at the end (as requested)
       templateSource: templateSource || 'unknown',
       createdAt: new Date().toISOString(),
       lastModified: new Date().toISOString()
     };
 
-    const jsonContent = JSON.stringify(userProject, null, APP_DEFAULTS.file.jsonIndentation);
+    const jsonContent = JSON.stringify(projectSaveData, null, APP_DEFAULTS.file.jsonIndentation);
     
     // Check if File System Access API is supported (modern browsers)
     if ('showSaveFilePicker' in window) {
       try {
         const fileHandle = await (window as any).showSaveFilePicker({
-          suggestedName: `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`,
+          suggestedName: `${projectSaveData.projectName?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`,
           types: [{
             description: 'Project files',
             accept: { 'application/json': ['.json'] }
@@ -99,7 +160,7 @@ export const saveUserProject = async (
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-          a.download = `${projectData.projectType?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`;
+          a.download = `${projectSaveData.projectName?.replace(/[^a-zA-Z0-9]/g, '-') || APP_DEFAULTS.project.defaultFilename}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

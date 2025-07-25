@@ -31,16 +31,14 @@ const createNewSection = (sectionNumber: number) => ({
 
 /** Create a new team role with default values */
 const createNewTeamRole = (name?: string) => ({
-  id: `role_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: name || 'New Role',
-  smb: 0,
-  standard: 1,
-  enterprise: 1
+  profile1: 0,
+  profile2: 1,
+  profile3: 1
 });
 
 /** Create a new resource section with default structure */
 const createNewResourceSection = (name?: string) => ({
-  id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   name: name || 'New Resource Section',
   roles: []
 });
@@ -61,7 +59,7 @@ const useAdminConfiguration = () => {
     setHasUnsavedChanges(true);
   };
 
-  const updateSizeDefinition = (sizeType: 'profile1Size' | 'profile2Size' | 'profile3Size', field: 'name' | 'description' | 'teamDescription', value: string) => {
+  const updateSizeDefinition = (sizeType: 'profile1' | 'profile2' | 'profile3', field: 'name' | 'description' | 'teamDescription', value: string) => {
     setScopeData(prev => ({
       ...prev,
       [sizeType]: {
@@ -80,11 +78,14 @@ const useAdminConfiguration = () => {
     const newRole = createNewTeamRole(name);
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => 
-        secIndex === resourceSectionIndex 
-          ? { ...section, roles: [...section.roles, newRole] }
-          : section
-      ) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
+          secIndex === resourceSectionIndex 
+            ? { ...section, roles: [...section.roles, newRole] }
+            : section
+        ) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -92,11 +93,14 @@ const useAdminConfiguration = () => {
   const removeTeamRole = (resourceSectionIndex: number, roleIndex: number) => {
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => 
-        secIndex === resourceSectionIndex 
-          ? { ...section, roles: section.roles.filter((_, roleIdx) => roleIdx !== roleIndex) }
-          : section
-      ) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
+          secIndex === resourceSectionIndex 
+            ? { ...section, roles: section.roles.filter((_, roleIdx) => roleIdx !== roleIndex) }
+            : section
+        ) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -104,14 +108,17 @@ const useAdminConfiguration = () => {
   const updateTeamRole = (resourceSectionIndex: number, roleIndex: number, updates: Partial<any>) => {
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => 
-        secIndex === resourceSectionIndex ? {
-          ...section,
-          roles: section.roles.map((role, roleIdx) => 
-            roleIdx === roleIndex ? { ...role, ...updates } : role
-          )
-        } : section
-      ) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
+          secIndex === resourceSectionIndex ? {
+            ...section,
+            roles: section.roles.map((role, roleIdx) => 
+              roleIdx === roleIndex ? { ...role, ...updates } : role
+            )
+          } : section
+        ) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -120,31 +127,37 @@ const useAdminConfiguration = () => {
     if (roleIndex === 0) return;
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => {
-        if (secIndex === resourceSectionIndex) {
-          const newRoles = [...section.roles];
-          [newRoles[roleIndex - 1], newRoles[roleIndex]] = [newRoles[roleIndex], newRoles[roleIndex - 1]];
-          return { ...section, roles: newRoles };
-        }
-        return section;
-      }) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => {
+          if (secIndex === resourceSectionIndex) {
+            const newRoles = [...section.roles];
+            [newRoles[roleIndex - 1], newRoles[roleIndex]] = [newRoles[roleIndex], newRoles[roleIndex - 1]];
+            return { ...section, roles: newRoles };
+          }
+          return section;
+        }) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
 
   const moveRoleDown = (resourceSectionIndex: number, roleIndex: number) => {
-    const currentSection = scopeData.resourceSections?.[resourceSectionIndex];
+    const currentSection = scopeData.teamSections.resourceSections?.[resourceSectionIndex];
     if (!currentSection || roleIndex === currentSection.roles.length - 1) return;
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => {
-        if (secIndex === resourceSectionIndex) {
-          const newRoles = [...section.roles];
-          [newRoles[roleIndex], newRoles[roleIndex + 1]] = [newRoles[roleIndex + 1], newRoles[roleIndex]];
-          return { ...section, roles: newRoles };
-        }
-        return section;
-      }) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => {
+          if (secIndex === resourceSectionIndex) {
+            const newRoles = [...section.roles];
+            [newRoles[roleIndex], newRoles[roleIndex + 1]] = [newRoles[roleIndex + 1], newRoles[roleIndex]];
+            return { ...section, roles: newRoles };
+          }
+          return section;
+        }) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -152,11 +165,14 @@ const useAdminConfiguration = () => {
   const updateResourceSectionName = (resourceSectionIndex: number, name: string) => {
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.map((section, secIndex) => 
-        secIndex === resourceSectionIndex 
-          ? { ...section, name }
-          : section
-      ) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
+          secIndex === resourceSectionIndex 
+            ? { ...section, name }
+            : section
+        ) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -165,7 +181,10 @@ const useAdminConfiguration = () => {
     const newSection = createNewResourceSection(name);
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: [...(prev.resourceSections || []), newSection]
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: [...(prev.teamSections.resourceSections || []), newSection]
+      }
     }));
     setHasUnsavedChanges(true);
   };
@@ -173,19 +192,22 @@ const useAdminConfiguration = () => {
   const removeResourceSection = (resourceSectionIndex: number) => {
     setScopeData((prev) => ({
       ...prev,
-      resourceSections: prev.resourceSections?.filter((_, secIndex) => secIndex !== resourceSectionIndex) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.filter((_, secIndex) => secIndex !== resourceSectionIndex) || []
+      }
     }));
     setHasUnsavedChanges(true);
   };
 
   // Section management functions
   const addNewSection = () => {
-    const sectionNumber = scopeData.sections.length + 1;
+    const sectionNumber = scopeData.scopeSections.length + 1;
     const newSection = createNewSection(sectionNumber);
 
     setScopeData((prev) => ({
       ...prev,
-      sections: [...prev.sections, newSection]
+      scopeSections: [...prev.scopeSections, newSection]
     }));
     setHasUnsavedChanges(true);
   };
@@ -231,7 +253,7 @@ const useAdminConfiguration = () => {
   const removeSection = (sectionIndex: number) => {
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.filter((_, index) => index !== sectionIndex)
+      scopeSections: prev.scopeSections.filter((_, index) => index !== sectionIndex)
     }));
     setHasUnsavedChanges(true);
   };
@@ -239,7 +261,7 @@ const useAdminConfiguration = () => {
   const updateSectionInfo = (sectionIndex: number, field: string, value: string) => {
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, index) => 
+      scopeSections: prev.scopeSections.map((section, index) => 
         index === sectionIndex ? { ...section, [field]: value } : section
       )
     }));
@@ -250,7 +272,7 @@ const useAdminConfiguration = () => {
   const updateScopeItem = (sectionIndex: number, itemIndex: number, updates: Partial<ScopeItem>) => {
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, secIndex) => 
+      scopeSections: prev.scopeSections.map((section, secIndex) => 
         secIndex === sectionIndex ? {
           ...section,
           items: section.items.map((item, itemIdx) => 
@@ -266,7 +288,7 @@ const useAdminConfiguration = () => {
     const newItem = createNewScopeItem();
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, secIndex) => 
+      scopeSections: prev.scopeSections.map((section, secIndex) => 
         secIndex === sectionIndex 
           ? { ...section, items: [...section.items, newItem] }
           : section
@@ -278,7 +300,7 @@ const useAdminConfiguration = () => {
   const removeScopeItem = (sectionIndex: number, itemIndex: number) => {
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, secIndex) => 
+      scopeSections: prev.scopeSections.map((section, secIndex) => 
         secIndex === sectionIndex 
           ? { ...section, items: section.items.filter((_, itemIdx) => itemIdx !== itemIndex) }
           : section
@@ -291,7 +313,7 @@ const useAdminConfiguration = () => {
     if (itemIndex === 0) return;
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, secIndex) => {
+      scopeSections: prev.scopeSections.map((section, secIndex) => {
         if (secIndex === sectionIndex) {
           const newItems = [...section.items];
           [newItems[itemIndex - 1], newItems[itemIndex]] = [newItems[itemIndex], newItems[itemIndex - 1]];
@@ -304,11 +326,11 @@ const useAdminConfiguration = () => {
   };
 
   const moveItemDown = (sectionIndex: number, itemIndex: number) => {
-    const currentSection = scopeData.sections[sectionIndex];
+    const currentSection = scopeData.scopeSections[sectionIndex];
     if (!currentSection || itemIndex === currentSection.items.length - 1) return;
     setScopeData((prev) => ({
       ...prev,
-      sections: prev.sections.map((section, secIndex) => {
+      scopeSections: prev.scopeSections.map((section, secIndex) => {
         if (secIndex === sectionIndex) {
           const newItems = [...section.items];
           [newItems[itemIndex], newItems[itemIndex + 1]] = [newItems[itemIndex + 1], newItems[itemIndex]];
@@ -399,7 +421,7 @@ interface AdminPanelProps {
   isLoaded: boolean;
   showExitWarning: boolean;
   onUpdateProjectInfo: (field: string, value: string | number) => void;
-  onUpdateSizeDefinition: (sizeType: 'profile1Size' | 'profile2Size' | 'profile3Size', field: 'name' | 'description' | 'teamDescription', value: string) => void;
+  onUpdateSizeDefinition: (sizeType: 'profile1' | 'profile2' | 'profile3', field: 'name' | 'description' | 'teamDescription', value: string) => void;
   onCreateNewConfig: () => void;
   onExitToWelcome: () => void;
   onSaveAndExit: () => void;
@@ -608,8 +630,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.profile1Size?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'name', e.target.value)}
+                                          value={scopeData.profile1?.name || ''}
+                        onChange={(e) => onUpdateSizeDefinition('profile1', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 1"
                   maxLength={12}
@@ -618,8 +640,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile1Size?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'description', e.target.value)}
+                                          value={scopeData.profile1?.description || ''}
+                        onChange={(e) => onUpdateSizeDefinition('profile1', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Basic implementation with essential features"
                 />
@@ -627,8 +649,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile1Size?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'teamDescription', e.target.value)}
+                  value={scopeData.profile1?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile1', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Lean team structure with essential roles"
                 />
@@ -641,8 +663,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.profile2Size?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'name', e.target.value)}
+                  value={scopeData.profile2?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 2"
                   maxLength={12}
@@ -651,8 +673,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile2Size?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'description', e.target.value)}
+                  value={scopeData.profile2?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Standard implementation with core functionality"
                 />
@@ -660,8 +682,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile2Size?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'teamDescription', e.target.value)}
+                  value={scopeData.profile2?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Balanced team with specialized roles"
                 />
@@ -674,8 +696,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.profile3Size?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'name', e.target.value)}
+                  value={scopeData.profile3?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 3"
                   maxLength={12}
@@ -684,8 +706,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile3Size?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'description', e.target.value)}
+                  value={scopeData.profile3?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Comprehensive implementation with advanced features"
                 />
@@ -693,8 +715,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.profile3Size?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'teamDescription', e.target.value)}
+                  value={scopeData.profile3?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Full-scale team with expert specialists"
                 />
@@ -713,7 +735,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         </div>
       
       <div className="p-6">
-        {scopeData.sections.length === 0 ? (
+        {scopeData.scopeSections.length === 0 ? (
       <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
           <FolderPlus className="w-8 h-8 text-gray-400" />
@@ -730,7 +752,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     ) : (
       <div className="space-y-8">
-        {scopeData.sections.map((sectionData, sectionIndex) => (
+        {scopeData.scopeSections.map((sectionData, sectionIndex) => (
           <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             {/* Section Header */}
             <div className="bg-gray-200 text-gray-800 p-6">
@@ -738,7 +760,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <h4 className="text-xl font-bold text-gray-800 mb-2">{sectionData.name || 'Unnamed Section'}</h4>
                 </div>
-                {scopeData.sections.length > 1 && (
+                {scopeData.scopeSections.length > 1 && (
                                       <button
                       onClick={() => onRemoveSection(sectionIndex)}
                       className={getButtonClasses('danger')}
@@ -831,9 +853,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     {/* Profile Checkboxes */}
                     <div className="flex items-center gap-4">
                       {[
-                        { key: 'small', label: scopeData.profile1Size?.name || 'Profile 1' },
-                        { key: 'medium', label: scopeData.profile2Size?.name || 'Profile 2' },
-                        { key: 'large', label: scopeData.profile3Size?.name || 'Profile 3' }
+                        { key: 'profile1', label: scopeData.profile1?.name || 'Profile 1' },
+                        { key: 'profile2', label: scopeData.profile2?.name || 'Profile 2' },
+                        { key: 'profile3', label: scopeData.profile3?.name || 'Profile 3' }
                       ].map((profile) => (
                         <label key={profile.key} className="flex items-center">
                           <input
@@ -893,7 +915,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     )}
     
     {/* Add Section Button - Only show if there are existing sections */}
-    {scopeData.sections.length > 0 && (
+    {scopeData.scopeSections.length > 0 && (
       <div className="mt-8 flex justify-center">
                       <button
                 onClick={onAddNewSection}
@@ -922,7 +944,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               type="number"
               min={APP_DEFAULTS.sprint.lengthMinLimit}
               max={APP_DEFAULTS.sprint.lengthMaxLimit}
-              value={scopeData.sprintLength || APP_DEFAULTS.sprint.length}
+              value={scopeData.sprintSections.sprintLength || APP_DEFAULTS.sprint.length}
               onChange={(e) => onUpdateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
               className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder={APP_DEFAULTS.sprint.length.toString()}
@@ -935,7 +957,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 type="number"
                 min={APP_DEFAULTS.sprint.efficiencyMinLimit}
                 max={APP_DEFAULTS.sprint.efficiencyMaxLimit}
-                value={scopeData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                value={scopeData.sprintSections.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
                 onChange={(e) => onUpdateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
                 className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={APP_DEFAULTS.sprint.efficiency.toString()}
@@ -974,7 +996,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min={APP_DEFAULTS.developers.formMinLimit}
                       max={APP_DEFAULTS.developers.formMaxLimit}
-                      value={scopeData.minDevelopers || APP_DEFAULTS.developers.min}
+                      value={scopeData.teamSections.minDevelopers || APP_DEFAULTS.developers.min}
                       onChange={(e) => onUpdateProjectInfo('minDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.min)}
                       className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder={APP_DEFAULTS.developers.min.toString()}
@@ -986,7 +1008,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min={APP_DEFAULTS.developers.formMinLimit}
                       max={APP_DEFAULTS.developers.formMaxLimit}
-                      value={scopeData.standardDevelopers || APP_DEFAULTS.developers.standard}
+                      value={scopeData.teamSections.standardDevelopers || APP_DEFAULTS.developers.standard}
                       onChange={(e) => onUpdateProjectInfo('standardDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.standard)}
                       className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder={APP_DEFAULTS.developers.standard.toString()}
@@ -998,7 +1020,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min={APP_DEFAULTS.developers.formMinLimit}
                       max={APP_DEFAULTS.developers.formMaxLimit}
-                      value={scopeData.maxDevelopers || APP_DEFAULTS.developers.max}
+                      value={scopeData.teamSections.maxDevelopers || APP_DEFAULTS.developers.max}
                       onChange={(e) => onUpdateProjectInfo('maxDevelopers', parseInt(e.target.value) || APP_DEFAULTS.developers.max)}
                       className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       placeholder={APP_DEFAULTS.developers.max.toString()}
@@ -1019,7 +1041,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         min={APP_DEFAULTS.qa.factorMinLimit}
                         max={APP_DEFAULTS.qa.factorMaxLimit}
                         step="1"
-                        value={scopeData.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
+                        value={scopeData.teamSections.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
                         onChange={(e) => onUpdateProjectInfo('minQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.minTeamFactor)}
                         className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={APP_DEFAULTS.qa.minTeamFactor.toString()}
@@ -1035,7 +1057,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         min={APP_DEFAULTS.qa.factorMinLimit}
                         max={APP_DEFAULTS.qa.factorMaxLimit}
                         step="1"
-                        value={scopeData.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor}
+                        value={scopeData.teamSections.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor}
                         onChange={(e) => onUpdateProjectInfo('standardQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.standardTeamFactor)}
                         className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={APP_DEFAULTS.qa.standardTeamFactor.toString()}
@@ -1051,7 +1073,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                         min={APP_DEFAULTS.qa.factorMinLimit}
                         max={APP_DEFAULTS.qa.factorMaxLimit}
                         step="1"
-                        value={scopeData.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
+                        value={scopeData.teamSections.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
                         onChange={(e) => onUpdateProjectInfo('maxQaTeamFactor', parseInt(e.target.value) || APP_DEFAULTS.qa.maxTeamFactor)}
                         className="w-full p-3 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder={APP_DEFAULTS.qa.maxTeamFactor.toString()}
@@ -1066,15 +1088,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
           <div className="space-y-8">
             {/* Resource Sections - Dynamic from template data */}
-            {scopeData.resourceSections?.map((resourceSection, sectionIndex) => (
-              <div key={resourceSection.id} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+            {scopeData.teamSections.resourceSections?.map((resourceSection, sectionIndex) => (
+              <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
                 {/* Section Header */}
                 <div className="bg-gray-200 text-gray-800 p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="text-xl font-bold text-gray-800 mb-2">{resourceSection.name}</h4>
                     </div>
-                    {scopeData.resourceSections && scopeData.resourceSections.length > 1 && (
+                    {scopeData.teamSections.resourceSections && scopeData.teamSections.resourceSections.length > 1 && (
                       <button
                         onClick={() => onRemoveResourceSection(sectionIndex)}
                         className={getButtonClasses('danger')}
@@ -1127,7 +1149,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       </div>
                     ) : (
                       resourceSection.roles.map((role, roleIndex) => (
-                        <div key={role.id} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
+                        <div key={roleIndex} className="flex items-center gap-4 p-4 border-2 rounded-lg shadow-sm border-gray-200 hover:border-gray-300 hover:shadow-md transition-all">
                           {/* Reorder Controls */}
                           <div className="flex flex-col gap-1">
                             <button
@@ -1174,11 +1196,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                               min="0"
                               max="10"
                               step="0.5"
-                                                          value={role.smb}
-                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { smb: parseFloat(e.target.value) || 0 })}
+                                                          value={role.profile1}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { profile1: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.profile1Size?.name || 'Profile 1'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile1?.name || 'Profile 1'}</span>
                           </div>
 
                           {/* Profile 2 Count */}
@@ -1188,11 +1210,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                               min="0"
                               max="10"
                               step="0.5"
-                                                          value={role.standard}
-                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { standard: parseFloat(e.target.value) || 0 })}
+                                                          value={role.profile2}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { profile2: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.profile2Size?.name || 'Profile 2'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile2?.name || 'Profile 2'}</span>
                           </div>
 
                           {/* Profile 3 Count */}
@@ -1202,11 +1224,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                               min="0"
                               max="10"
                               step="0.5"
-                                                          value={role.enterprise}
-                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { enterprise: parseFloat(e.target.value) || 0 })}
+                                                          value={role.profile3}
+                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { profile3: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.profile3Size?.name || 'Profile 3'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile3?.name || 'Profile 3'}</span>
                           </div>
 
                           {/* Remove Button */}

@@ -16,18 +16,18 @@ export const APP_DEFAULTS = {
   projectProfiles: {
     profile1: {
       name: 'Profile 1',
-      description: 'Small-scale implementation with basic features',
-      teamDescription: 'Lean team structure with essential roles'
+      description: 'Profile 1 scope definition.',
+      teamDescription: 'Profile 1 team structure.'
     },
     profile2: {
       name: 'Profile 2', 
-      description: 'Standard implementation with core functionality',
-      teamDescription: 'Balanced team with specialized roles'
+      description: 'Profile 2 scope definition.',
+      teamDescription: 'Profile 2 team structure.'
     },
     profile3: {
       name: 'Profile 3',
-      description: 'Comprehensive implementation with advanced features',
-      teamDescription: 'Full-scale team with expert specialists'
+      description: 'Profile 3 scope definition.',
+      teamDescription: 'Profile 3 team structure'
     }
   },
 
@@ -72,18 +72,22 @@ export const APP_DEFAULTS = {
 
   // Section Defaults
   section: {
-    namePrefix: 'Section',
+    namePrefix: 'New Scope Section',
   },
 
   // Template Metadata Fallbacks (when template data is missing/invalid)
   templateFallbacks: {
-    projectType: 'Unknown Project',
+    projectType: 'Unknown Project Name',
     description: 'No description available',
-    minDevelopers: 1,
-    standardDevelopers: 2,
-    maxDevelopers: 4,
-    sprintLength: 14,
-    sprintEfficiency: 80,
+    teamSections: {
+      minDevelopers: 4,
+      standardDevelopers: 6,
+      maxDevelopers: 8,
+    },
+    sprintSections: {
+      sprintLength: 10,
+      sprintEfficiency: 60,
+    },
   },
 
   // File Operation Defaults
@@ -111,12 +115,10 @@ export const APP_DEFAULTS = {
   teamStructure: {
     defaultResourceSections: [
       {
-        id: 'onshore',
         name: 'Onshore Lead Resources',
         roles: []
       },
       {
-        id: 'offshore',
         name: 'Offshore Lead Resources', 
         roles: []
       }

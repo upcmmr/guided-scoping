@@ -8,14 +8,18 @@ export interface TemplateMetadata {
   filename: string;
   projectType: string;
   description: string;
-  minDevelopers: number;
-  standardDevelopers: number;
-  maxDevelopers: number;
-  minQaTeamFactor: number;
-  standardQaTeamFactor: number;
-  maxQaTeamFactor: number;
-  sprintLength: number;
-  sprintEfficiency: number;
+  teamSections: {
+    minDevelopers: number;
+    standardDevelopers: number;
+    maxDevelopers: number;
+    minQaTeamFactor: number;
+    standardQaTeamFactor: number;
+    maxQaTeamFactor: number;
+  };
+  sprintSections: {
+    sprintLength: number;
+    sprintEfficiency: number;
+  };
   sectionsCount: number;
   totalItems: number;
 }
@@ -60,26 +64,30 @@ export const loadTemplateMetadata = async (filename: string): Promise<TemplateMe
     }
     
     // Calculate statistics
-    const sectionsCount = template.sections?.length || 0;
-    const totalItems = template.sections?.reduce((total: number, section: any) => 
+    const sectionsCount = template?.scopeSections?.length || 0;
+    const totalItems = template?.scopeSections?.reduce((total: number, section: any) => 
       total + (section.items?.length || 0), 0) || 0;
     
-    return {
+        return {
       filename,
-      projectType: template.projectType || APP_DEFAULTS.templateFallbacks.projectType,
-      description: template.description || APP_DEFAULTS.templateFallbacks.description,
-      minDevelopers: template.minDevelopers || APP_DEFAULTS.templateFallbacks.minDevelopers,
-      standardDevelopers: template.standardDevelopers || APP_DEFAULTS.templateFallbacks.standardDevelopers,
-      maxDevelopers: template.maxDevelopers || APP_DEFAULTS.templateFallbacks.maxDevelopers,
-      minQaTeamFactor: template.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
-      standardQaTeamFactor: template.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
-      maxQaTeamFactor: template.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
-      sprintLength: template.sprintLength || APP_DEFAULTS.templateFallbacks.sprintLength,
-      sprintEfficiency: template.sprintEfficiency || APP_DEFAULTS.templateFallbacks.sprintEfficiency,
+      projectType: template?.projectType || APP_DEFAULTS.templateFallbacks.projectType,
+      description: template?.description || APP_DEFAULTS.templateFallbacks.description,
+      teamSections: {
+        minDevelopers: template?.teamSections?.minDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.minDevelopers,
+        standardDevelopers: template?.teamSections?.standardDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers,
+        maxDevelopers: template?.teamSections?.maxDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.maxDevelopers,
+        minQaTeamFactor: template?.teamSections?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
+        standardQaTeamFactor: template?.teamSections?.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
+        maxQaTeamFactor: template?.teamSections?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
+      },
+      sprintSections: {
+        sprintLength: template?.sprintSections?.sprintLength || APP_DEFAULTS.templateFallbacks.sprintSections.sprintLength,
+        sprintEfficiency: template?.sprintSections?.sprintEfficiency || APP_DEFAULTS.templateFallbacks.sprintSections.sprintEfficiency,
+      },
       sectionsCount,
       totalItems,
     };
-      } catch (error) {
+  } catch (error) {
       return null;
   }
 };

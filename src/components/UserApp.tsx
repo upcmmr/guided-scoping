@@ -9,7 +9,7 @@ import { loadCompleteTemplate } from '../utils/templateScanner';
 import type { TemplateMetadata } from '../utils/templateScanner';
 import { saveUserProject, loadUserProject } from '../utils/projectManager';
 import { APP_DEFAULTS, getNewSectionName } from '../config/defaults';
-import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getHeadingClasses, getBodyClasses, iconSizes, animations } from '../utils/styleUtils';
+import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getHeadingClasses, getBodyClasses, iconSizes } from '../utils/styleUtils';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -19,18 +19,7 @@ interface UserAppProps {
   onSwitchToAdmin?: () => void;
 }
 
-interface ProjectScopeItem {
-  name: string;
-  hours: number;
-  profile1?: boolean;
-  profile2?: boolean;
-  profile3?: boolean;
-}
-
-interface ProjectSection {
-  name: string;
-  items: ProjectScopeItem[];
-}
+type UserAppState = 'landing' | 'selectTemplate' | 'scoping';
 
 interface SizeDefinition {
   name: string;
@@ -38,47 +27,133 @@ interface SizeDefinition {
   teamDescription: string;
 }
 
+interface ProjectScopeItem {
+  name: string;
+  hours: number;
+  profile1?: boolean;
+  profile2?: boolean;
+  profile3?: boolean;
+  selected?: boolean; // For saved project files
+}
+
+interface ProjectSection {
+  name: string;
+  items: ProjectScopeItem[];
+}
+
+interface SectionTotal {
+  name: string;
+  items: number;
+  hours: number;
+}
+
 interface ProjectData {
   accountName: string;
-  projectType: string;
+  projectName: string;
   description: string;
   version: string;
-  profile1Size?: SizeDefinition;
-  profile2Size?: SizeDefinition;
-  profile3Size?: SizeDefinition;
+  profile1?: SizeDefinition;
+  profile2?: SizeDefinition;
+  profile3?: SizeDefinition;
   numberOfDevelopers?: number;
-  minDevelopers?: number;
-  standardDevelopers?: number;
-  maxDevelopers?: number;
-  minQaTeamFactor?: number;
-  standardQaTeamFactor?: number;
-  maxQaTeamFactor?: number;
-  sprintLength: number;
-  sprintEfficiency: number;
-  sections: ProjectSection[];
-  resourceSections?: Array<{
-    id: string;
-    name: string;
-    roles: Array<{
-      id: string;
+  teamSections: {
+    minDevelopers: number;
+    standardDevelopers: number;
+    maxDevelopers: number;
+    minQaTeamFactor: number;
+    standardQaTeamFactor: number;
+    maxQaTeamFactor: number;
+    resourceSections: Array<{
       name: string;
-      smb: number;
-      standard: number;
-      enterprise: number;
+      roles: Array<{
+        name: string;
+        profile1: number;
+        profile2: number;
+        profile3: number;
+      }>;
     }>;
-  }>;
+  };
+  sprintSections: {
+    sprintLength: number;
+    sprintEfficiency: number;
+  };
+  scopeSections: ProjectSection[];
   customTeamRoles?: { [roleKey: string]: number };
   selectedTeamModel?: 'light' | 'standard' | 'heavy';
   templateSource?: string;
 }
 
-interface SectionTotal {
-  name: string;
-  hours: number;
-  items: number;
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Creates template metadata from project data
+ */
+const createTemplateMetadata = (projectData: any, filename?: string): TemplateMetadata => {
+  return {
+    filename: filename || projectData.templateSource || 'loaded-project',
+    projectType: projectData.projectName || projectData.projectType || 'Loaded Project',
+    description: projectData.description || '',
+    teamSections: {
+      minDevelopers: projectData.teamSections?.minDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.minDevelopers,
+      standardDevelopers: projectData.teamSections?.standardDevelopers || projectData.numberOfDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers,
+      maxDevelopers: projectData.teamSections?.maxDevelopers || (projectData.numberOfDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers) * APP_DEFAULTS.userProject.developerMultiplierForMax,
+      minQaTeamFactor: projectData.teamSections?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
+      standardQaTeamFactor: projectData.teamSections?.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
+      maxQaTeamFactor: projectData.teamSections?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
+    },
+    sprintSections: {
+      sprintLength: projectData.sprintSections?.sprintLength || APP_DEFAULTS.sprint.length,
+      sprintEfficiency: projectData.sprintSections?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency,
+    },
+    sectionsCount: projectData.scopeSections?.length || 0,
+    totalItems: projectData.scopeSections?.reduce((total: number, section: any) => total + section.items.length, 0) || 0
+  };
+};
+
+/**
+ * Converts team model from profile ID format to UI format
+ */
+const convertTeamModelFromProfile = (teamModel: string): 'light' | 'standard' | 'heavy' | null => {
+  switch (teamModel) {
+    case 'profile1': return 'light';
+    case 'profile2': return 'standard';
+    case 'profile3': return 'heavy';
+    default: return null;
+  }
+};
+
+/**
+ * Restores item selections from project data
+ */
+const restoreItemSelections = (scopeSections: ProjectSection[]): Map<string, boolean> => {
+  const selections = new Map<string, boolean>();
+  if (scopeSections && Array.isArray(scopeSections)) {
+    scopeSections.forEach((section: ProjectSection, sectionIndex: number) => {
+      section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
+        selections.set(`${sectionIndex}-${itemIndex}`, item.selected || false);
+      });
+    });
+  }
+  return selections;
+};
+
+/**
+ * Common state setup for both template and project loading
+ */
+interface StateSetupParams {
+  projectData: any;
+  templateMetadata: TemplateMetadata;
+  isFromTemplate: boolean;
+  selectedProfile?: string | null;
+  selectedTeamModel?: string | null;
+  itemSelections?: Map<string, boolean>;
 }
 
-type UserAppState = 'landing' | 'scoping';
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
 const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [currentState, setCurrentState] = useState<UserAppState>('landing');
@@ -104,6 +179,164 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [showSprintDetails, setShowSprintDetails] = useState(false);
   const [showHoursDetails, setShowHoursDetails] = useState(false);
 
+  // ============================================================================
+  // PROJECT/TEMPLATE LOADING LOGIC
+  // ============================================================================
+
+  /**
+   * Common state setup function used by both template and project loading
+   */
+  const setupApplicationState = useCallback((params: StateSetupParams) => {
+    const { projectData, templateMetadata, isFromTemplate, selectedProfile, selectedTeamModel, itemSelections: customSelections } = params;
+
+    // Only set profile if explicitly provided (for templates, this should be null to require user selection)
+    if (selectedProfile) {
+      setSelectedSize(selectedProfile as 'profile1' | 'profile2' | 'profile3');
+    } else {
+      setSelectedSize(null); // Ensure profile is cleared - user must select
+    }
+
+    // Set main data
+    setEditableData({
+      accountName: projectData.accountName || '',
+      projectName: projectData.projectName || projectData.projectType || '',
+      description: projectData.description || '',
+      version: projectData.version || '1.0.0',
+      numberOfDevelopers: projectData.numberOfDevelopers,
+      teamSections: projectData.teamSections || {
+        minDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.minDevelopers,
+        standardDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers,
+        maxDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.maxDevelopers,
+        minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
+        standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
+        maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
+        resourceSections: projectData.teamSections?.resourceSections || []
+      },
+      sprintSections: projectData.sprintSections || {
+        sprintLength: APP_DEFAULTS.sprint.length,
+        sprintEfficiency: APP_DEFAULTS.sprint.efficiency
+      },
+      scopeSections: projectData.scopeSections?.map((section: ProjectSection) => ({
+        name: section.name,
+        items: section.items.map((item: ProjectScopeItem) => ({
+          name: item.name,
+          hours: item.hours
+        }))
+      })) || []
+    });
+
+    // Set template metadata and data
+    setSelectedTemplate(templateMetadata);
+    setTemplateData(projectData as any);
+
+    // Set selections
+    if (customSelections) {
+      setItemSelections(customSelections);
+    }
+
+    // Set team model
+    if (selectedTeamModel) {
+      const uiTeamModel = convertTeamModelFromProfile(selectedTeamModel);
+      if (uiTeamModel) {
+        setSelectedTeamModel(uiTeamModel);
+      }
+    }
+
+    // Restore team customization if available
+    if (projectData.customTeamRoles) {
+      const restoredTeamRoles = new Map<string, number>();
+      Object.entries(projectData.customTeamRoles).forEach(([key, value]) => {
+        restoredTeamRoles.set(key, value as number);
+      });
+      setCustomTeamRoles(restoredTeamRoles);
+    }
+
+    // Set UI defaults
+    setSelectedDevelopers(projectData.teamSections?.standardDevelopers || projectData.numberOfDevelopers || APP_DEFAULTS.developers.standard);
+    setSelectedQaPercentage(projectData.teamSections?.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor);
+
+    // Batch final state updates
+    setHasUnsavedChanges(false);
+    setCameFromTemplate(isFromTemplate);
+    // For project files with selected profile, show customize details immediately
+    // For templates, don't show until profile is selected
+    setShowCustomize(!isFromTemplate && !!selectedProfile);
+    setIsEditMode(!isFromTemplate && !!selectedProfile); // Project files start in edit mode
+    setIsTeamEditMode(!isFromTemplate && !!selectedProfile); // Team also starts in edit mode for project files
+    setCurrentState('scoping');
+  }, []);
+
+  const handleOpenProjectFile = useCallback(async () => {
+    try {
+      const projectData = await loadUserProject();
+      
+      if (projectData) {
+        const templateMetadata = createTemplateMetadata(projectData);
+        const itemSelections = restoreItemSelections(projectData.scopeSections || []);
+        
+        setupApplicationState({
+          projectData,
+          templateMetadata,
+          isFromTemplate: false, // This is a project file, not a template
+          selectedProfile: projectData.selectedProfile || null, // Restore saved profile selection
+          selectedTeamModel: projectData.selectedTeamModel,
+          itemSelections
+        });
+        
+        // State will be set properly by setupApplicationState
+      }
+    } catch (error) {
+      console.error('Error opening project file:', error);
+      alert('Failed to open project file.');
+    }
+  }, [setupApplicationState]);
+
+  const handleTemplateSelected = useCallback(async (template: TemplateMetadata) => {
+    try {
+      setLoading(true);
+      const completeTemplate = await loadCompleteTemplate(template.filename) as any;
+      
+      // Initialize all items as unselected for new template
+      const initialSelections = new Map<string, boolean>();
+      completeTemplate.scopeSections?.forEach((section: ProjectSection, sectionIndex: number) => {
+        section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
+          initialSelections.set(`${sectionIndex}-${itemIndex}`, false);
+        });
+      });
+
+      // Reset team customization for new template
+      setCustomTeamRoles(new Map());
+      setTeamRoleSelections(new Map());
+      setSelectedTeamModel(null);
+      setIsTeamEditMode(false);
+      setShowTeamDetails(false);
+
+      const enhancedTemplate = {
+        ...completeTemplate,
+        accountName: '',
+        version: '1.0.0'
+      };
+
+      setupApplicationState({
+        projectData: enhancedTemplate,
+        templateMetadata: template,
+        isFromTemplate: true,
+        selectedProfile: null, // No profile selected for new template
+        selectedTeamModel: null,
+        itemSelections: initialSelections
+      });
+
+      // Reset profile selection for new template
+      setSelectedSize(null);
+      
+    } catch (error) {
+      console.error('Failed to load template:', error);
+      alert('Failed to load the selected template. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [setupApplicationState]);
+
   // Sync CSS custom properties with config values
   useEffect(() => {
     const root = document.documentElement;
@@ -124,138 +357,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const handleStartWithTemplate = () => {
     setShowTemplates(true);
   };
-
-  const handleOpenProjectFile = useCallback(async () => {
-    try {
-      const projectData = await loadUserProject();
-      
-      if (projectData) {
-        // Load the project data and restore state (remove selected field for editing)
-        setEditableData({
-          accountName: projectData.accountName || '',
-          projectType: projectData.projectType,
-          description: projectData.description,
-          version: projectData.version || '1.0.0',
-          numberOfDevelopers: projectData.numberOfDevelopers,
-          minQaTeamFactor: projectData.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
-          standardQaTeamFactor: projectData.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
-          maxQaTeamFactor: projectData.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
-          sprintLength: projectData.sprintLength,
-          sprintEfficiency: projectData.sprintEfficiency,
-          sections: projectData.sections.map((section: ProjectSection) => ({
-            name: section.name,
-            items: section.items.map((item: ProjectScopeItem) => ({
-              name: item.name,
-              hours: item.hours
-              // Remove selected field for editing format
-            }))
-          }))
-        });
-        
-        // Restore item selections from embedded selected field
-        const restoredSelections = new Map<string, boolean>();
-        projectData.sections.forEach((section: ProjectSection, sectionIndex: number) => {
-          section.items.forEach((item: ProjectScopeItem & { selected?: boolean }, itemIndex: number) => {
-            restoredSelections.set(`${sectionIndex}-${itemIndex}`, item.selected || false);
-          });
-        });
-        setItemSelections(restoredSelections);
-        
-        // Restore team customization state if available
-        if ('customTeamRoles' in projectData && projectData.customTeamRoles) {
-          const restoredTeamRoles = new Map<string, number>();
-          Object.entries(projectData.customTeamRoles).forEach(([key, value]) => {
-            restoredTeamRoles.set(key, value as number);
-          });
-          setCustomTeamRoles(restoredTeamRoles);
-        }
-        
-        if ('selectedTeamModel' in projectData && projectData.selectedTeamModel) {
-          setSelectedTeamModel(projectData.selectedTeamModel as 'light' | 'standard' | 'heavy');
-        }
-        
-        // Set template metadata (create a mock metadata object)
-        setSelectedTemplate({
-          filename: projectData.templateSource || 'loaded-project',
-          projectType: projectData.projectType,
-          description: projectData.description,
-          minDevelopers: APP_DEFAULTS.templateFallbacks.minDevelopers,
-          standardDevelopers: projectData.numberOfDevelopers,
-          maxDevelopers: projectData.numberOfDevelopers * APP_DEFAULTS.userProject.developerMultiplierForMax,
-          minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
-          standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
-          maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
-          sprintLength: projectData.sprintLength,
-          sprintEfficiency: projectData.sprintEfficiency,
-          sectionsCount: projectData.sections.length,
-          totalItems: projectData.sections.reduce((total, section) => total + section.items.length, 0)
-        });
-        
-        // Set default developer count for slider
-        setSelectedDevelopers(projectData.numberOfDevelopers || APP_DEFAULTS.developers.standard);
-        
-        // Set default QA percentage for slider
-        setSelectedQaPercentage(projectData.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor);
-        
-        setHasUnsavedChanges(false);
-        setCameFromTemplate(false);
-        setSelectedSize(null);
-        setShowCustomize(true);
-        setIsEditMode(true);
-        setCurrentState('scoping');
-      }
-    } catch (error) {
-      console.error('Error opening project file:', error);
-      alert('Failed to open project file.');
-    }
-  }, []);
-
-  const handleTemplateSelected = useCallback(async (template: TemplateMetadata) => {
-    try {
-      setLoading(true);
-      const completeTemplate = await loadCompleteTemplate(template.filename);
-      setSelectedTemplate(template);
-      setTemplateData(completeTemplate);
-      setEditableData({
-        accountName: '',
-        version: '1.0.0',
-        standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
-        ...completeTemplate
-      }); // Create editable copy
-      
-      // Reset team customization state
-      setCustomTeamRoles(new Map());
-      setTeamRoleSelections(new Map());
-      setSelectedTeamModel(null);
-      setIsTeamEditMode(false);
-      setShowTeamDetails(false);
-      
-      // Initialize all items as unselected
-      const initialSelections = new Map<string, boolean>();
-      completeTemplate.sections.forEach((section: ProjectSection, sectionIndex: number) => {
-        section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
-          initialSelections.set(`${sectionIndex}-${itemIndex}`, false);
-        });
-      });
-      setItemSelections(initialSelections);
-      setHasUnsavedChanges(false);
-      setCameFromTemplate(true);
-      setSelectedSize(null);
-      
-      // Set default developer count for slider
-      setSelectedDevelopers(template.standardDevelopers || APP_DEFAULTS.developers.standard);
-      
-      // Set default QA percentage for slider
-      setSelectedQaPercentage(completeTemplate.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor);
-      
-      setCurrentState('scoping');
-    } catch (error) {
-      console.error('Failed to load template:', error);
-      alert('Failed to load the selected template. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const handleBackToLanding = () => {
     if (hasUnsavedChanges) {
@@ -304,6 +405,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       const success = await saveUserProject(
         dataToSave,
         itemSelections,
+        selectedSize,
+        selectedTeamModel,
         selectedTemplate.filename
       );
       
@@ -337,8 +440,25 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     setShowExitWarning(false);
   };
 
-  const updateProjectInfo = (field: keyof ProjectData, value: string | number) => {
-    setEditableData((prev) => prev ? ({ ...prev, [field]: value }) : null);
+  const updateProjectInfo = (field: string, value: string | number) => {
+    if (!editableData) return;
+    
+    // Handle nested properties for teamSections and sprintSections
+    if (field.includes('.')) {
+      const [section, property] = field.split('.');
+      setEditableData({
+        ...editableData,
+        [section]: {
+          ...editableData[section as keyof ProjectData] as any,
+          [property]: value
+        }
+      });
+    } else {
+      setEditableData({
+        ...editableData,
+        [field]: value
+      });
+    }
     setHasUnsavedChanges(true);
   };
 
@@ -347,13 +467,13 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     if (!editableData) return;
     
     const newSection = {
-      name: getNewSectionName(editableData.sections.length),
+      name: getNewSectionName(editableData.scopeSections.length),
       items: []
     };
 
     setEditableData((prev) => prev ? ({
       ...prev,
-      sections: [...prev.sections, newSection]
+      scopeSections: [...prev.scopeSections, newSection]
     }) : null);
     setHasUnsavedChanges(true);
   };
@@ -361,7 +481,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const removeSection = (sectionIndex: number) => {
     setEditableData((prev) => prev ? ({
       ...prev,
-      sections: prev.sections.filter((_, index: number) => index !== sectionIndex)
+      scopeSections: prev.scopeSections.filter((_, index: number) => index !== sectionIndex)
     }) : null);
     // Update item selections to remove items from deleted section
     const newSelections = new Map<string, boolean>();
@@ -384,7 +504,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const updateSectionInfo = (sectionIndex: number, field: string, value: string) => {
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, index: number) => 
+      scopeSections: prev.scopeSections.map((section: any, index: number) => 
         index === sectionIndex ? { ...section, [field]: value } : section
       )
     }));
@@ -400,7 +520,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, index: number) => 
+      scopeSections: prev.scopeSections.map((section: any, index: number) => 
         index === sectionIndex 
           ? { ...section, items: [...section.items, newItem] }
           : section
@@ -412,7 +532,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const removeScopeItem = (sectionIndex: number, itemIndex: number) => {
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, index: number) => 
+      scopeSections: prev.scopeSections.map((section: any, index: number) => 
         index === sectionIndex 
           ? { ...section, items: section.items.filter((_: any, idx: number) => idx !== itemIndex) }
           : section
@@ -437,7 +557,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const updateScopeItem = (sectionIndex: number, itemIndex: number, updates: any) => {
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, secIndex: number) => 
+      scopeSections: prev.scopeSections.map((section: any, secIndex: number) => 
         secIndex === sectionIndex 
           ? {
               ...section,
@@ -456,7 +576,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, secIndex: number) => {
+      scopeSections: prev.scopeSections.map((section: any, secIndex: number) => {
         if (secIndex === sectionIndex) {
           const newItems = [...section.items];
           [newItems[itemIndex], newItems[itemIndex - 1]] = [newItems[itemIndex - 1], newItems[itemIndex]];
@@ -484,14 +604,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     if (!editableData) return;
     
     const newSection = {
-      id: `section-${Date.now()}`,
-      name: `Resource Section ${(editableData.resourceSections?.length || 0) + 1}`,
+      name: `Resource Section ${(editableData.teamSections?.resourceSections?.length || 0) + 1}`,
       roles: []
     };
     
     setEditableData((prev: any) => ({
       ...prev,
-      resourceSections: [...(prev?.resourceSections || []), newSection]
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: [...(prev?.teamSections.resourceSections || []), newSection]
+      }
     }));
     
     setHasUnsavedChanges(true);
@@ -500,25 +622,27 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const removeTeamResourceSection = (sectionIndex: number) => {
     setEditableData((prev: any) => ({
       ...prev,
-      resourceSections: prev?.resourceSections?.filter((_: any, index: number) => index !== sectionIndex) || []
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev?.teamSections.resourceSections?.filter((_: any, index: number) => index !== sectionIndex) || []
+      }
     }));
     
     setHasUnsavedChanges(true);
   };
 
   const addTeamRole = (sectionIndex: number) => {
-    if (!editableData?.resourceSections) return;
+    if (!editableData?.teamSections.resourceSections) return;
     
     const newRole = {
-      id: `role-${Date.now()}`,
       name: 'New Role',
-      smb: 0,
-      standard: 0,
-      enterprise: 0
+      profile1: 0,
+      profile2: 0,
+      profile3: 0
     };
     
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]) {
         newSections[sectionIndex] = {
           ...newSections[sectionIndex],
@@ -528,7 +652,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -537,7 +664,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
   const removeTeamRole = (sectionIndex: number, roleIndex: number) => {
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]) {
         newSections[sectionIndex] = {
           ...newSections[sectionIndex],
@@ -547,7 +674,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -556,7 +686,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
   const updateTeamRoleName = (sectionIndex: number, roleIndex: number, newName: string) => {
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]?.roles[roleIndex]) {
         newSections[sectionIndex].roles[roleIndex] = {
           ...newSections[sectionIndex].roles[roleIndex],
@@ -566,7 +696,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -575,7 +708,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
   const updateTeamResourceSectionName = (sectionIndex: number, newName: string) => {
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]) {
         newSections[sectionIndex] = {
           ...newSections[sectionIndex],
@@ -585,7 +718,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -596,7 +732,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     if (roleIndex === 0) return;
     
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]?.roles) {
         const newRoles = [...newSections[sectionIndex].roles];
         [newRoles[roleIndex], newRoles[roleIndex - 1]] = [newRoles[roleIndex - 1], newRoles[roleIndex]];
@@ -608,7 +744,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -617,7 +756,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
   const moveTeamRoleDown = (sectionIndex: number, roleIndex: number) => {
     setEditableData((prev: any) => {
-      const newSections = [...(prev?.resourceSections || [])];
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
       if (newSections[sectionIndex]?.roles && roleIndex < newSections[sectionIndex].roles.length - 1) {
         const newRoles = [...newSections[sectionIndex].roles];
         [newRoles[roleIndex], newRoles[roleIndex + 1]] = [newRoles[roleIndex + 1], newRoles[roleIndex]];
@@ -629,7 +768,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       
       return {
         ...prev,
-        resourceSections: newSections
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
       };
     });
     
@@ -647,12 +789,12 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const moveItemDown = (sectionIndex: number, itemIndex: number) => {
     if (!editableData) return;
     
-    const sectionLength = editableData.sections[sectionIndex]?.items.length || 0;
+    const sectionLength = editableData.scopeSections[sectionIndex]?.items.length || 0;
     if (itemIndex >= sectionLength - 1) return;
     
     setEditableData((prev: any) => ({
       ...prev,
-      sections: prev.sections.map((section: any, secIndex: number) => {
+      scopeSections: prev.scopeSections.map((section: any, secIndex: number) => {
         if (secIndex === sectionIndex) {
           const newItems = [...section.items];
           [newItems[itemIndex], newItems[itemIndex + 1]] = [newItems[itemIndex + 1], newItems[itemIndex]];
@@ -696,7 +838,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const getTotalHours = useMemo(() => {
     if (!editableData) return 0;
     let total = 0;
-    editableData.sections.forEach((section: ProjectSection, sectionIndex: number) => {
+    editableData.scopeSections.forEach((section: ProjectSection, sectionIndex: number) => {
       section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
         const key = `${sectionIndex}-${itemIndex}`;
         if (itemSelections.get(key)) {
@@ -709,7 +851,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
     const getSectionTotals = useMemo(() => {
     if (!editableData) return [];
-    return editableData.sections.map((section: ProjectSection, sectionIndex: number) => {
+    return editableData.scopeSections.map((section: ProjectSection, sectionIndex: number) => {
       let sectionHours = 0;
       let sectionItems = 0;
       section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
@@ -731,8 +873,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const calculateSprintCapacity = () => {
     if (!editableData || !selectedTemplate) return 0;
     
-    const sprintDays = editableData.sprintLength || APP_DEFAULTS.sprint.length;
-    const efficiencyPercent = editableData.sprintEfficiency || APP_DEFAULTS.sprint.efficiency;
+    const sprintDays = editableData.sprintSections?.sprintLength || APP_DEFAULTS.sprint.length;
+    const efficiencyPercent = editableData.sprintSections?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency;
     const efficiency = efficiencyPercent / APP_DEFAULTS.sprintPlanning.percentageConversion;
     
     return selectedDevelopers * sprintDays * APP_DEFAULTS.sprintPlanning.hoursPerDay * efficiency;
@@ -753,7 +895,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     
     const newSelections = new Map<string, boolean>();
     
-    templateData.sections.forEach((section: any, sectionIndex: number) => {
+    templateData.scopeSections.forEach((section: any, sectionIndex: number) => {
       section.items.forEach((item: any, itemIndex: number) => {
         const key = `${sectionIndex}-${itemIndex}`;
         // Select item if it has the chosen size flag set to true
@@ -861,7 +1003,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     );
   }
 
-    // Scoping Interface - Customization page with editable fields
+    // Scoping Interface - Show project info and profile selection, scope sections only after profile selected  
   if (currentState === 'scoping' && selectedTemplate && editableData) {
     return (
       <div className="max-w-7xl mx-auto p-6 min-h-screen">
@@ -927,8 +1069,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   <label className={getLabelClasses()}>Project Name</label>
                   <input
                     type="text"
-                    value={editableData?.projectType || ''}
-                    onChange={(e) => updateProjectInfo('projectType', e.target.value)}
+                    value={editableData?.projectName || ''}
+                    onChange={(e) => updateProjectInfo('projectName', e.target.value)}
                     className={getInputClasses()}
                     placeholder={APP_DEFAULTS.messages.placeholders.projectName}
                   />
@@ -959,83 +1101,87 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           </div>
 
-          {/* Size Selector - Only show when coming from template */}
-          {cameFromTemplate && (
-            <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-0 overflow-hidden">
-              <div className="bg-gray-200 text-gray-800 p-6">
-                <h4 className="text-xl font-bold text-gray-800 mb-2">2. Project Scope</h4>
-                <p className="text-gray-600 mt-1 text-base">Choose your project size to automatically select the right scope for your needs</p>
-              </div>
-              
-              <div className="p-6">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => !isEditMode && handleSizeSelection('profile1')}
-                    disabled={isEditMode}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'profile1'
-                        ? isEditMode 
-                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
-                          : 'border-green-500 bg-green-50 text-green-800'
-                        : isEditMode
-                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile1Size?.name || 'Profile 1'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile1Size?.description || 'Essential features only'}</div>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => !isEditMode && handleSizeSelection('profile2')}
-                    disabled={isEditMode}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'profile2'
-                        ? isEditMode 
-                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
-                          : 'border-yellow-500 bg-yellow-50 text-yellow-800'
-                        : isEditMode
-                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile2Size?.name || 'Profile 2'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile2Size?.description || 'Standard feature set'}</div>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => !isEditMode && handleSizeSelection('profile3')}
-                    disabled={isEditMode}
-                    className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'profile3'
-                        ? isEditMode 
-                          ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
-                          : 'border-red-500 bg-red-50 text-red-800'
-                        : isEditMode
-                          ? 'border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                          : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile3Size?.name || 'Profile 3'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile3Size?.description || 'Comprehensive features'}</div>
-                    </div>
-                  </button>
-                </div>
+          {/* Size Selector - Show for both template and project loading, but with different behavior */}
+          <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-0 overflow-hidden">
+            <div className="bg-gray-200 text-gray-800 p-6">
+              <h4 className="text-xl font-bold text-gray-800 mb-2">2. Project Scope</h4>
+              <p className="text-gray-600 mt-1 text-base">
+                {cameFromTemplate 
+                  ? "Choose your project size to automatically select the right scope for your needs"
+                  : "Project profile selection (from saved project)"
+                }
+              </p>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => cameFromTemplate && !isEditMode && handleSizeSelection('profile1')}
+                  disabled={!cameFromTemplate || isEditMode}
+                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                    !cameFromTemplate || isEditMode
+                      ? selectedSize === 'profile1'
+                        ? 'border-gray-500 bg-gray-300 text-gray-700 cursor-not-allowed' // Selected but disabled (darker grey)
+                        : 'border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed' // Not selected and disabled (lighter grey)
+                      : selectedSize === 'profile1'
+                      ? 'border-green-500 bg-green-50 text-green-800'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg font-bold mb-2">{templateData?.profile1?.name || 'Profile 1'}</div>
+                    <div className="text-base text-gray-600">{templateData?.profile1?.description || 'Essential features only'}</div>
+                  </div>
+                </button>
                 
-                {/* Customize Button - Show after size selection */}
-                {selectedSize && !isEditMode && (
+                <button
+                  onClick={() => cameFromTemplate && !isEditMode && handleSizeSelection('profile2')}
+                  disabled={!cameFromTemplate || isEditMode}
+                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                    !cameFromTemplate || isEditMode
+                      ? selectedSize === 'profile2'
+                        ? 'border-gray-500 bg-gray-300 text-gray-700 cursor-not-allowed' // Selected but disabled (darker grey)
+                        : 'border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed' // Not selected and disabled (lighter grey)
+                      : selectedSize === 'profile2'
+                      ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg font-bold mb-2">{templateData?.profile2?.name || 'Profile 2'}</div>
+                    <div className="text-base text-gray-600">{templateData?.profile2?.description || 'Standard feature set'}</div>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => cameFromTemplate && !isEditMode && handleSizeSelection('profile3')}
+                  disabled={!cameFromTemplate || isEditMode}
+                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
+                    !cameFromTemplate || isEditMode
+                      ? selectedSize === 'profile3'
+                        ? 'border-gray-500 bg-gray-300 text-gray-700 cursor-not-allowed' // Selected but disabled (darker grey)
+                        : 'border-gray-300 bg-gray-200 text-gray-500 cursor-not-allowed' // Not selected and disabled (lighter grey)
+                      : selectedSize === 'profile3'
+                      ? 'border-red-500 bg-red-50 text-red-800'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-lg font-bold mb-2">{templateData?.profile3?.name || 'Profile 3'}</div>
+                    <div className="text-base text-gray-600">{templateData?.profile3?.description || 'Comprehensive features'}</div>
+                  </div>
+                </button>
+              </div>
+                
+                {/* Show Details / Customize Button - Only show for templates when profile is selected */}
+                {selectedSize && cameFromTemplate && !isEditMode && (
                   <div className="mt-6 pt-4 border-t border-gray-300">
                     <div className="flex items-center justify-between">
-                <div>
+                      <div>
                         <p className="text-sm text-gray-600">
-                          View details of the selected prime profile.
+                          View details of the selected profile.
                         </p>
-                </div>
+                      </div>
                       <button
                         onClick={() => setShowCustomize(!showCustomize)}
                         className={getButtonClasses('secondary')}
@@ -1052,14 +1198,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           </>
                         )}
                       </button>
-              </div>
-            </div>
+                    </div>
+                  </div>
                 )}
+
+
 
                 {/* Detailed Scope Content - Integrated within same container */}
                 {showCustomize && (
                   <div className="border-t border-gray-300 pt-6 mt-6">
-                {!isEditMode && (
+                {!isEditMode && cameFromTemplate && (
                   <div className="mb-6">
                     <h4 className="text-xl font-bold text-gray-800 mb-2">Customize Your Project Scope</h4>
                     <div className="text-center">
@@ -1076,14 +1224,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     </div>
                   </div>
                 )}
-          {editableData.sections.length === 0 ? (
+                      {!selectedSize ? (
+              <div className="text-center py-8">
+                <p className={getBodyClasses()}>Please select a project profile above to view scope sections.</p>
+              </div>
+            ) : editableData.scopeSections.length === 0 ? (
             <div className="text-center py-12 text-gray-500 rounded-lg border-2 border-dashed border-gray-300">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
                 <Layers className="w-8 h-8 text-gray-400" />
               </div>
               <p className="mb-4 font-medium">No sections defined</p>
               <p className="text-sm text-gray-400 mb-6">{isEditMode ? 'Add sections to organize your project scope' : 'No scope items available'}</p>
-              {isEditMode && (
+              {isEditMode && selectedSize && (
               <button
                 onClick={addNewSection}
                                         className={`${getButtonClasses('success')} mx-auto`}
@@ -1095,15 +1247,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           ) : (
             <div className="space-y-8">
-              {editableData.sections.map((sectionData: any, sectionIndex: number) => (
+              {selectedSize && editableData.scopeSections.map((sectionData: any, sectionIndex: number) => (
                 <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
                   {/* Section Header */}
                   <div className={`${isEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
                     <div className="flex items-center justify-between">
                       <div>
-                                                 <h4 className="text-xl font-bold text-gray-800 mb-2">{sectionData.name || 'Unnamed Section'}</h4>
+                        <h4 className="text-xl font-bold text-gray-800 mb-2">{sectionData.name || 'Unnamed Section'}</h4>
+                        {!cameFromTemplate && !isEditMode && (
+                          <p className="text-sm text-gray-600">Read-only view from saved project</p>
+                        )}
                       </div>
-                      {isEditMode && editableData.sections.length > 1 && (
+                      {isEditMode && editableData.scopeSections.length > 1 && (
                         <button
                           onClick={() => removeSection(sectionIndex)}
                           className={getButtonClasses('danger')}
@@ -1311,7 +1466,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           )}
           
                     {/* Add Section Button - Only show if there are existing sections */}
-          {isEditMode && editableData.sections.length > 0 && (
+          {isEditMode && selectedSize && editableData.scopeSections.length > 0 && (
             <div className="mt-8 flex justify-center">
               <button
                 onClick={addNewSection}
@@ -1326,7 +1481,6 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 )}
               </div>
             </div>
-          )}
 
           {/* Project Summary - Always visible */}
           <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
@@ -1336,7 +1490,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
             
             <div className="p-6 bg-white space-y-8">
-              {getSectionTotals.length > 0 ? (
+              {getSectionTotals.length > 0 || !cameFromTemplate ? (
                 <>
                   {/* 1. Development Hours Section */}
                   <div>
@@ -1399,7 +1553,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               )}
 
               {/* 2. Sprint Planning Section */}
-              {selectedTemplate && getSectionTotals.length > 0 && (
+              {selectedTemplate && (getSectionTotals.length > 0 || !cameFromTemplate) && (
                 <div className="border-t border-gray-200 pt-8">
                   <div className="flex items-center justify-between mb-6">
                     <h4 className="text-xl font-bold text-gray-800">Sprint Planning</h4>
@@ -1436,8 +1590,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 type="number"
                                 min="1"
                                 max="30"
-                                value={editableData?.sprintLength || APP_DEFAULTS.sprint.length}
-                                onChange={(e) => updateProjectInfo('sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
+                                value={editableData?.sprintSections.sprintLength || APP_DEFAULTS.sprint.length}
+                                onChange={(e) => updateProjectInfo('sprintSections.sprintLength', parseInt(e.target.value) || APP_DEFAULTS.sprint.length)}
                                 className={`w-full px-3 py-2 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                             />
                           </div>
@@ -1450,8 +1604,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                   type="number"
                                   min="1"
                                   max="100"
-                                  value={editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
-                                  onChange={(e) => updateProjectInfo('sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
+                                  value={editableData?.sprintSections.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}
+                                  onChange={(e) => updateProjectInfo('sprintSections.sprintEfficiency', parseInt(e.target.value) || APP_DEFAULTS.sprint.efficiency)}
                                   className={`w-full px-3 py-2 pr-8 border border-gray-300 rounded-md text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                               />
                               <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">%</span>
@@ -1472,8 +1626,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           
                           <input
                             type="range"
-                            min={selectedTemplate.minDevelopers}
-                            max={selectedTemplate.maxDevelopers}
+                            min={selectedTemplate.teamSections.minDevelopers}
+                            max={selectedTemplate.teamSections.maxDevelopers}
                             step="1"
                             value={selectedDevelopers}
                             onChange={(e) => setSelectedDevelopers(parseInt(e.target.value))}
@@ -1481,8 +1635,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           />
                           
                           <div className="flex justify-between text-sm text-gray-500">
-                            <span>{selectedTemplate.minDevelopers}</span>
-                            <span>{selectedTemplate.maxDevelopers}</span>
+                            <span>{selectedTemplate.teamSections.minDevelopers}</span>
+                            <span>{selectedTemplate.teamSections.maxDevelopers}</span>
                           </div>
                         </div>
 
@@ -1496,21 +1650,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                           
                           <input
                             type="range"
-                            min={selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
-                            max={selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
+                            min={selectedTemplate?.teamSections.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}
+                            max={selectedTemplate?.teamSections.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}
                             step="10"
                             value={selectedQaPercentage}
                             onChange={(e) => {
                               const newValue = parseInt(e.target.value);
                               setSelectedQaPercentage(newValue);
-                              updateProjectInfo('standardQaTeamFactor', newValue);
+                              updateProjectInfo('teamSections.standardQaTeamFactor', newValue);
                             }}
                             className="w-full mb-2 focus:outline-none slider"
                           />
                           
                           <div className="flex justify-between text-sm text-gray-500">
-                            <span>{selectedTemplate?.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}%</span>
-                            <span>{selectedTemplate?.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}%</span>
+                            <span>{selectedTemplate?.teamSections.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor}%</span>
+                            <span>{selectedTemplate?.teamSections.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor}%</span>
                           </div>
                         </div>
                       </div>
@@ -1518,7 +1672,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   )}
 
                   {/* Sprint Timeline Results */}
-                  {getTotalHours > 0 && (() => {
+                  {(getTotalHours > 0 || !cameFromTemplate) && (() => {
                     const totalProjectHours = getTotalHours;
                     const sprintCount = calculateSprints();
                     const capacityPerSprint = calculateSprintCapacity();
@@ -1533,7 +1687,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                             <div>
                               <span className="text-lg font-medium text-gray-800">Estimated Sprint Count</span>
                               <span className="text-base text-gray-600 ml-2">
-                                (Sprint duration: {editableData?.sprintLength || APP_DEFAULTS.sprint.length} working days, Sprint efficiency: {editableData?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}%, Number developers: {selectedDevelopers})
+                                (Sprint duration: {editableData?.sprintSections.sprintLength || APP_DEFAULTS.sprint.length} working days, Sprint efficiency: {editableData?.sprintSections.sprintEfficiency || APP_DEFAULTS.sprint.efficiency}%, Number developers: {selectedDevelopers})
                               </span>
                             </div>
                             <div className="text-lg font-medium text-gray-800">
@@ -1573,7 +1727,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           </div>
 
           {/* 4. Team Configuration Section */}
-          {selectedTemplate && getSectionTotals.length > 0 && (
+          {selectedTemplate && (getSectionTotals.length > 0 || !cameFromTemplate) && (
             <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
               <div className="bg-gray-200 text-gray-800 p-6">
                 <h4 className="text-xl font-bold text-gray-800 mb-2">4. Team Configuration</h4>
@@ -1598,8 +1752,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile1Size?.name || 'Light'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile1Size?.teamDescription || 'Minimal oversight and process'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile1?.name || 'Light'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile1?.teamDescription || 'Minimal oversight and process'}</div>
                     </div>
                   </button>
                   
@@ -1617,8 +1771,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile2Size?.name || 'Standard'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile2Size?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile2?.name || 'Standard'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile2?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
                     </div>
                   </button>
                   
@@ -1636,8 +1790,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.profile3Size?.name || 'Heavy'}</div>
-                      <div className="text-base text-gray-600">{templateData?.profile3Size?.teamDescription || 'Comprehensive governance and documentation'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile3?.name || 'Heavy'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile3?.teamDescription || 'Comprehensive governance and documentation'}</div>
                     </div>
                   </button>
                 </div>
@@ -1696,9 +1850,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
 
                                                     {/* Team Roles Display */}
-                        {editableData?.resourceSections && (editableData.resourceSections?.length || 0) > 0 ? (
+                        {editableData?.teamSections.resourceSections && (editableData.teamSections?.resourceSections?.length || 0) > 0 ? (
                           <div className="space-y-6">
-                            {editableData.resourceSections.map((resourceSection: any, sectionIndex: number) => (
+                            {editableData.teamSections?.resourceSections.map((resourceSection: any, sectionIndex: number) => (
                               <div key={sectionIndex} className="border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
                                 {/* Resource Section Header */}
                                 <div className={`${isTeamEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
@@ -1706,7 +1860,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                     <div>
                                       <h4 className={`${getHeadingClasses('h4')} mb-2`}>{resourceSection.name}</h4>
                                     </div>
-                                    {isTeamEditMode && (editableData.resourceSections?.length || 0) > 1 && (
+                                    {isTeamEditMode && (editableData.teamSections?.resourceSections?.length || 0) > 1 && (
                                       <button
                                         onClick={() => removeTeamResourceSection(sectionIndex)}
                                         className={getButtonClasses('danger')}
@@ -1803,18 +1957,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                               min="0"
                                               max="20"
                                               step="1"
-                                              value={isTeamEditMode ? 
-                                                (customTeamRoles.get(`${resourceSection.id}-${role.id}`) ?? 
-                                                  (selectedTeamModel === 'light' ? (role.smb || 0) :
-                                                   selectedTeamModel === 'standard' ? (role.standard || 0) :
-                                                   (role.enterprise || 0))) :
-                                                (selectedTeamModel === 'light' ? (role.smb || 0) :
-                                                 selectedTeamModel === 'standard' ? (role.standard || 0) :
-                                                 (role.enterprise || 0))
-                                              }
+                                                                                              value={isTeamEditMode ? 
+                                                 (customTeamRoles.get(`${sectionIndex}-${roleIndex}`) ?? 
+                                                    (selectedTeamModel === 'light' ? (role.profile1 || 0) :
+                                                     selectedTeamModel === 'standard' ? (role.profile2 || 0) :
+                                                     (role.profile3 || 0))) :
+                                                 (selectedTeamModel === 'light' ? (role.profile1 || 0) :
+                                                  selectedTeamModel === 'standard' ? (role.profile2 || 0) :
+                                                  (role.profile3 || 0))
+                                                }
                                               onChange={(e) => {
                                                 if (isTeamEditMode) {
-                                                  const roleKey = `${resourceSection.id}-${role.id}`;
+                                                  const roleKey = `${sectionIndex}-${roleIndex}`;
                                                   const value = Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
                                                   setCustomTeamRoles(prev => new Map(prev.set(roleKey, value)));
                                                 }

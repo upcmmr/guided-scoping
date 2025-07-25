@@ -22,15 +22,13 @@ export interface ScopeSection {
 }
 
 export interface TeamRole {
-  id: string;
   name: string;
-  smb: number;
-  standard: number;
-  enterprise: number;
+  profile1: number;
+  profile2: number;
+  profile3: number;
 }
 
 export interface ResourceSection {
-  id: string;
   name: string;
   roles: TeamRole[];
 }
@@ -41,22 +39,30 @@ export interface SizeDefinition {
   teamDescription: string;
 }
 
-export interface ProjectConfig {
-  projectType: string;
-  description: string;
-  profile1Size: SizeDefinition;
-  profile2Size: SizeDefinition;
-  profile3Size: SizeDefinition;
+export interface TeamSections {
   minDevelopers: number;
   standardDevelopers: number;
   maxDevelopers: number;
   minQaTeamFactor: number; // Minimum QA team size as percentage of development team
   standardQaTeamFactor: number; // Typical QA team size as percentage of development team
   maxQaTeamFactor: number; // Maximum QA team size as percentage of development team
+  resourceSections: ResourceSection[];
+}
+
+export interface SprintSections {
   sprintLength: number;
   sprintEfficiency: number; // percentage (0-100)
-  sections: ScopeSection[];
-  resourceSections: ResourceSection[];
+}
+
+export interface ProjectConfig {
+  projectType: string;
+  description: string;
+  profile1: SizeDefinition;
+  profile2: SizeDefinition;
+  profile3: SizeDefinition;
+  teamSections: TeamSections;
+  sprintSections: SprintSections;
+  scopeSections: ScopeSection[];
 }
 
 export type ScopeData = ProjectConfig;
@@ -73,19 +79,23 @@ export const getEmptyScopeData = (): ScopeData => {
   return {
     projectType: APP_DEFAULTS.project.name,
     description: APP_DEFAULTS.project.description,
-    profile1Size: APP_DEFAULTS.projectProfiles.profile1,
-    profile2Size: APP_DEFAULTS.projectProfiles.profile2,
-    profile3Size: APP_DEFAULTS.projectProfiles.profile3,
-    minDevelopers: APP_DEFAULTS.developers.min,
-    standardDevelopers: APP_DEFAULTS.developers.standard,
-    maxDevelopers: APP_DEFAULTS.developers.max,
-    minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
-    standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
-    maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
-    sprintLength: APP_DEFAULTS.sprint.length,
-    sprintEfficiency: APP_DEFAULTS.sprint.efficiency,
-    sections: [],
-    resourceSections: APP_DEFAULTS.teamStructure.defaultResourceSections
+    profile1: APP_DEFAULTS.projectProfiles.profile1,
+    profile2: APP_DEFAULTS.projectProfiles.profile2,
+    profile3: APP_DEFAULTS.projectProfiles.profile3,
+    teamSections: {
+      minDevelopers: APP_DEFAULTS.developers.min,
+      standardDevelopers: APP_DEFAULTS.developers.standard,
+      maxDevelopers: APP_DEFAULTS.developers.max,
+      minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
+      standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
+      maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
+      resourceSections: APP_DEFAULTS.teamStructure.defaultResourceSections
+    },
+    sprintSections: {
+      sprintLength: APP_DEFAULTS.sprint.length,
+      sprintEfficiency: APP_DEFAULTS.sprint.efficiency
+    },
+    scopeSections: []
   };
 };
 
