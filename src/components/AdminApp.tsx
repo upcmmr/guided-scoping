@@ -8,7 +8,6 @@ import {
   loadScopeDataFromFile,
   getEmptyScopeData,
   saveScopeData, 
-  resetToInitialConfig,
   type ScopeData,
   type ScopeSection,
   type ScopeItem
@@ -62,7 +61,7 @@ const useAdminConfiguration = () => {
     setHasUnsavedChanges(true);
   };
 
-  const updateSizeDefinition = (sizeType: 'smallSize' | 'mediumSize' | 'largeSize', field: 'name' | 'description' | 'teamDescription', value: string) => {
+  const updateSizeDefinition = (sizeType: 'profile1Size' | 'profile2Size' | 'profile3Size', field: 'name' | 'description' | 'teamDescription', value: string) => {
     setScopeData(prev => ({
       ...prev,
       [sizeType]: {
@@ -321,12 +320,7 @@ const useAdminConfiguration = () => {
     setHasUnsavedChanges(true);
   };
 
-  // Configuration management
-  const resetToDefaults = () => {
-    const defaultData = resetToInitialConfig();
-    setScopeData(defaultData);
-    setHasUnsavedChanges(false);
-  };
+
 
   const handleAdminHoursChange = (sectionIndex: number, itemIndex: number, newHours: string) => {
     const hours = parseInt(newHours) || 0;
@@ -372,7 +366,7 @@ const useAdminConfiguration = () => {
     updateScopeItem,
     moveItemUp,
     moveItemDown,
-    resetToDefaults,
+
     handleAdminHoursChange,
     handleAdminNameChange,
     handleSizeCheckboxChange,
@@ -405,7 +399,7 @@ interface AdminPanelProps {
   isLoaded: boolean;
   showExitWarning: boolean;
   onUpdateProjectInfo: (field: string, value: string | number) => void;
-  onUpdateSizeDefinition: (sizeType: 'smallSize' | 'mediumSize' | 'largeSize', field: 'name' | 'description' | 'teamDescription', value: string) => void;
+  onUpdateSizeDefinition: (sizeType: 'profile1Size' | 'profile2Size' | 'profile3Size', field: 'name' | 'description' | 'teamDescription', value: string) => void;
   onCreateNewConfig: () => void;
   onExitToWelcome: () => void;
   onSaveAndExit: () => void;
@@ -418,7 +412,7 @@ interface AdminPanelProps {
   onRemoveScopeItem: (sectionIndex: number, itemIndex: number) => void;
   onMoveItemUp: (sectionIndex: number, itemIndex: number) => void;
   onMoveItemDown: (sectionIndex: number, itemIndex: number) => void;
-  onResetToDefaults: () => void;
+
   onAdminHoursChange: (sectionIndex: number, itemIndex: number, hours: string) => void;
   onAdminNameChange: (sectionIndex: number, itemIndex: number, name: string) => void;
   onSizeCheckboxChange: (sectionIndex: number, itemIndex: number, size: string, checked: boolean) => void;
@@ -454,7 +448,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onRemoveScopeItem,
   onMoveItemUp,
   onMoveItemDown,
-  onResetToDefaults,
+
   onAdminHoursChange,
   onAdminNameChange,
   onSizeCheckboxChange,
@@ -614,8 +608,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.smallSize?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'name', e.target.value)}
+                  value={scopeData.profile1Size?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 1"
                   maxLength={12}
@@ -624,8 +618,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.smallSize?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'description', e.target.value)}
+                  value={scopeData.profile1Size?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Basic implementation with essential features"
                 />
@@ -633,8 +627,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.smallSize?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('smallSize', 'teamDescription', e.target.value)}
+                  value={scopeData.profile1Size?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile1Size', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Lean team structure with essential roles"
                 />
@@ -647,8 +641,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.mediumSize?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'name', e.target.value)}
+                  value={scopeData.profile2Size?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 2"
                   maxLength={12}
@@ -657,8 +651,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.mediumSize?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'description', e.target.value)}
+                  value={scopeData.profile2Size?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Standard implementation with core functionality"
                 />
@@ -666,8 +660,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.mediumSize?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('mediumSize', 'teamDescription', e.target.value)}
+                  value={scopeData.profile2Size?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile2Size', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Balanced team with specialized roles"
                 />
@@ -680,8 +674,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <input
                   type="text"
-                  value={scopeData.largeSize?.name || ''}
-                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'name', e.target.value)}
+                  value={scopeData.profile3Size?.name || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'name', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Profile 3"
                   maxLength={12}
@@ -690,8 +684,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.largeSize?.description || ''}
-                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'description', e.target.value)}
+                  value={scopeData.profile3Size?.description || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'description', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Comprehensive implementation with advanced features"
                 />
@@ -699,8 +693,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
               <div>
                 <textarea
                   rows={2}
-                  value={scopeData.largeSize?.teamDescription || ''}
-                  onChange={(e) => onUpdateSizeDefinition('largeSize', 'teamDescription', e.target.value)}
+                  value={scopeData.profile3Size?.teamDescription || ''}
+                  onChange={(e) => onUpdateSizeDefinition('profile3Size', 'teamDescription', e.target.value)}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
                   placeholder="Full-scale team with expert specialists"
                 />
@@ -837,9 +831,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     {/* Profile Checkboxes */}
                     <div className="flex items-center gap-4">
                       {[
-                        { key: 'small', label: scopeData.smallSize?.name || 'Profile 1' },
-                        { key: 'medium', label: scopeData.mediumSize?.name || 'Profile 2' },
-                        { key: 'large', label: scopeData.largeSize?.name || 'Profile 3' }
+                        { key: 'small', label: scopeData.profile1Size?.name || 'Profile 1' },
+                        { key: 'medium', label: scopeData.profile2Size?.name || 'Profile 2' },
+                        { key: 'large', label: scopeData.profile3Size?.name || 'Profile 3' }
                       ].map((profile) => (
                         <label key={profile.key} className="flex items-center">
                           <input
@@ -1184,7 +1178,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { smb: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.smallSize?.name || 'Profile 1'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile1Size?.name || 'Profile 1'}</span>
                           </div>
 
                           {/* Profile 2 Count */}
@@ -1198,7 +1192,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { standard: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.mediumSize?.name || 'Profile 2'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile2Size?.name || 'Profile 2'}</span>
                           </div>
 
                           {/* Profile 3 Count */}
@@ -1212,7 +1206,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                             onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { enterprise: parseFloat(e.target.value) || 0 })}
                             className="w-20 p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
-                            <span className="text-sm text-gray-500">{scopeData.largeSize?.name || 'Profile 3'}</span>
+                            <span className="text-sm text-gray-500">{scopeData.profile3Size?.name || 'Profile 3'}</span>
                           </div>
 
                           {/* Remove Button */}
@@ -1346,7 +1340,7 @@ const AdminApp: React.FC = () => {
         onRemoveScopeItem={adminHook.removeScopeItem}
         onMoveItemUp={adminHook.moveItemUp}
         onMoveItemDown={adminHook.moveItemDown}
-        onResetToDefaults={adminHook.resetToDefaults}
+
         onAdminHoursChange={adminHook.handleAdminHoursChange}
         onAdminNameChange={adminHook.handleAdminNameChange}
         onSizeCheckboxChange={adminHook.handleSizeCheckboxChange}

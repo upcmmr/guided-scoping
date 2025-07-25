@@ -12,20 +12,20 @@ export const APP_DEFAULTS = {
     defaultFilename: 'project',
   },
 
-  // Project Size Definitions
-  projectSizes: {
-    small: {
-      name: 'Small',
+  // Project Profile Definitions
+  projectProfiles: {
+    profile1: {
+      name: 'Profile 1',
       description: 'Small-scale implementation with basic features',
       teamDescription: 'Lean team structure with essential roles'
     },
-    medium: {
-      name: 'Medium', 
+    profile2: {
+      name: 'Profile 2', 
       description: 'Standard implementation with core functionality',
       teamDescription: 'Balanced team with specialized roles'
     },
-    large: {
-      name: 'Large',
+    profile3: {
+      name: 'Profile 3',
       description: 'Comprehensive implementation with advanced features',
       teamDescription: 'Full-scale team with expert specialists'
     }
@@ -84,8 +84,6 @@ export const APP_DEFAULTS = {
     maxDevelopers: 4,
     sprintLength: 14,
     sprintEfficiency: 80,
-    sectionsCount: 0,
-    totalItems: 0,
   },
 
   // File Operation Defaults
@@ -94,63 +92,7 @@ export const APP_DEFAULTS = {
     defaultProjectFilename: 'project.json',
   },
 
-  // Initial Template Data (used for reset functionality)
-  initialTemplate: {
-    projectType: "B2C E-commerce Platform",
-    description: "Standard B2C e-commerce project with common integrations and features",
-    smallSize: {
-      name: "Small",
-      description: "Small-scale implementation with basic features",
-      teamDescription: "Lean team structure with essential roles"
-    },
-    mediumSize: {
-      name: "Medium",
-      description: "Standard implementation with core functionality",
-      teamDescription: "Balanced team with specialized roles"
-    },
-    largeSize: {
-      name: "Large",
-      description: "Comprehensive implementation with advanced features",
-      teamDescription: "Full-scale team with expert specialists"
-    },
-    minDevelopers: 2,
-    standardDevelopers: 4,
-    maxDevelopers: 8,
-    minQaTeamFactor: 20,
-    standardQaTeamFactor: 30,
-    maxQaTeamFactor: 50,
-    sprintLength: 14,
-    sprintEfficiency: 80,
-    sections: [
-      {
-        name: "Section 1",
-        items: [
-          { name: "Basic API Integration", hours: 40, small: true, medium: true, large: true },
-          { name: "Database Setup", hours: 24, small: true, medium: true, large: true },
-          { name: "User Authentication", hours: 32, small: false, medium: true, large: true }
-        ]
-      },
-      {
-        name: "Section 2", 
-        items: [
-          { name: "UI Components", hours: 48, small: true, medium: true, large: true },
-          { name: "Responsive Design", hours: 24, small: false, medium: true, large: true }
-        ]
-      }
-    ],
-    resourceSections: [
-      {
-        id: 'onshore',
-        name: 'Onshore Lead Resources',
-        roles: []
-      },
-      {
-        id: 'offshore',
-        name: 'Offshore Lead Resources', 
-        roles: []
-      }
-    ]
-  },
+
 
   // User Project Backwards Compatibility
   userProject: {
@@ -394,9 +336,9 @@ export const getDefaultProject = () => ({
 export const getDefaultScopeItem = (name?: string, hours?: number) => ({
   name: name || APP_DEFAULTS.scopeItem.defaultName,
   hours: hours || APP_DEFAULTS.scopeItem.defaultHours,
-  small: false,
-  medium: false,
-  large: false
+  profile1: false,
+  profile2: false,
+  profile3: false
 });
 
 export const getNewSectionName = (existingCount: number) => 

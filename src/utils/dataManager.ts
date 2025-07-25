@@ -11,9 +11,9 @@ import { APP_DEFAULTS } from '../config/defaults';
 export interface ScopeItem {
   name: string;
   hours: number;
-  small: boolean;
-  medium: boolean;
-  large: boolean;
+  profile1: boolean;
+  profile2: boolean;
+  profile3: boolean;
 }
 
 export interface ScopeSection {
@@ -44,9 +44,9 @@ export interface SizeDefinition {
 export interface ProjectConfig {
   projectType: string;
   description: string;
-  smallSize: SizeDefinition;
-  mediumSize: SizeDefinition;
-  largeSize: SizeDefinition;
+  profile1Size: SizeDefinition;
+  profile2Size: SizeDefinition;
+  profile3Size: SizeDefinition;
   minDevelopers: number;
   standardDevelopers: number;
   maxDevelopers: number;
@@ -73,9 +73,9 @@ export const getEmptyScopeData = (): ScopeData => {
   return {
     projectType: APP_DEFAULTS.project.name,
     description: APP_DEFAULTS.project.description,
-    smallSize: APP_DEFAULTS.projectSizes.small,
-    mediumSize: APP_DEFAULTS.projectSizes.medium,
-    largeSize: APP_DEFAULTS.projectSizes.large,
+    profile1Size: APP_DEFAULTS.projectProfiles.profile1,
+    profile2Size: APP_DEFAULTS.projectProfiles.profile2,
+    profile3Size: APP_DEFAULTS.projectProfiles.profile3,
     minDevelopers: APP_DEFAULTS.developers.min,
     standardDevelopers: APP_DEFAULTS.developers.standard,
     maxDevelopers: APP_DEFAULTS.developers.max,
@@ -89,13 +89,7 @@ export const getEmptyScopeData = (): ScopeData => {
   };
 };
 
-/**
- * Get default scope data from the bundled configuration (used for reset only)
- */
-export const getDefaultScopeData = (): ScopeData => {
-  console.log('Loading default scope data from bundled config');
-  return JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
-};
+
 
 /**
  * Load scope data from a user-selected JSON file
@@ -214,16 +208,4 @@ export const saveScopeData = async (data: ScopeData): Promise<boolean> => {
   }
 };
 
-/**
- * Reset to initial configuration
- */
-export const resetToInitialConfig = (): ScopeData => {
-  try {
-    const data = JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
-    console.log('Reset to initial configuration');
-    return data;
-  } catch (error) {
-    console.error('Error resetting to initial config:', error);
-    return JSON.parse(JSON.stringify(APP_DEFAULTS.initialTemplate)) as ScopeData;
-  }
-}; 
+ 

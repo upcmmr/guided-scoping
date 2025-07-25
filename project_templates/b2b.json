@@ -1,53 +1,53 @@
 {
     "projectType": "B2B Commerce",
     "description": "B2B Commerce Project",
-    "smallSize": {
-        "name": "Small",
+    "profile1Size": {
+        "name": "Profile 1",
         "description": "Small-scale implementation with basic features",
         "teamDescription": "Lean team structure with essential roles"
     },
-    "mediumSize": {
-        "name": "Medium",
+    "profile2Size": {
+        "name": "Profile 2",
         "description": "Standard implementation with core functionality",
         "teamDescription": "Balanced team with specialized roles"
     },
-    "largeSize": {
-        "name": "Large",
+    "profile3Size": {
+        "name": "Profile 3",
         "description": "Comprehensive implementation with advanced features",
         "teamDescription": "Full-scale team with expert specialists"
     },
     "minDevelopers": 3,
     "standardDevelopers": 6,
-    "maxDevelopers": 10,
+    "maxDevelopers": 12,
     "minQaTeamFactor": 20,
     "standardQaTeamFactor": 30,
     "maxQaTeamFactor": 50,
-    "sprintLength": 10,
-    "sprintEfficiency": 60,
+    "sprintLength": 14,
+    "sprintEfficiency": 80,
     "sections": [
-      {
-        "name": "Test Section",
-        "items": [
-          {
-            "name": "Sample Scope Item",
-            "hours": 40,
-            "small": true,
-            "medium": false,
-            "large": false
-          }
-        ]
-      }
+        {
+            "name": "Setup",
+            "items": [
+                {
+                    "name": "Basic API Integration",
+                    "hours": 40,
+                    "profile1": true,
+                    "profile2": false,
+                    "profile3": false
+                }
+            ]
+        }
     ],
     "resourceSections": [
-      {
-        "id": "onshore",
-        "name": "Onshore Lead Resources",
-        "roles": []
-      },
-      {
-        "id": "offshore",
-        "name": "Offshore Lead Resources", 
-        "roles": []
-      }
+        {
+            "id": "onshore",
+            "name": "Onshore Lead Resources",
+            "roles": []
+        },
+        {
+            "id": "offshore",
+            "name": "Offshore Lead Resources",
+            "roles": []
+        }
     ]
-  }
+}

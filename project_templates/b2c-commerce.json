@@ -1,24 +1,24 @@
 {
   "projectType": "B2C E-commerce Platform",
   "description": "Standard B2C e-commerce project with integrated payment processing, customer management, and content delivery systems",
-  "smallSize": {
-    "name": "Small",
+  "profile1Size": {
+    "name": "Profile 1",
     "description": "Small-scale implementation with basic features",
     "teamDescription": "Lean team structure with essential roles"
   },
-  "mediumSize": {
-    "name": "Medium",
+  "profile2Size": {
+    "name": "Profile 2",
     "description": "Standard implementation with core functionality",
     "teamDescription": "Balanced team with specialized roles"
   },
-  "largeSize": {
-    "name": "Large",
+  "profile3Size": {
+    "name": "Profile 3",
     "description": "Comprehensive implementation with advanced features",
     "teamDescription": "Full-scale team with expert specialists"
   },
   "minDevelopers": 4,
   "standardDevelopers": 6,
-  "maxDevelopers": 12,
+  "maxDevelopers": 10,
   "minQaTeamFactor": 20,
   "standardQaTeamFactor": 30,
   "maxQaTeamFactor": 50,
@@ -26,201 +26,206 @@
   "sprintEfficiency": 80,
   "sections": [
     {
-      "name": "Integrations",
+      "name": "Project Setup & Foundation",
       "items": [
         {
           "name": "Basic API Integration ",
           "hours": 50,
-          "small": true,
-          "medium": true,
-          "large": true
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
           "name": "Database Integration",
           "hours": 60,
-          "small": false,
-          "medium": true,
-          "large": true
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
           "name": "Third-party Service Integration",
           "hours": 80,
-          "small": true,
-          "medium": true,
-          "large": true
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Legacy System Integration",
+          "name": "Content Management System",
           "hours": 120,
-          "small": true,
-          "medium": true,
-          "large": true
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Real-time Data Integration",
+          "name": "User Management",
           "hours": 100,
-          "small": true,
-          "medium": true,
-          "large": true
-        },
-        {
-          "name": "File Import/Export",
-          "hours": 50,
-          "small": true,
-          "medium": true,
-          "large": true
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
           "name": "Payment Gateway Integration",
-          "hours": 90,
-          "small": false,
-          "medium": true,
-          "large": true
+          "hours": 140,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Email Service Integration",
-          "hours": 30,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Security Framework",
+          "hours": 80,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Authentication Integration",
-          "hours": 70,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Advanced Analytics",
+          "hours": 100,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Analytics Integration",
-          "hours": 45,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Multi-language Support",
+          "hours": 120,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "CRM Integration",
-          "hours": 110,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Machine Learning Integration",
+          "hours": 160,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         },
         {
-          "name": "ERP Integration",
-          "hours": 200,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Advanced Search",
+          "hours": 80,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         },
         {
-          "name": "Cloud Storage Integration",
-          "hours": 55,
-          "small": true,
-          "medium": true,
-          "large": true
-        },
-        {
-          "name": "Notification Service Integration",
-          "hours": 40,
-          "small": true,
-          "medium": true,
-          "large": true
-        },
-        {
-          "name": "Custom API Development",
-          "hours": 200,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Real-time Features",
+          "hours": 140,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         }
       ]
     },
     {
-      "name": "Frontend Customizations",
+      "name": "Frontend Development",
       "items": [
         {
-          "name": "Custom Dashboard Design",
-          "hours": 80,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Responsive UI Components",
+          "hours": 120,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Responsive Layout Adjustments",
-          "hours": 60,
-          "small": true,
-          "medium": true,
-          "large": true
-        },
-        {
-          "name": "Custom Components",
+          "name": "Mobile-first Design",
           "hours": 100,
-          "small": false,
-          "medium": true,
-          "large": true
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Theme Customization",
-          "hours": 40,
-          "small": true,
-          "medium": true,
-          "large": true
+          "name": "Advanced Animation/Interactions",
+          "hours": 80,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        }
+      ]
+    },
+    {
+      "name": "E-commerce Features",
+      "items": [
+        {
+          "name": "Product Catalog",
+          "hours": 100,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Advanced Forms",
-          "hours": 70,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Shopping Cart",
+          "hours": 80,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Data Visualization",
-          "hours": 90,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Checkout Process",
+          "hours": 120,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Interactive Elements",
-          "hours": 85,
-          "small": true,
-          "medium": true,
-          "large": true
+          "name": "Order Management",
+          "hours": 140,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Mobile Optimization",
-          "hours": 75,
-          "small": true,
-          "medium": true,
-          "large": true
+          "name": "Inventory Management",
+          "hours": 100,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Accessibility Features",
-          "hours": 65,
-          "small": false,
-          "medium": true,
-          "large": true
+          "name": "Customer Reviews & Ratings",
+          "hours": 80,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Custom Navigation",
-          "hours": 55,
-          "small": true,
-          "medium": true,
-          "large": true
+          "name": "Wishlist Functionality",
+          "hours": 60,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Advanced Search Interface",
-          "hours": 95,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Recommendation Engine",
+          "hours": 120,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
         },
         {
-          "name": "Real-time Updates UI",
-          "hours": 110,
-          "small": false,
-          "medium": false,
-          "large": true
+          "name": "Advanced Product Search",
+          "hours": 100,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Promotional Campaigns",
+          "hours": 80,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Multi-vendor Support",
+          "hours": 200,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Advanced Reporting",
+          "hours": 120,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         }
       ]
     }
@@ -229,42 +234,12 @@
     {
       "id": "onshore",
       "name": "Onshore Lead Resources",
-      "roles": [
-        {
-          "id": "role_1753235836227_c5uqogxtn",
-          "name": "Technical Architect",
-          "smb": 1,
-          "standard": 1,
-          "enterprise": 2
-        },
-        {
-          "id": "role_1753235841279_acup2a0pi",
-          "name": "Solution Architect",
-          "smb": 1,
-          "standard": 1,
-          "enterprise": 1.5
-        }
-      ]
+      "roles": []
     },
     {
-      "id": "offshore",
+      "id": "offshore", 
       "name": "Offshore Lead Resources",
-      "roles": [
-        {
-          "id": "role_1753235860616_6yu03442a",
-          "name": "Project Manager",
-          "smb": 1,
-          "standard": 1,
-          "enterprise": 1
-        },
-        {
-          "id": "role_1753235867382_nnhs7rbdq",
-          "name": "Technical Architect",
-          "smb": 1,
-          "standard": 1,
-          "enterprise": 2
-        }
-      ]
+      "roles": []
     }
   ]
 }

@@ -22,9 +22,9 @@ interface UserAppProps {
 interface ProjectScopeItem {
   name: string;
   hours: number;
-  small?: boolean;
-  medium?: boolean;
-  large?: boolean;
+  profile1?: boolean;
+  profile2?: boolean;
+  profile3?: boolean;
 }
 
 interface ProjectSection {
@@ -43,9 +43,9 @@ interface ProjectData {
   projectType: string;
   description: string;
   version: string;
-  smallSize?: SizeDefinition;
-  mediumSize?: SizeDefinition;
-  largeSize?: SizeDefinition;
+  profile1Size?: SizeDefinition;
+  profile2Size?: SizeDefinition;
+  profile3Size?: SizeDefinition;
   numberOfDevelopers?: number;
   minDevelopers?: number;
   standardDevelopers?: number;
@@ -91,7 +91,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [cameFromTemplate, setCameFromTemplate] = useState(false);
-  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large' | null>(null);
+  const [selectedSize, setSelectedSize] = useState<'profile1' | 'profile2' | 'profile3' | null>(null);
   const [showCustomize, setShowCustomize] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedDevelopers, setSelectedDevelopers] = useState<number>(APP_DEFAULTS.developers.standard);
@@ -748,7 +748,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return Math.ceil(getTotalHours / capacityPerSprint);
   }, [editableData, selectedTemplate, selectedDevelopers, itemSelections]);
 
-  const handleSizeSelection = (size: 'small' | 'medium' | 'large') => {
+  const handleSizeSelection = (size: 'profile1' | 'profile2' | 'profile3') => {
     if (!templateData) return;
     
     const newSelections = new Map<string, boolean>();
@@ -970,10 +970,10 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               <div className="p-6">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => !isEditMode && handleSizeSelection('small')}
+                    onClick={() => !isEditMode && handleSizeSelection('profile1')}
                     disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'small'
+                      selectedSize === 'profile1'
                         ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-green-500 bg-green-50 text-green-800'
@@ -983,16 +983,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Small'}</div>
-                      <div className="text-base text-gray-600">{templateData?.smallSize?.description || 'Essential features only'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile1Size?.name || 'Profile 1'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile1Size?.description || 'Essential features only'}</div>
                     </div>
                   </button>
                   
                   <button
-                    onClick={() => !isEditMode && handleSizeSelection('medium')}
+                    onClick={() => !isEditMode && handleSizeSelection('profile2')}
                     disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'medium'
+                      selectedSize === 'profile2'
                         ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-yellow-500 bg-yellow-50 text-yellow-800'
@@ -1002,16 +1002,16 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Medium'}</div>
-                      <div className="text-base text-gray-600">{templateData?.mediumSize?.description || 'Standard feature set'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile2Size?.name || 'Profile 2'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile2Size?.description || 'Standard feature set'}</div>
                     </div>
                   </button>
                   
                   <button
-                    onClick={() => !isEditMode && handleSizeSelection('large')}
+                    onClick={() => !isEditMode && handleSizeSelection('profile3')}
                     disabled={isEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                      selectedSize === 'large'
+                      selectedSize === 'profile3'
                         ? isEditMode 
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-red-500 bg-red-50 text-red-800'
@@ -1021,8 +1021,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Large'}</div>
-                      <div className="text-base text-gray-600">{templateData?.largeSize?.description || 'Comprehensive features'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile3Size?.name || 'Profile 3'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile3Size?.description || 'Comprehensive features'}</div>
                     </div>
                   </button>
                 </div>
@@ -1598,8 +1598,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.smallSize?.name || 'Light'}</div>
-                      <div className="text-base text-gray-600">{templateData?.smallSize?.teamDescription || 'Minimal oversight and process'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile1Size?.name || 'Light'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile1Size?.teamDescription || 'Minimal oversight and process'}</div>
                     </div>
                   </button>
                   
@@ -1617,8 +1617,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.mediumSize?.name || 'Standard'}</div>
-                      <div className="text-base text-gray-600">{templateData?.mediumSize?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile2Size?.name || 'Standard'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile2Size?.teamDescription || 'Balanced approach with regular checkpoints'}</div>
                     </div>
                   </button>
                   
@@ -1636,8 +1636,8 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-lg font-bold mb-2">{templateData?.largeSize?.name || 'Heavy'}</div>
-                      <div className="text-base text-gray-600">{templateData?.largeSize?.teamDescription || 'Comprehensive governance and documentation'}</div>
+                      <div className="text-lg font-bold mb-2">{templateData?.profile3Size?.name || 'Heavy'}</div>
+                      <div className="text-base text-gray-600">{templateData?.profile3Size?.teamDescription || 'Comprehensive governance and documentation'}</div>
                     </div>
                   </button>
                 </div>
