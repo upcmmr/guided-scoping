@@ -14,6 +14,7 @@ import {
 } from '../utils/dataManager';
 import { APP_DEFAULTS, getDefaultScopeItem, getNewSectionName } from '../config/defaults';
 import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getCardClasses, getCardHeaderClasses, getHeadingClasses, getBodyClasses, iconSizes } from '../utils/styleUtils';
+import { getUniqueRoleNames, getUniqueRegions } from '../utils/rolesManager';
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -170,6 +171,21 @@ const useAdminConfiguration = () => {
         resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
           secIndex === resourceSectionIndex 
             ? { ...section, name }
+            : section
+        ) || []
+      }
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateResourceSectionRegion = (resourceSectionIndex: number, region: string) => {
+    setScopeData((prev) => ({
+      ...prev,
+      teamSections: {
+        ...prev.teamSections,
+        resourceSections: prev.teamSections.resourceSections?.map((section, secIndex) => 
+          secIndex === resourceSectionIndex 
+            ? { ...section, region }
             : section
         ) || []
       }
@@ -406,6 +422,7 @@ const useAdminConfiguration = () => {
     moveRoleUp,
     moveRoleDown,
     updateResourceSectionName,
+    updateResourceSectionRegion,
     addResourceSection,
     removeResourceSection
   };
@@ -447,6 +464,7 @@ interface AdminPanelProps {
   onMoveRoleUp: (resourceSectionIndex: number, roleIndex: number) => void;
   onMoveRoleDown: (resourceSectionIndex: number, roleIndex: number) => void;
   onUpdateResourceSectionName: (resourceSectionIndex: number, name: string) => void;
+  onUpdateResourceSectionRegion: (resourceSectionIndex: number, region: string) => void;
   onAddResourceSection: (name?: string) => void;
   onRemoveResourceSection: (resourceSectionIndex: number) => void;
 }
@@ -483,6 +501,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   onMoveRoleUp,
   onMoveRoleDown,
   onUpdateResourceSectionName,
+  onUpdateResourceSectionRegion,
   onAddResourceSection,
   onRemoveResourceSection
 }) => {
@@ -1094,7 +1113,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="bg-gray-200 text-gray-800 p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xl font-bold text-gray-800 mb-2">{resourceSection.name}</h4>
+                      <div className="mb-3">
+                        <label className="block text-sm font-medium text-gray-600 mb-1">Section Name</label>
+                        <h4 className="text-xl font-bold text-gray-800 mb-0">{resourceSection.name}</h4>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">Region</label>
+                        <p className="text-base text-gray-800">{resourceSection.region || 'Not specified'}</p>
+                      </div>
                     </div>
                     {scopeData.teamSections.resourceSections && scopeData.teamSections.resourceSections.length > 1 && (
                       <button
@@ -1110,15 +1136,32 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                 {/* Section Name Configuration */}
                 <div className="border-b border-gray-300 p-6">
-                  <div>
-                    <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
-                    <input
-                      type="text"
-                      value={resourceSection.name}
-                      onChange={(e) => onUpdateResourceSectionName(sectionIndex, e.target.value)}
-                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter section name"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-base font-medium text-gray-700 mb-2">Section Name</label>
+                      <input
+                        type="text"
+                        value={resourceSection.name}
+                        onChange={(e) => onUpdateResourceSectionName(sectionIndex, e.target.value)}
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter section name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-base font-medium text-gray-700 mb-2">Region</label>
+                      <select
+                        value={resourceSection.region || ''}
+                        onChange={(e) => onUpdateResourceSectionRegion(sectionIndex, e.target.value)}
+                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select a region</option>
+                        {getUniqueRegions().map((region) => (
+                          <option key={region} value={region}>
+                            {region}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
                 
@@ -1180,13 +1223,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
                           {/* Role Name */}
                           <div className="flex-1">
-                                                      <input
-                            type="text"
-                            value={role.name}
-                            onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { name: e.target.value })}
-                            className="w-full p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Role name"
-                          />
+                            <select
+                              value={role.name}
+                              onChange={(e) => onUpdateTeamRole(sectionIndex, roleIndex, { name: e.target.value })}
+                              className="w-full p-3 border-2 border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="">Select a role</option>
+                              {getUniqueRoleNames().map((roleName) => (
+                                <option key={roleName} value={roleName}>
+                                  {roleName}
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
                           {/* Profile 1 Count */}
@@ -1374,6 +1422,7 @@ const AdminApp: React.FC = () => {
         onMoveRoleUp={adminHook.moveRoleUp}
         onMoveRoleDown={adminHook.moveRoleDown}
         onUpdateResourceSectionName={adminHook.updateResourceSectionName}
+        onUpdateResourceSectionRegion={adminHook.updateResourceSectionRegion}
         onAddResourceSection={adminHook.addResourceSection}
         onRemoveResourceSection={adminHook.removeResourceSection}
       />

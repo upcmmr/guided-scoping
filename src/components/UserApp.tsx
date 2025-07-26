@@ -10,6 +10,7 @@ import type { TemplateMetadata } from '../utils/templateScanner';
 import { saveUserProject, loadUserProject } from '../utils/projectManager';
 import { APP_DEFAULTS, getNewSectionName } from '../config/defaults';
 import { getButtonClasses, getInputClasses, getTextareaClasses, getLabelClasses, getHeadingClasses, getBodyClasses, iconSizes } from '../utils/styleUtils';
+import { getUniqueRoleNames, getUniqueRegions } from '../utils/rolesManager';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -713,6 +714,28 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         newSections[sectionIndex] = {
           ...newSections[sectionIndex],
           name: newName
+        };
+      }
+      
+      return {
+        ...prev,
+        teamSections: {
+          ...prev.teamSections,
+          resourceSections: newSections
+        }
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  const updateTeamResourceSectionRegion = (sectionIndex: number, newRegion: string) => {
+    setEditableData((prev: any) => {
+      const newSections = [...(prev?.teamSections.resourceSections || [])];
+      if (newSections[sectionIndex]) {
+        newSections[sectionIndex] = {
+          ...newSections[sectionIndex],
+          region: newRegion
         };
       }
       
@@ -1858,7 +1881,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 <div className={`${isTeamEditMode ? 'bg-gray-200' : 'bg-gray-100'} text-gray-800 p-6`}>
                                   <div className="flex items-center justify-between">
                                     <div>
-                                      <h4 className={`${getHeadingClasses('h4')} mb-2`}>{resourceSection.name}</h4>
+                                      <div className="mb-3">
+                                        <label className="block text-sm font-medium text-gray-600 mb-1">Section Name</label>
+                                        <h4 className={`${getHeadingClasses('h4')} mb-0`}>{resourceSection.name}</h4>
+                                      </div>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-600 mb-1">Region</label>
+                                        <p className="text-base text-gray-800">{resourceSection.region || 'Not specified'}</p>
+                                      </div>
                                     </div>
                                     {isTeamEditMode && (editableData.teamSections?.resourceSections?.length || 0) > 1 && (
                                       <button
@@ -1875,7 +1905,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                 {/* Section Configuration Form */}
                                 {isTeamEditMode && (
                                   <div className="bg-gray-50 border-t border-gray-300 p-6">
-                                    <div className="grid grid-cols-1 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div>
                                         <label className={getLabelClasses()}>Section Name</label>
                                         <input
@@ -1885,6 +1915,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                           className={getInputClasses()}
                                           placeholder="Enter section name"
                                         />
+                                      </div>
+                                      <div>
+                                        <label className={getLabelClasses()}>Region</label>
+                                        <select
+                                          value={resourceSection.region || ''}
+                                          onChange={(e) => updateTeamResourceSectionRegion(sectionIndex, e.target.value)}
+                                          className={getInputClasses()}
+                                        >
+                                          <option value="">Select a region</option>
+                                          {getUniqueRegions().map((region) => (
+                                            <option key={region} value={region}>
+                                              {region}
+                                            </option>
+                                          ))}
+                                        </select>
                                       </div>
                                     </div>
                                   </div>
@@ -1938,13 +1983,18 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                           {/* Role Name */}
                                           <div className="flex-1">
                                             {isTeamEditMode ? (
-                                              <input
-                                                type="text"
+                                              <select
                                                 value={role.name}
                                                 onChange={(e) => updateTeamRoleName(sectionIndex, roleIndex, e.target.value)}
                                                 className={getInputClasses()}
-                                                placeholder="Role name"
-                                              />
+                                              >
+                                                <option value="">Select a role</option>
+                                                {getUniqueRoleNames().map((roleName) => (
+                                                  <option key={roleName} value={roleName}>
+                                                    {roleName}
+                                                  </option>
+                                                ))}
+                                              </select>
                                             ) : (
                                               <span className="text-base text-gray-700">{role.name}</span>
                                             )}

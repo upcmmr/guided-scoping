@@ -30,6 +30,7 @@ export interface TeamRole {
 
 export interface ResourceSection {
   name: string;
+  region?: string;
   roles: TeamRole[];
 }
 
