@@ -990,10 +990,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return (
       <div className="max-w-7xl mx-auto p-6 min-h-screen">
         {/* Separate Header Box - Match admin panel structure */}
-        <div className="rounded-lg shadow-md mb-6">
+        <div className="rounded-lg shadow-md mb-6 bg-white">
           <div className="p-8 border-b border-gray-200">
-                              <h1 className={`${getHeadingClasses('h1')} mb-2`}>Guided Scoping Tool</h1>
-          <p className={getBodyClasses('base')}>Start a new project or continue working on an existing one.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className={`${getHeadingClasses('h1')} mb-2`}>Guided Scoping Tool</h1>
+                <p className={getBodyClasses('base')}>Start a new project or continue working on an existing one.</p>
+              </div>
+              <div className="flex-shrink-0 ml-8">
+                <img 
+                  src="/assets/Salesforce-logo.png" 
+                  alt="Salesforce Logo" 
+                  className="h-16 w-auto"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1070,10 +1081,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     return (
       <div className="max-w-7xl mx-auto p-6 min-h-screen">
         {/* Separate Header Box - Match admin panel structure */}
-        <div className="rounded-lg shadow-md mb-6">
+        <div className="rounded-lg shadow-md mb-6 bg-white">
           <div className="p-8 border-b border-gray-200">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool</h1>
-        <p className="text-base text-gray-600">Configure your project settings and select the scope items that apply.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool</h1>
+                <p className="text-base text-gray-600">Configure your project settings and select the scope items that apply.</p>
+              </div>
+              <div className="flex-shrink-0 ml-8">
+                <img 
+                  src="/assets/Salesforce-logo.png" 
+                  alt="Salesforce Logo" 
+                  className="h-16 w-auto"
+                />
+              </div>
+            </div>
           </div>
         </div>
 

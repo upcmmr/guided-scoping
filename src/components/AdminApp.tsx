@@ -1554,10 +1554,21 @@ const AdminApp: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 min-h-screen">
-      <div className="rounded-lg shadow-md mb-6">
+      <div className="rounded-lg shadow-md mb-6 bg-white">
         <div className="p-8 border-b border-gray-200">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool - Template Configuration</h1>
-          <p className="text-base text-gray-600">Manage project template definitions and configurations.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool - Template Configuration</h1>
+              <p className="text-base text-gray-600">Manage project template definitions and configurations.</p>
+            </div>
+            <div className="flex-shrink-0 ml-8">
+              <img 
+                src="/assets/Salesforce-logo.png" 
+                alt="Salesforce Logo" 
+                className="h-16 w-auto"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
