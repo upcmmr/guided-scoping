@@ -55,6 +55,24 @@ export interface SprintSections {
   sprintEfficiency: number; // percentage (0-100)
 }
 
+export interface TimelineSections {
+  discovery: {
+    profile1: number;
+    profile2: number;
+    profile3: number;
+  };
+  uat: {
+    profile1: number;
+    profile2: number;
+    profile3: number;
+  };
+  postLaunch: {
+    profile1: number;
+    profile2: number;
+    profile3: number;
+  };
+}
+
 export interface ProjectConfig {
   projectType: string;
   description: string;
@@ -63,6 +81,7 @@ export interface ProjectConfig {
   profile3: SizeDefinition;
   teamSections: TeamSections;
   sprintSections: SprintSections;
+  timelineSections: TimelineSections;
   scopeSections: ScopeSection[];
 }
 
@@ -95,6 +114,23 @@ export const getEmptyScopeData = (): ScopeData => {
     sprintSections: {
       sprintLength: APP_DEFAULTS.sprint.length,
       sprintEfficiency: APP_DEFAULTS.sprint.efficiency
+    },
+    timelineSections: {
+      discovery: {
+        profile1: 2,
+        profile2: 3,
+        profile3: 4
+      },
+      uat: {
+        profile1: 2,
+        profile2: 3,
+        profile3: 4
+      },
+      postLaunch: {
+        profile1: 1,
+        profile2: 2,
+        profile3: 3
+      }
     },
     scopeSections: []
   };

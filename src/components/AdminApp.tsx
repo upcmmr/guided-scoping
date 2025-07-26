@@ -1326,6 +1326,153 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
     </div>
 
+    {/* 5. Default Timeline Configuration */}
+    <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
+      <div className="bg-gray-200 text-gray-800 p-6">
+        <h4 className="text-xl font-bold text-gray-800 mb-2">5. Default Timeline Configuration</h4>
+        <p className="text-gray-600 mt-1 text-base">Configure default timeline durations (in weeks) for different project phases and profiles</p>
+      </div>
+      
+      <div className="p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">Phase</th>
+                <th className="text-center p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">{scopeData.profile1?.name || 'Profile 1'}</th>
+                <th className="text-center p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">{scopeData.profile2?.name || 'Profile 2'}</th>
+                <th className="text-center p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">{scopeData.profile3?.name || 'Profile 3'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Discovery Row */}
+              <tr className="border-b border-gray-200">
+                <td className="p-3 font-medium text-gray-700 bg-gray-50">Discovery</td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="2"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="3"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="4"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+              </tr>
+              
+              {/* UAT Row */}
+              <tr className="border-b border-gray-200">
+                <td className="p-3 font-medium text-gray-700 bg-gray-50">UAT</td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="2"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="3"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="4"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+              </tr>
+              
+              {/* Post Launch Row */}
+              <tr>
+                <td className="p-3 font-medium text-gray-700 bg-gray-50">Post Launch</td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="1"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="2"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="52"
+                      defaultValue="3"
+                      className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <span className="text-sm text-gray-600">weeks</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
 
 
   </div>
