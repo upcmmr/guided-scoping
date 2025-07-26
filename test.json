@@ -1,0 +1,101 @@
+{
+  "accountName": "Example Corp",
+  "projectName": "E-commerce Platform Redesign",
+  "description": "Complete redesign of the customer-facing e-commerce platform with enhanced user experience and mobile optimization",
+  "version": "1.0.0",
+  "selectedProfile": "profile2",
+  "selectedTeamModel": "profile2",
+  "scopeSections": [
+    {
+      "name": "Frontend Development",
+      "items": [
+        {
+          "name": "Homepage Redesign",
+          "hours": 120,
+          "selected": true
+        },
+        {
+          "name": "Product Catalog",
+          "hours": 80,
+          "selected": true
+        },
+        {
+          "name": "Shopping Cart",
+          "hours": 60,
+          "selected": true
+        },
+        {
+          "name": "User Account Pages",
+          "hours": 40,
+          "selected": false
+        }
+      ]
+    },
+    {
+      "name": "Backend Development",
+      "items": [
+        {
+          "name": "API Development",
+          "hours": 100,
+          "selected": true
+        },
+        {
+          "name": "Database Migration",
+          "hours": 60,
+          "selected": true
+        },
+        {
+          "name": "Payment Integration",
+          "hours": 80,
+          "selected": true
+        }
+      ]
+    }
+  ],
+  "teamSections": {
+    "minDevelopers": 2,
+    "standardDevelopers": 4,
+    "maxDevelopers": 6,
+    "minQaTeamFactor": 20,
+    "standardQaTeamFactor": 25,
+    "maxQaTeamFactor": 30,
+    "resourceSections": [
+      {
+        "name": "Development Team",
+        "region": "USA",
+        "roles": [
+          {
+            "name": "Technical Architect",
+            "count": 1
+          },
+          {
+            "name": "Solution Architect", 
+            "count": 1
+          }
+        ]
+      },
+      {
+        "name": "QA Team",
+        "region": "GDC",
+        "roles": [
+          {
+            "name": "QA Manager",
+            "count": 1
+          }
+        ]
+      }
+    ]
+  },
+  "sprintSections": {
+    "sprintLength": 10,
+    "sprintEfficiency": 70
+  },
+  "timelineSections": {
+    "discovery": 3,
+    "uat": 3,
+    "postLaunch": 2
+  },
+  "templateSource": "b2c-commerce",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "lastModified": "2024-01-15T14:45:00.000Z"
+} 

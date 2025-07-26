@@ -71,6 +71,20 @@ const useAdminConfiguration = () => {
     setHasUnsavedChanges(true);
   };
 
+  const updateTimelineInfo = (phase: 'discovery' | 'uat' | 'postLaunch', profile: 'profile1' | 'profile2' | 'profile3', value: number) => {
+    setScopeData(prev => ({
+      ...prev,
+      timelineSections: {
+        ...prev.timelineSections,
+        [phase]: {
+          ...prev.timelineSections[phase],
+          [profile]: value
+        }
+      }
+    }));
+    setHasUnsavedChanges(true);
+  };
+
   // ============================================================================
   // TEAM ROLE MANAGEMENT FUNCTIONS
   // ============================================================================
@@ -395,6 +409,7 @@ const useAdminConfiguration = () => {
     isLoaded,
     updateProjectInfo,
     updateSizeDefinition,
+    updateTimelineInfo,
     createNewConfig,
     addNewSection,
     removeSection,
@@ -439,6 +454,7 @@ interface AdminPanelProps {
   showExitWarning: boolean;
   onUpdateProjectInfo: (field: string, value: string | number) => void;
   onUpdateSizeDefinition: (sizeType: 'profile1' | 'profile2' | 'profile3', field: 'name' | 'description' | 'teamDescription', value: string) => void;
+  onUpdateTimelineInfo: (phase: 'discovery' | 'uat' | 'postLaunch', profile: 'profile1' | 'profile2' | 'profile3', value: number) => void;
   onCreateNewConfig: () => void;
   onExitToWelcome: () => void;
   onSaveAndExit: () => void;
@@ -476,6 +492,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   showExitWarning,
   onUpdateProjectInfo,
   onUpdateSizeDefinition,
+  onUpdateTimelineInfo,
   onCreateNewConfig,
   onExitToWelcome,
   onSaveAndExit,
@@ -1319,14 +1336,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             Add New Resource Section
           </button>
           </div>
-
-
-
         </div>
       </div>
     </div>
 
-    {/* 5. Default Timeline Configuration */}
+
     <div className="border-2 border-gray-200 rounded-xl shadow-lg mb-8 overflow-hidden">
       <div className="bg-gray-200 text-gray-800 p-6">
         <h4 className="text-xl font-bold text-gray-800 mb-2">5. Default Timeline Configuration</h4>
@@ -1354,7 +1368,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="2"
+                      value={scopeData.timelineSections?.discovery?.profile1 || 2}
+                      onChange={(e) => onUpdateTimelineInfo('discovery', 'profile1', parseInt(e.target.value) || 2)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1366,7 +1381,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="3"
+                      value={scopeData.timelineSections?.discovery?.profile2 || 3}
+                      onChange={(e) => onUpdateTimelineInfo('discovery', 'profile2', parseInt(e.target.value) || 3)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1378,7 +1394,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="4"
+                      value={scopeData.timelineSections?.discovery?.profile3 || 4}
+                      onChange={(e) => onUpdateTimelineInfo('discovery', 'profile3', parseInt(e.target.value) || 4)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1395,7 +1412,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="2"
+                      value={scopeData.timelineSections?.uat?.profile1 || 2}
+                      onChange={(e) => onUpdateTimelineInfo('uat', 'profile1', parseInt(e.target.value) || 2)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1407,7 +1425,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="3"
+                      value={scopeData.timelineSections?.uat?.profile2 || 3}
+                      onChange={(e) => onUpdateTimelineInfo('uat', 'profile2', parseInt(e.target.value) || 3)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1419,7 +1438,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="4"
+                      value={scopeData.timelineSections?.uat?.profile3 || 4}
+                      onChange={(e) => onUpdateTimelineInfo('uat', 'profile3', parseInt(e.target.value) || 4)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1436,7 +1456,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="1"
+                      value={scopeData.timelineSections?.postLaunch?.profile1 || 1}
+                      onChange={(e) => onUpdateTimelineInfo('postLaunch', 'profile1', parseInt(e.target.value) || 1)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1448,7 +1469,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="2"
+                      value={scopeData.timelineSections?.postLaunch?.profile2 || 2}
+                      onChange={(e) => onUpdateTimelineInfo('postLaunch', 'profile2', parseInt(e.target.value) || 2)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1460,7 +1482,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                       type="number"
                       min="1"
                       max="52"
-                      defaultValue="3"
+                      value={scopeData.timelineSections?.postLaunch?.profile3 || 3}
+                      onChange={(e) => onUpdateTimelineInfo('postLaunch', 'profile3', parseInt(e.target.value) || 3)}
                       className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <span className="text-sm text-gray-600">weeks</span>
@@ -1545,6 +1568,7 @@ const AdminApp: React.FC = () => {
         showExitWarning={adminHook.showExitWarning}
         onUpdateProjectInfo={adminHook.updateProjectInfo}
         onUpdateSizeDefinition={adminHook.updateSizeDefinition}
+        onUpdateTimelineInfo={adminHook.updateTimelineInfo}
         onCreateNewConfig={adminHook.createNewConfig}
         onExitToWelcome={adminHook.exitToWelcome}
         onSaveAndExit={adminHook.handleSaveAndExit}

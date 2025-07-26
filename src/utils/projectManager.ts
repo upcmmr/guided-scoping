@@ -121,6 +121,20 @@ export const saveUserProject = async (
         resourceSections: transformedResourceSections
       },
       sprintSections: projectData.sprintSections,
+      timelineSections: (() => {
+        if (!projectData.timelineSections) return undefined;
+        
+        // Extract timeline values for the selected profile only
+        const profileKey = selectedTeamModel === 'light' ? 'profile1' : 
+                          selectedTeamModel === 'standard' ? 'profile2' : 
+                          selectedTeamModel === 'heavy' ? 'profile3' : 'profile2';
+        
+        return {
+          discovery: projectData.timelineSections.discovery?.[profileKey] || 2,
+          uat: projectData.timelineSections.uat?.[profileKey] || 3,
+          postLaunch: projectData.timelineSections.postLaunch?.[profileKey] || 1
+        };
+      })(),
       
       // Project-specific metadata at the end (as requested)
       templateSource: templateSource || 'unknown',

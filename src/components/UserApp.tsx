@@ -78,9 +78,27 @@ interface ProjectData {
     sprintLength: number;
     sprintEfficiency: number;
   };
+  timelineSections?: {
+    discovery: number | {
+      profile1: number;
+      profile2: number;
+      profile3: number;
+    };
+    uat: number | {
+      profile1: number;
+      profile2: number;
+      profile3: number;
+    };
+    postLaunch: number | {
+      profile1: number;
+      profile2: number;
+      profile3: number;
+    };
+  };
   scopeSections: ProjectSection[];
   customTeamRoles?: { [roleKey: string]: number };
   selectedTeamModel?: 'light' | 'standard' | 'heavy';
+  selectedProfile?: string;
   templateSource?: string;
 }
 
@@ -744,6 +762,21 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         teamSections: {
           ...prev.teamSections,
           resourceSections: newSections
+        }
+      };
+    });
+    
+    setHasUnsavedChanges(true);
+  };
+
+  // Function to update timeline values
+  const updateTimelineValue = (phase: 'discovery' | 'uat' | 'postLaunch', value: number) => {
+    setEditableData((prev: any) => {
+      return {
+        ...prev,
+        timelineSections: {
+          ...prev.timelineSections,
+          [phase]: value
         }
       };
     });
@@ -2102,6 +2135,165 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* 5. Timeline Configuration Section */}
+          {selectedTemplate && (
+            <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-gray-200 text-gray-800 p-6">
+                <h4 className="text-xl font-bold text-gray-800 mb-2">5. Timeline Configuration</h4>
+                <p className="text-gray-600 mt-1 text-base">Project timeline estimates for different phases</p>
+              </div>
+              
+              <div className="p-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">Phase</th>
+                        <th className="text-center p-3 border-b-2 border-gray-200 bg-gray-50 font-medium text-gray-700">Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Discovery Row */}
+                      <tr className="border-b border-gray-200">
+                        <td className="p-3 font-medium text-gray-700 bg-gray-50">Discovery</td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <input
+                              type="number"
+                              min="1"
+                              max="52"
+                              value={(() => {
+                                if (editableData?.timelineSections?.discovery) {
+                                  if (typeof editableData.timelineSections.discovery === 'number') {
+                                    return editableData.timelineSections.discovery;
+                                  }
+                                }
+                                if (!cameFromTemplate && templateData?.timelineSections?.discovery) {
+                                  // From project file - show saved value
+                                  if (typeof templateData.timelineSections.discovery === 'number') {
+                                    return templateData.timelineSections.discovery;
+                                  } else {
+                                    const profileKey = templateData.selectedProfile || 'profile2';
+                                    const discoveryData = templateData.timelineSections.discovery as { profile1: number; profile2: number; profile3: number; };
+                                    if (profileKey === 'profile1') return discoveryData.profile1 || 2;
+                                    if (profileKey === 'profile2') return discoveryData.profile2 || 2;
+                                    if (profileKey === 'profile3') return discoveryData.profile3 || 2;
+                                    return 2;
+                                  }
+                                } else {
+                                  // From template - show value for selected profile
+                                  const profileKey = selectedSize || 'profile2';
+                                  const discoveryData = templateData?.timelineSections?.discovery as { profile1: number; profile2: number; profile3: number; } | undefined;
+                                  if (profileKey === 'profile1') return discoveryData?.profile1 || 2;
+                                  if (profileKey === 'profile2') return discoveryData?.profile2 || 2;
+                                  if (profileKey === 'profile3') return discoveryData?.profile3 || 2;
+                                  return 2;
+                                }
+                              })()}
+                              onChange={(e) => updateTimelineValue('discovery', parseInt(e.target.value) || 2)}
+                              className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-600">weeks</span>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      {/* UAT Row */}
+                      <tr className="border-b border-gray-200">
+                        <td className="p-3 font-medium text-gray-700 bg-gray-50">UAT</td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <input
+                              type="number"
+                              min="1"
+                              max="52"
+                              value={(() => {
+                                if (editableData?.timelineSections?.uat) {
+                                  if (typeof editableData.timelineSections.uat === 'number') {
+                                    return editableData.timelineSections.uat;
+                                  }
+                                }
+                                if (!cameFromTemplate && templateData?.timelineSections?.uat) {
+                                  // From project file - show saved value
+                                  if (typeof templateData.timelineSections.uat === 'number') {
+                                    return templateData.timelineSections.uat;
+                                  } else {
+                                    const profileKey = templateData.selectedProfile || 'profile2';
+                                    const uatData = templateData.timelineSections.uat as { profile1: number; profile2: number; profile3: number; };
+                                    if (profileKey === 'profile1') return uatData.profile1 || 3;
+                                    if (profileKey === 'profile2') return uatData.profile2 || 3;
+                                    if (profileKey === 'profile3') return uatData.profile3 || 3;
+                                    return 3;
+                                  }
+                                } else {
+                                  // From template - show value for selected profile
+                                  const profileKey = selectedSize || 'profile2';
+                                  const uatData = templateData?.timelineSections?.uat as { profile1: number; profile2: number; profile3: number; } | undefined;
+                                  if (profileKey === 'profile1') return uatData?.profile1 || 3;
+                                  if (profileKey === 'profile2') return uatData?.profile2 || 3;
+                                  if (profileKey === 'profile3') return uatData?.profile3 || 3;
+                                  return 3;
+                                }
+                              })()}
+                              onChange={(e) => updateTimelineValue('uat', parseInt(e.target.value) || 3)}
+                              className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-600">weeks</span>
+                          </div>
+                        </td>
+                      </tr>
+                      
+                      {/* Post Launch Row */}
+                      <tr>
+                        <td className="p-3 font-medium text-gray-700 bg-gray-50">Post Launch</td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <input
+                              type="number"
+                              min="1"
+                              max="52"
+                              value={(() => {
+                                if (editableData?.timelineSections?.postLaunch) {
+                                  if (typeof editableData.timelineSections.postLaunch === 'number') {
+                                    return editableData.timelineSections.postLaunch;
+                                  }
+                                }
+                                if (!cameFromTemplate && templateData?.timelineSections?.postLaunch) {
+                                  // From project file - show saved value
+                                  if (typeof templateData.timelineSections.postLaunch === 'number') {
+                                    return templateData.timelineSections.postLaunch;
+                                  } else {
+                                    const profileKey = templateData.selectedProfile || 'profile2';
+                                    const postLaunchData = templateData.timelineSections.postLaunch as { profile1: number; profile2: number; profile3: number; };
+                                    if (profileKey === 'profile1') return postLaunchData.profile1 || 1;
+                                    if (profileKey === 'profile2') return postLaunchData.profile2 || 1;
+                                    if (profileKey === 'profile3') return postLaunchData.profile3 || 1;
+                                    return 1;
+                                  }
+                                } else {
+                                  // From template - show value for selected profile
+                                  const profileKey = selectedSize || 'profile2';
+                                  const postLaunchData = templateData?.timelineSections?.postLaunch as { profile1: number; profile2: number; profile3: number; } | undefined;
+                                  if (profileKey === 'profile1') return postLaunchData?.profile1 || 1;
+                                  if (profileKey === 'profile2') return postLaunchData?.profile2 || 1;
+                                  if (profileKey === 'profile3') return postLaunchData?.profile3 || 1;
+                                  return 1;
+                                }
+                              })()}
+                              onChange={(e) => updateTimelineValue('postLaunch', parseInt(e.target.value) || 1)}
+                              className="w-16 p-2 border border-gray-300 rounded text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                            <span className="text-sm text-gray-600">weeks</span>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
