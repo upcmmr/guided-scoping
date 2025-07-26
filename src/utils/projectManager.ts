@@ -19,17 +19,21 @@ export interface UserProject {
     maxQaTeamFactor: number;
     resourceSections: Array<{
       name: string;
+      region?: string;
       roles: Array<{
         name: string;
-        profile1: number;
-        profile2: number;
-        profile3: number;
+        count: number;
       }>;
     }>;
   };
   sprintSections?: {
     sprintLength: number;
     sprintEfficiency: number;
+  };
+  timelineSections?: {
+    discovery: number;
+    uat: number;
+    postLaunch: number;
   };
   scopeSections: Array<{
     name: string;
@@ -54,7 +58,7 @@ export const saveUserProject = async (
   projectData: any, 
   selectedItems: Map<string, boolean>,
   selectedProfile?: 'profile1' | 'profile2' | 'profile3' | null,
-  selectedTeamModel?: 'light' | 'standard' | 'heavy' | null,
+  selectedTeamModel?: 'profile1' | 'profile2' | 'profile3' | null,
   templateSource?: string
 ): Promise<boolean> => {
   try {
@@ -77,24 +81,35 @@ export const saveUserProject = async (
     // Transform resource sections - convert profile-based counts to single count based on selected team model
     const transformedResourceSections = projectData.teamSections?.resourceSections?.map((section: any) => ({
       name: section.name,
+      ...(section.region && { region: section.region }),
       roles: section.roles.map((role: any) => {
-        let count = 0;
-        
-        if (selectedTeamModel === 'light') {
+        // Check if role already has a count (from user modifications) or needs conversion from profiles
+        if (typeof role.count === 'number') {
+          // Already has count from user modifications
+          return {
+            name: role.name,
+            count: role.count
+          };
+        } else {
+          // Convert from profile-based structure
+          let count = 0;
+          
+                  if (selectedTeamModel === 'profile1') {
           count = role.profile1 || 0;
-        } else if (selectedTeamModel === 'standard') {
+        } else if (selectedTeamModel === 'profile2') {
           count = role.profile2 || 0;
-        } else if (selectedTeamModel === 'heavy') {
+        } else if (selectedTeamModel === 'profile3') {
           count = role.profile3 || 0;
         } else {
-          // Default to profile2 (standard) if no team model selected
+          // Default to profile2 if no team model selected
           count = role.profile2 || 0;
         }
-        
-        return {
-          name: role.name,
-          count: count
-        };
+          
+          return {
+            name: role.name,
+            count: count
+          };
+        }
       })
     })) || [];
 
@@ -102,16 +117,14 @@ export const saveUserProject = async (
     const projectSaveData = {
       // Project definition (replaces template metadata, follows template order)
       accountName: projectData.accountName || '',
-      projectName: projectData.projectType || 'Untitled Project',
+      projectName: projectData.projectName || 'Untitled Project',
       description: projectData.description || '',
       version: projectData.version || '1.0.0',
       
       // Selected profile/model info (conditionally included) - convert UI names to profile IDs
       ...(selectedProfile && { selectedProfile }),
       ...(selectedTeamModel && { 
-        selectedTeamModel: selectedTeamModel === 'light' ? 'profile1' : 
-                          selectedTeamModel === 'standard' ? 'profile2' : 
-                          selectedTeamModel === 'heavy' ? 'profile3' : 'profile2' 
+        selectedTeamModel: selectedTeamModel
       }),
       
       // Follow template order: scopeSections, teamSections, sprintSections
@@ -124,15 +137,23 @@ export const saveUserProject = async (
       timelineSections: (() => {
         if (!projectData.timelineSections) return undefined;
         
-        // Extract timeline values for the selected profile only
-        const profileKey = selectedTeamModel === 'light' ? 'profile1' : 
-                          selectedTeamModel === 'standard' ? 'profile2' : 
-                          selectedTeamModel === 'heavy' ? 'profile3' : 'profile2';
+        // Handle both direct number format (from user edits) and profile-based format (from templates)
+        const getTimelineValue = (phase: any, defaultValue: number) => {
+          if (typeof phase === 'number') {
+            // Direct number format (from user edits)
+            return phase;
+          } else if (phase && typeof phase === 'object') {
+            // Profile-based format (from templates) - extract value for selected profile
+            const profileKey = selectedTeamModel || 'profile2';
+            return phase[profileKey] || defaultValue;
+          }
+          return defaultValue;
+        };
         
         return {
-          discovery: projectData.timelineSections.discovery?.[profileKey] || 2,
-          uat: projectData.timelineSections.uat?.[profileKey] || 3,
-          postLaunch: projectData.timelineSections.postLaunch?.[profileKey] || 1
+          discovery: getTimelineValue(projectData.timelineSections.discovery, 2),
+          uat: getTimelineValue(projectData.timelineSections.uat, 3),
+          postLaunch: getTimelineValue(projectData.timelineSections.postLaunch, 1)
         };
       })(),
       

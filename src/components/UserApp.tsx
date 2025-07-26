@@ -66,6 +66,7 @@ interface ProjectData {
     maxQaTeamFactor: number;
     resourceSections: Array<{
       name: string;
+      region?: string;
       roles: Array<{
         name: string;
         profile1: number;
@@ -97,7 +98,7 @@ interface ProjectData {
   };
   scopeSections: ProjectSection[];
   customTeamRoles?: { [roleKey: string]: number };
-  selectedTeamModel?: 'light' | 'standard' | 'heavy';
+  selectedTeamModel?: 'profile1' | 'profile2' | 'profile3';
   selectedProfile?: string;
   templateSource?: string;
 }
@@ -132,13 +133,13 @@ const createTemplateMetadata = (projectData: any, filename?: string): TemplateMe
 };
 
 /**
- * Converts team model from profile ID format to UI format
+ * Converts team model from profile ID format to consistent profile format
  */
-const convertTeamModelFromProfile = (teamModel: string): 'light' | 'standard' | 'heavy' | null => {
+const convertTeamModelFromProfile = (teamModel: string): 'profile1' | 'profile2' | 'profile3' | null => {
   switch (teamModel) {
-    case 'profile1': return 'light';
-    case 'profile2': return 'standard';
-    case 'profile3': return 'heavy';
+    case 'profile1': return 'profile1';
+    case 'profile2': return 'profile2';
+    case 'profile3': return 'profile3';
     default: return null;
   }
 };
@@ -190,7 +191,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedDevelopers, setSelectedDevelopers] = useState<number>(APP_DEFAULTS.developers.standard);
   const [selectedQaPercentage, setSelectedQaPercentage] = useState<number>(APP_DEFAULTS.qa.standardTeamFactor);
-  const [selectedTeamModel, setSelectedTeamModel] = useState<'light' | 'standard' | 'heavy' | null>(null);
+  const [selectedTeamModel, setSelectedTeamModel] = useState<'profile1' | 'profile2' | 'profile3' | null>(null);
   const [showTeamDetails, setShowTeamDetails] = useState(false);
   const [isTeamEditMode, setIsTeamEditMode] = useState(false);
   const [customTeamRoles, setCustomTeamRoles] = useState<Map<string, number>>(new Map());
@@ -234,6 +235,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       sprintSections: projectData.sprintSections || {
         sprintLength: APP_DEFAULTS.sprint.length,
         sprintEfficiency: APP_DEFAULTS.sprint.efficiency
+      },
+      timelineSections: projectData.timelineSections || {
+        discovery: 2,
+        uat: 3,
+        postLaunch: 1
       },
       scopeSections: projectData.scopeSections?.map((section: ProjectSection) => ({
         name: section.name,
@@ -281,7 +287,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     // For templates, don't show until profile is selected
     setShowCustomize(!isFromTemplate && !!selectedProfile);
     setIsEditMode(!isFromTemplate && !!selectedProfile); // Project files start in edit mode
-    setIsTeamEditMode(!isFromTemplate && !!selectedProfile); // Team also starts in edit mode for project files
+    setIsTeamEditMode(!isFromTemplate); // Team starts in edit mode for project files, not for templates
     setCurrentState('scoping');
   }, []);
 
@@ -1538,8 +1544,9 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </div>
             </div>
 
-          {/* Project Summary - Always visible */}
-          <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
+          {/* 3. Sprint Configuration Section */}
+          {selectedTemplate && (getSectionTotals.length > 0 || !cameFromTemplate) && (
+            <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-200 text-gray-800 p-6">
                                               <h4 className="text-xl font-bold text-gray-800 mb-2">3. Sprint Configuration</h4>
                 <p className="text-gray-600 mt-1 text-base">Review total hours, adjust team size, and estimate project timeline</p>
@@ -1781,6 +1788,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
             </div>
           </div>
+          )}
 
           {/* 4. Team Configuration Section */}
           {selectedTemplate && (getSectionTotals.length > 0 || !cameFromTemplate) && (
@@ -1795,14 +1803,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button
-                    onClick={() => !isTeamEditMode && setSelectedTeamModel('light')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('profile1')}
                     disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       isTeamEditMode 
-                        ? selectedTeamModel === 'light'
+                        ? selectedTeamModel === 'profile1'
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : selectedTeamModel === 'light'
+                        : selectedTeamModel === 'profile1'
                         ? 'border-green-500 bg-green-50 text-green-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50'
                     }`}
@@ -1814,14 +1822,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => !isTeamEditMode && setSelectedTeamModel('standard')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('profile2')}
                     disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       isTeamEditMode 
-                        ? selectedTeamModel === 'standard'
+                        ? selectedTeamModel === 'profile2'
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : selectedTeamModel === 'standard'
+                        : selectedTeamModel === 'profile2'
                         ? 'border-yellow-500 bg-yellow-50 text-yellow-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-yellow-300 hover:bg-yellow-50'
                     }`}
@@ -1833,14 +1841,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   </button>
                   
                   <button
-                    onClick={() => !isTeamEditMode && setSelectedTeamModel('heavy')}
+                    onClick={() => !isTeamEditMode && setSelectedTeamModel('profile3')}
                     disabled={isTeamEditMode}
                     className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                       isTeamEditMode 
-                        ? selectedTeamModel === 'heavy'
+                        ? selectedTeamModel === 'profile3'
                           ? 'border-gray-400 bg-gray-200 text-gray-600 cursor-not-allowed'
                           : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : selectedTeamModel === 'heavy'
+                        : selectedTeamModel === 'profile3'
                         ? 'border-red-500 bg-red-50 text-red-800'
                         : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:bg-red-50'
                     }`}
@@ -2042,11 +2050,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                               step="1"
                                                                                               value={isTeamEditMode ? 
                                                  (customTeamRoles.get(`${sectionIndex}-${roleIndex}`) ?? 
-                                                    (selectedTeamModel === 'light' ? (role.profile1 || 0) :
-                                                     selectedTeamModel === 'standard' ? (role.profile2 || 0) :
+                                                    (selectedTeamModel === 'profile1' ? (role.profile1 || 0) :
+                                                     selectedTeamModel === 'profile2' ? (role.profile2 || 0) :
                                                      (role.profile3 || 0))) :
-                                                 (selectedTeamModel === 'light' ? (role.profile1 || 0) :
-                                                  selectedTeamModel === 'standard' ? (role.profile2 || 0) :
+                                                 (selectedTeamModel === 'profile1' ? (role.profile1 || 0) :
+                                                  selectedTeamModel === 'profile2' ? (role.profile2 || 0) :
                                                   (role.profile3 || 0))
                                                 }
                                               onChange={(e) => {
@@ -2140,7 +2148,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           )}
 
           {/* 5. Timeline Configuration Section */}
-          {selectedTemplate && (
+          {selectedTemplate && (getSectionTotals.length > 0 || !cameFromTemplate) && (
             <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden">
               <div className="bg-gray-200 text-gray-800 p-6">
                 <h4 className="text-xl font-bold text-gray-800 mb-2">5. Timeline Configuration</h4>
