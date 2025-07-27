@@ -2424,6 +2424,11 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   templateData={templateData}
                   selectedTeamModel={selectedTeamModel}
                   scopeSelections={itemSelections}
+                  selectedDevelopers={selectedDevelopers}
+                  selectedSize={selectedSize}
+                  cameFromTemplate={cameFromTemplate}
+                  isTeamEditMode={isTeamEditMode}
+                  customTeamRoles={customTeamRoles}
                   onClose={handleCloseBidModal}
                 />
               </div>

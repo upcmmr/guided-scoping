@@ -7,6 +7,11 @@ interface BidDisplayProps {
   templateData?: any;
   selectedTeamModel?: 'profile1' | 'profile2' | 'profile3' | null;
   scopeSelections?: Map<string, boolean>;
+  selectedDevelopers?: number;
+  selectedSize?: 'profile1' | 'profile2' | 'profile3' | null;
+  cameFromTemplate?: boolean;
+  isTeamEditMode?: boolean;
+  customTeamRoles?: Map<string, number>;
   onClose?: () => void;
 }
 
@@ -15,6 +20,11 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
   templateData,
   selectedTeamModel,
   scopeSelections,
+  selectedDevelopers,
+  selectedSize,
+  cameFromTemplate,
+  isTeamEditMode,
+  customTeamRoles,
   onClose
 }) => {
   // Utility function to get business days per week
@@ -38,26 +48,48 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     return roleData.billRate;
   };
 
-  // Calculate project duration in weeks
+  // Calculate project duration in weeks (matching section 5 logic exactly)
   const calculateProjectDuration = () => {
     if (!projectData) return { discovery: 0, sprints: 0, uat: 0, postLaunch: 0, total: 0 };
 
-    const timelineSections = projectData.timelineSections || {};
     const sprintLength = projectData.sprintSections?.sprintLength || APP_DEFAULTS.sprint.length;
     
-    // Get timeline values - they can be numbers or objects with profile values
-    const getTimelineValue = (section: any) => {
-      if (!section) return 0;
-      if (typeof section === 'number') return section;
-      if (selectedTeamModel && section[selectedTeamModel]) {
-        return section[selectedTeamModel];
+    // Get timeline values using the exact same logic as section 5 in UserApp
+    const getTimelineValue = (phase: 'discovery' | 'uat' | 'postLaunch', defaultValue: number) => {
+      // First check if editableData has the value (user manually entered)
+      if (projectData?.timelineSections?.[phase]) {
+        if (typeof projectData.timelineSections[phase] === 'number') {
+          return projectData.timelineSections[phase];
+        }
       }
-      return 0;
+      
+      // If not, check templateData with profile logic
+      if (!cameFromTemplate && templateData?.timelineSections?.[phase]) {
+        // From project file - show saved value
+        if (typeof templateData.timelineSections[phase] === 'number') {
+          return templateData.timelineSections[phase];
+        } else {
+          const profileKey = templateData.selectedProfile || 'profile2';
+          const phaseData = templateData.timelineSections[phase] as { profile1: number; profile2: number; profile3: number; };
+          if (profileKey === 'profile1') return phaseData.profile1 || defaultValue;
+          if (profileKey === 'profile2') return phaseData.profile2 || defaultValue;
+          if (profileKey === 'profile3') return phaseData.profile3 || defaultValue;
+          return defaultValue;
+        }
+      } else {
+        // From template - show value for selected profile
+        const profileKey = selectedSize || 'profile2';
+        const phaseData = templateData?.timelineSections?.[phase] as { profile1: number; profile2: number; profile3: number; } | undefined;
+        if (profileKey === 'profile1') return phaseData?.profile1 || defaultValue;
+        if (profileKey === 'profile2') return phaseData?.profile2 || defaultValue;
+        if (profileKey === 'profile3') return phaseData?.profile3 || defaultValue;
+        return defaultValue;
+      }
     };
 
-    const discovery = getTimelineValue(timelineSections.discovery);
-    const uat = getTimelineValue(timelineSections.uat);
-    const postLaunch = getTimelineValue(timelineSections.postLaunch);
+    const discovery = getTimelineValue('discovery', 2);
+    const uat = getTimelineValue('uat', 3);
+    const postLaunch = getTimelineValue('postLaunch', 1);
 
     // Calculate sprint count and duration (matching main app logic exactly)
     const totalScopeHours = calculateTotalScopeHours();
@@ -102,23 +134,14 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
 
   // Calculate team capacity per sprint (matching main app logic)
   const calculateTeamCapacityPerSprint = () => {
-    if (!projectData) return 0;
+    if (!projectData || !selectedDevelopers) return 0;
 
     const sprintLength = projectData.sprintSections?.sprintLength || APP_DEFAULTS.sprint.length;
     const efficiency = (projectData.sprintSections?.sprintEfficiency || APP_DEFAULTS.sprint.efficiency) / APP_DEFAULTS.sprintPlanning.percentageConversion;
     const hoursPerDay = APP_DEFAULTS.sprintPlanning.hoursPerDay;
 
-    // Get developer count based on selected team model (matching main app)
-    let developerCount = 0;
-    if (selectedTeamModel === 'profile1') {
-      developerCount = projectData.teamSections?.minDevelopers || APP_DEFAULTS.developers.min;
-    } else if (selectedTeamModel === 'profile2') {
-      developerCount = projectData.teamSections?.standardDevelopers || APP_DEFAULTS.developers.standard;
-    } else if (selectedTeamModel === 'profile3') {
-      developerCount = projectData.teamSections?.maxDevelopers || APP_DEFAULTS.developers.max;
-    }
-
-    return developerCount * sprintLength * hoursPerDay * efficiency;
+    // Use the actual selectedDevelopers value that the user has set (matching main app)
+    return selectedDevelopers * sprintLength * hoursPerDay * efficiency;
   };
 
     // Calculate team composition and costs grouped by region
@@ -129,10 +152,34 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     const regionGroups: { [key: string]: any[] } = {};
     let totalWeeklyCost = 0;
 
+    // Debug logging for team roles
+    console.log('=== BidDisplay Debug Info ===');
+    console.log('Selected Team Model:', selectedTeamModel);
+    console.log('Project Data Team Sections:', projectData.teamSections?.resourceSections);
+
     // Add configured team roles from team sections
-    projectData.teamSections?.resourceSections?.forEach((section: any) => {
-      section.roles?.forEach((role: any) => {
-        const count = role[selectedTeamModel] || 0;
+    projectData.teamSections?.resourceSections?.forEach((section: any, sectionIndex: number) => {
+      console.log(`Section ${sectionIndex}: ${section.name}`, section);
+      section.roles?.forEach((role: any, roleIndex: number) => {
+        // Use the exact same value calculation as the UserApp UI
+        const count = isTeamEditMode ? 
+          (customTeamRoles?.get(`${sectionIndex}-${roleIndex}`) ?? 
+             (selectedTeamModel === 'profile1' ? (role.profile1 || 0) :
+              selectedTeamModel === 'profile2' ? (role.profile2 || 0) :
+              (role.profile3 || 0))) :
+          (selectedTeamModel === 'profile1' ? (role.profile1 || 0) :
+           selectedTeamModel === 'profile2' ? (role.profile2 || 0) :
+           (role.profile3 || 0));
+           
+        console.log(`  Role ${roleIndex}: ${role.name}`, {
+          profile1: role.profile1,
+          profile2: role.profile2,
+          profile3: role.profile3,
+          isTeamEditMode,
+          customValue: customTeamRoles?.get(`${sectionIndex}-${roleIndex}`),
+          finalCount: count,
+          selectedTeamModel
+        });
         if (count > 0) {
           // Determine region based on section name or explicit region
           let sectionRegion = section.region;
@@ -168,22 +215,18 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
             region: sectionRegion
           });
 
+          console.log(`    ✅ Added role: ${role.name} (${count} × $${rate}/hr = $${weeklyCost}/week)`);
           totalWeeklyCost += weeklyCost;
+        } else {
+          console.log(`    ❌ Skipped role: ${role.name} (count = ${count} for ${selectedTeamModel})`);
         }
       });
     });
 
     // Add developers and QA consultants based on sprint configuration
     const addSprintBasedRoles = (region: string) => {
-      // Get developer count from team sections based on selected profile
-      let developerCount = 0;
-      if (selectedTeamModel === 'profile1') {
-        developerCount = projectData.teamSections?.minDevelopers || APP_DEFAULTS.developers.min;
-      } else if (selectedTeamModel === 'profile2') {
-        developerCount = projectData.teamSections?.standardDevelopers || APP_DEFAULTS.developers.standard;
-      } else if (selectedTeamModel === 'profile3') {
-        developerCount = projectData.teamSections?.maxDevelopers || APP_DEFAULTS.developers.max;
-      }
+      // Use the actual selectedDevelopers value that the user has set
+      const developerCount = selectedDevelopers || APP_DEFAULTS.developers.standard;
 
       // Calculate QA consultants based on QA team factor
       let qaFactor = 0;
@@ -249,6 +292,11 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     // Add sprint-based roles for both regions (assuming they could be in either)
     addSprintBasedRoles('GDC'); // Typically developers would be offshore
     // You can also add USA developers if needed: addSprintBasedRoles('USA');
+
+    console.log('=== Final Team Cost Breakdown ===');
+    console.log('Region Groups:', regionGroups);
+    console.log('Total Weekly Cost:', totalWeeklyCost);
+    console.log('===============================');
 
     return { breakdown: regionGroups, totalWeeklyCost };
   };
