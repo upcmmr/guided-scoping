@@ -1,4 +1,4 @@
-# Guided Scoping & Estimation Tool
+# Bid Generator
 
 A React-based application for project scoping and development time estimation. Streamlines the process of defining project scope through pre-configured templates and provides accurate development hour estimates.
 
@@ -31,8 +31,8 @@ A React-based application for project scoping and development time estimation. S
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/guided-scoping.git
-   cd guided-scoping
+   git clone https://github.com/yourusername/bid-generator.git
+cd bid-generator
    ```
 
 2. **Install dependencies**

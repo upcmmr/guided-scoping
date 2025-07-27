@@ -1558,7 +1558,7 @@ const AdminApp: React.FC = () => {
         <div className="p-8 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool - Template Configuration</h1>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">Bid Generator - Template Configuration</h1>
               <p className="text-base text-gray-600">Manage project template definitions and configurations.</p>
             </div>
             <div className="flex-shrink-0 ml-8">

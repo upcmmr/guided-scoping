@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Layers, CheckSquare, Square, FolderOpen, Plus, X, Trash2, ChevronUp, ChevronDown, Settings } from 'lucide-react';
 import TemplateSelector from './TemplateSelector';
+import BidDisplay from './BidDisplay';
 import { loadCompleteTemplate } from '../utils/templateScanner';
 import type { TemplateMetadata } from '../utils/templateScanner';
 import { saveUserProject, loadUserProject } from '../utils/projectManager';
@@ -198,6 +199,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
   const [teamRoleSelections, setTeamRoleSelections] = useState<Map<string, boolean>>(new Map());
   const [showSprintDetails, setShowSprintDetails] = useState(false);
   const [showHoursDetails, setShowHoursDetails] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
 
   // ============================================================================
   // PROJECT/TEMPLATE LOADING LOGIC
@@ -463,6 +465,14 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
 
   const handleCancelExit = () => {
     setShowExitWarning(false);
+  };
+
+  const handleGenerateBid = () => {
+    setShowBidModal(true);
+  };
+
+  const handleCloseBidModal = () => {
+    setShowBidModal(false);
   };
 
   const updateProjectInfo = (field: string, value: string | number) => {
@@ -931,6 +941,48 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     }).filter((section: SectionTotal) => section.items > 0); // Only show sections with selected items
   }, [editableData, itemSelections]);
 
+  // Validation for Generate Bid button
+  const isBidGenerationEnabled = useMemo(() => {
+    // Check if project information is complete
+    const hasProjectInfo = !!(editableData?.projectName && editableData?.description);
+    
+    // Check if project scope is selected - calculate inline to avoid dependency issues
+    const hasScopeSelection = !!(editableData && editableData.scopeSections && 
+      editableData.scopeSections.some((section: ProjectSection, sectionIndex: number) => {
+        return section.items.some((item: ProjectScopeItem, itemIndex: number) => {
+          const key = `${sectionIndex}-${itemIndex}`;
+          return itemSelections.get(key);
+        });
+      }));
+    
+    // Check if user has selected a team profile (profile1, profile2, or profile3)
+    const hasTeamProfileSelected = selectedTeamModel !== null;
+    
+    // Check if team configuration is properly set up with actual roles and counts
+    const hasTeamConfiguration = !!(editableData?.teamSections?.resourceSections && 
+      editableData.teamSections.resourceSections.length > 0 &&
+      editableData.teamSections.resourceSections.some(section => 
+        section.roles && section.roles.length > 0 && 
+        section.roles.some(role => {
+          // Check if any profile has a count > 0
+          const hasProfile1Count = role.profile1 && role.profile1 > 0;
+          const hasProfile2Count = role.profile2 && role.profile2 > 0;
+          const hasProfile3Count = role.profile3 && role.profile3 > 0;
+          return hasProfile1Count || hasProfile2Count || hasProfile3Count;
+        })
+      ));
+    
+    // Only enable if ALL conditions are met: project info, scope, team profile selected, AND fully configured team
+    return hasProjectInfo && hasScopeSelection && hasTeamProfileSelected && hasTeamConfiguration;
+  }, [
+    editableData?.projectName, 
+    editableData?.description, 
+    editableData?.scopeSections,
+    itemSelections,
+    selectedTeamModel,
+    editableData?.teamSections?.resourceSections
+  ]);
+
   // Helper function to calculate sprint capacity
   const calculateSprintCapacity = () => {
     if (!editableData || !selectedTemplate) return 0;
@@ -994,7 +1046,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           <div className="p-8 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className={`${getHeadingClasses('h1')} mb-2`}>Guided Scoping Tool</h1>
+                <h1 className={`${getHeadingClasses('h1')} mb-2`}>Bid Generator</h1>
                 <p className={getBodyClasses('base')}>Start a new project or continue working on an existing one.</p>
               </div>
               <div className="flex-shrink-0 ml-8">
@@ -1085,7 +1137,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           <div className="p-8 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-gray-800 mb-2">Guided Scoping Tool</h1>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">Bid Generator</h1>
                 <p className="text-base text-gray-600">Configure your project settings and select the scope items that apply.</p>
               </div>
               <div className="flex-shrink-0 ml-8">
@@ -2328,6 +2380,56 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
             </div>
           )}
         </div>
+
+        {/* Generate Bid Button */}
+        <div className="mt-8 border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden bg-white">
+          <div className="p-6 text-center">
+            <button
+              onClick={handleGenerateBid}
+              disabled={!isBidGenerationEnabled}
+              className={`px-8 py-3 rounded-lg text-lg font-semibold transition-colors ${
+                isBidGenerationEnabled
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              Generate Bid
+            </button>
+            {!isBidGenerationEnabled && (
+              <p className="text-sm text-gray-500 mt-2">
+                Complete project information, select scope items, choose a team configuration profile, and configure team roles to generate bid
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Bid Generation Modal */}
+        {showBidModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-7xl mx-4 w-full max-h-[90vh] overflow-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-2xl font-bold text-gray-800">Generated Bid</h2>
+                <button
+                  onClick={handleCloseBidModal}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-6">
+                <BidDisplay
+                  projectData={editableData}
+                  templateData={templateData}
+                  selectedTeamModel={selectedTeamModel}
+                  scopeSelections={itemSelections}
+                  onClose={handleCloseBidModal}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Exit Warning Dialog */}
         {showExitWarning && (

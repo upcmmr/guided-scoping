@@ -1,7 +1,7 @@
 {
-  "name": "guided-scoping-tool",
+  "name": "bid-generator",
   "version": "1.0.0",
-  "description": "Guided Scoping and Estimation Tool for project development",
+  "description": "Bid Generator for project development",
   "type": "module",
   "scripts": {
     "dev": "npx vite",

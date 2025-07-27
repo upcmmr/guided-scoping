@@ -59,6 +59,30 @@
       "region": "GDC",
       "costRate": 20,
       "billRate": 50
+    },
+    {
+      "roleName": "Developer",
+      "region": "USA",
+      "costRate": 120,
+      "billRate": 200
+    },
+    {
+      "roleName": "Developer",
+      "region": "GDC",
+      "costRate": 20,
+      "billRate": 50
+    },
+    {
+      "roleName": "QA Consultant",
+      "region": "USA",
+      "costRate": 120,
+      "billRate": 200
+    },
+    {
+      "roleName": "QA Consultant",
+      "region": "GDC",
+      "costRate": 20,
+      "billRate": 50
     }
   ]
 } 
