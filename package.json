@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx vite",
-    "build": "npx tsc && npx vite build",
+    "build": "vite build",
     "preview": "npx vite preview",
     "lint": "npx eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },

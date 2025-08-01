@@ -1,6 +1,6 @@
 {
-  "projectType": "Salesforce B2C Commerce",
-  "description": "Standard Salesforce B2C Commerce project. Can be SFRA or PWA Kit refernce architecture. ",
+  "projectType": "Salesforce B2B Commerce",
+  "description": "Standard Salesforce B2C Commerce on Core project. ",
   "profile1": {
     "name": "Small",
     "description": "MVP implementation with minimal integrations and a few functional customizations.",
@@ -44,13 +44,6 @@
         {
           "name": "Shipping",
           "hours": 40,
-          "profile1": false,
-          "profile2": true,
-          "profile3": true
-        },
-        {
-          "name": "Reviews",
-          "hours": 60,
           "profile1": false,
           "profile2": true,
           "profile3": true
@@ -135,13 +128,6 @@
           "hours": 120,
           "profile1": false,
           "profile2": false,
-          "profile3": true
-        },
-        {
-          "name": "Homepage Product Spotlight",
-          "hours": 40,
-          "profile1": true,
-          "profile2": true,
           "profile3": true
         },
         {
