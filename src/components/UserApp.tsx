@@ -1051,7 +1051,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </div>
               <div className="flex-shrink-0 ml-8">
                 <img 
-                  src="/assets/Salesforce-logo.png" 
+                  src="/Salesforce-logo.png" 
                   alt="Salesforce Logo" 
                   className="h-16 w-auto"
                 />
@@ -1142,7 +1142,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
               </div>
               <div className="flex-shrink-0 ml-8">
                 <img 
-                  src="/assets/Salesforce-logo.png" 
+                  src="/Salesforce-logo.png" 
                   alt="Salesforce Logo" 
                   className="h-16 w-auto"
                 />

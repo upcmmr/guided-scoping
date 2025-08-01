@@ -152,14 +152,8 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     const regionGroups: { [key: string]: any[] } = {};
     let totalWeeklyCost = 0;
 
-    // Debug logging for team roles
-    console.log('=== BidDisplay Debug Info ===');
-    console.log('Selected Team Model:', selectedTeamModel);
-    console.log('Project Data Team Sections:', projectData.teamSections?.resourceSections);
-
     // Add configured team roles from team sections
     projectData.teamSections?.resourceSections?.forEach((section: any, sectionIndex: number) => {
-      console.log(`Section ${sectionIndex}: ${section.name}`, section);
       section.roles?.forEach((role: any, roleIndex: number) => {
         // Use the exact same value calculation as the UserApp UI
         const count = isTeamEditMode ? 
@@ -171,15 +165,6 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
            selectedTeamModel === 'profile2' ? (role.profile2 || 0) :
            (role.profile3 || 0));
            
-        console.log(`  Role ${roleIndex}: ${role.name}`, {
-          profile1: role.profile1,
-          profile2: role.profile2,
-          profile3: role.profile3,
-          isTeamEditMode,
-          customValue: customTeamRoles?.get(`${sectionIndex}-${roleIndex}`),
-          finalCount: count,
-          selectedTeamModel
-        });
         if (count > 0) {
           // Determine region based on section name or explicit region
           let sectionRegion = section.region;
@@ -215,10 +200,7 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
             region: sectionRegion
           });
 
-          console.log(`    ✅ Added role: ${role.name} (${count} × $${rate}/hr = $${weeklyCost}/week)`);
           totalWeeklyCost += weeklyCost;
-        } else {
-          console.log(`    ❌ Skipped role: ${role.name} (count = ${count} for ${selectedTeamModel})`);
         }
       });
     });
@@ -292,11 +274,6 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     // Add sprint-based roles for both regions (assuming they could be in either)
     addSprintBasedRoles('GDC'); // Typically developers would be offshore
     // You can also add USA developers if needed: addSprintBasedRoles('USA');
-
-    console.log('=== Final Team Cost Breakdown ===');
-    console.log('Region Groups:', regionGroups);
-    console.log('Total Weekly Cost:', totalWeeklyCost);
-    console.log('===============================');
 
     return { breakdown: regionGroups, totalWeeklyCost };
   };
