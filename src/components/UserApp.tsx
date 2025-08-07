@@ -225,14 +225,47 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
       description: projectData.description || '',
       version: projectData.version || '1.0.0',
       numberOfDevelopers: projectData.numberOfDevelopers,
-      teamSections: projectData.teamSections || {
+      teamSections: projectData.teamSections ? {
+        minDevelopers: projectData.teamSections.minDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.minDevelopers,
+        standardDevelopers: projectData.teamSections.standardDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers,
+        maxDevelopers: projectData.teamSections.maxDevelopers || APP_DEFAULTS.templateFallbacks.teamSections.maxDevelopers,
+        minQaTeamFactor: projectData.teamSections.minQaTeamFactor || APP_DEFAULTS.qa.minTeamFactor,
+        standardQaTeamFactor: projectData.teamSections.standardQaTeamFactor || APP_DEFAULTS.qa.standardTeamFactor,
+        maxQaTeamFactor: projectData.teamSections.maxQaTeamFactor || APP_DEFAULTS.qa.maxTeamFactor,
+        resourceSections: projectData.teamSections.resourceSections?.map((section: any) => ({
+          name: section.name,
+          region: section.region,
+          roles: section.roles.map((role: any) => {
+            // Handle both saved project structure (with count) and template structure (with profile1/2/3)
+            if (typeof role.count === 'number') {
+              // This is a saved project file - convert count back to profile structure
+              // Put the count in the selected team model profile, 0 in others
+              const selectedProfile = selectedTeamModel || 'profile2'; // Default to profile2 if not specified
+              return {
+                name: role.name,
+                profile1: selectedProfile === 'profile1' ? role.count : 0,
+                profile2: selectedProfile === 'profile2' ? role.count : 0,
+                profile3: selectedProfile === 'profile3' ? role.count : 0
+              };
+            } else {
+              // This is template structure - keep as is
+              return {
+                name: role.name,
+                profile1: role.profile1 || 0,
+                profile2: role.profile2 || 0,
+                profile3: role.profile3 || 0
+              };
+            }
+          })
+        })) || []
+      } : {
         minDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.minDevelopers,
         standardDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.standardDevelopers,
         maxDevelopers: APP_DEFAULTS.templateFallbacks.teamSections.maxDevelopers,
         minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
         standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
         maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor,
-        resourceSections: projectData.teamSections?.resourceSections || []
+        resourceSections: []
       },
       sprintSections: projectData.sprintSections || {
         sprintLength: APP_DEFAULTS.sprint.length,
@@ -339,7 +372,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
         },
         sprintSections: customTemplate.sprintSections || {
           sprintLength: APP_DEFAULTS.sprint.length,
-          sprintEfficiency: APP_DEFAULTS.sprintPlanning.efficiency
+          sprintEfficiency: APP_DEFAULTS.sprint.efficiency
         },
         sectionsCount: customTemplate.scopeSections?.length || 0,
         totalItems: customTemplate.scopeSections?.reduce((acc: number, section: any) => acc + (section.items?.length || 0), 0) || 0

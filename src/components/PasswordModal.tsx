@@ -116,15 +116,15 @@ const PasswordModal: React.FC<PasswordModalProps> = ({ onAuthenticated }) => {
           <button
             type="submit"
             disabled={isLoading || !password.trim()}
-            className={`w-full ${getButtonClasses('primary')} ${
+            className={`w-full ${getButtonClasses('primary')} flex items-center justify-center ${
               isLoading || !password.trim() ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {isLoading ? (
-              <div className="flex items-center justify-center">
+              <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Checking...
-              </div>
+              </>
             ) : (
               'Enter'
             )}

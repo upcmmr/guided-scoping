@@ -46,7 +46,7 @@ const MainApp: React.FC = () => {
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            User View
+            User Panel
           </button>
           <button
             onClick={switchToAdmin}
