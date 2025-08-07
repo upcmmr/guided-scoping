@@ -1,0 +1,279 @@
+{
+  "projectType": "Salesforce B2C Commerce",
+  "description": "Standard Salesforce B2C Commerce project. Can be SFRA or PWA Kit refernce architecture. ",
+  "profile1": {
+    "name": "Small",
+    "description": "MVP implementation with minimal integrations and a few functional customizations.",
+    "teamDescription": "Lean team structure with essential roles."
+  },
+  "profile2": {
+    "name": "Medium",
+    "description": "Standard implementation with standard integrations and a medium level of functional customizations.",
+    "teamDescription": "Standard team of onshore lead roles with offshore development team."
+  },
+  "profile3": {
+    "name": "Large",
+    "description": "Enterprise level implementation with more complex architecture and integrations and customizations",
+    "teamDescription": "Enterprise team with heavier onshore lead roles."
+  },
+  "scopeSections": [
+    {
+      "name": "Integrations",
+      "items": [
+        {
+          "name": "CC Payment Processor",
+          "hours": 80,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Apple Pay",
+          "hours": 40,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Tax",
+          "hours": 40,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Shipping",
+          "hours": 40,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Reviews",
+          "hours": 60,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Single Sign On",
+          "hours": 80,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Analytics",
+          "hours": 60,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Tag Manager",
+          "hours": 40,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Search",
+          "hours": 120,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Order Management",
+          "hours": 120,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "BNPL",
+          "hours": 60,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        }
+      ]
+    },
+    {
+      "name": "Functional Customizations",
+      "items": [
+        {
+          "name": "Single Page Checkout",
+          "hours": 240,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Enhanced Main Menu",
+          "hours": 40,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Product Tile Customization",
+          "hours": 80,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Enhanced PDP",
+          "hours": 120,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Store Inventory",
+          "hours": 120,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Homepage Product Spotlight",
+          "hours": 40,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "PLP Slicing",
+          "hours": 40,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "PLP Quick View",
+          "hours": 20,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        }
+      ]
+    },
+    {
+      "name": "Non Functional Requirements",
+      "items": [
+        {
+          "name": "Environment Configuration",
+          "hours": 160,
+          "profile1": true,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "ADA Compliance",
+          "hours": 120,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        },
+        {
+          "name": "Load Test Support",
+          "hours": 120,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
+        }
+      ]
+    }
+  ],
+  "teamSections": {
+    "minDevelopers": 4,
+    "standardDevelopers": 6,
+    "maxDevelopers": 12,
+    "minQaTeamFactor": 20,
+    "standardQaTeamFactor": 30,
+    "maxQaTeamFactor": 50,
+    "resourceSections": [
+      {
+        "name": "Onshore Lead Resources",
+        "roles": [
+          {
+            "name": "Technical Architect",
+            "profile1": 1,
+            "profile2": 1,
+            "profile3": 2
+          },
+          {
+            "name": "Solution Architect",
+            "profile1": 1,
+            "profile2": 1.5,
+            "profile3": 2
+          },
+          {
+            "name": "Project Manager",
+            "profile1": 1,
+            "profile2": 1,
+            "profile3": 1
+          },
+          {
+            "name": "Engagement Manager",
+            "profile1": 0.5,
+            "profile2": 0.5,
+            "profile3": 0.5
+          },
+          {
+            "name": "QA Manager",
+            "profile1": 0.5,
+            "profile2": 1,
+            "profile3": 1
+          }
+        ]
+      },
+      {
+        "name": "Offshore Lead Resources",
+        "roles": [
+          {
+            "name": "Technical Architect",
+            "profile1": 1,
+            "profile2": 1,
+            "profile3": 2
+          },
+          {
+            "name": "Solution Architect",
+            "profile1": 0,
+            "profile2": 1,
+            "profile3": 1
+          },
+          {
+            "name": "Project Manager",
+            "profile1": 0.5,
+            "profile2": 1,
+            "profile3": 1
+          }
+        ]
+      }
+    ]
+  },
+  "sprintSections": {
+    "sprintLength": 10,
+    "sprintEfficiency": 60
+  },
+  "timelineSections": {
+    "discovery": {
+      "profile1": 4,
+      "profile2": 6,
+      "profile3": 8
+    },
+    "uat": {
+      "profile1": 4,
+      "profile2": 6,
+      "profile3": 8
+    },
+    "postLaunch": {
+      "profile1": 1,
+      "profile2": 2,
+      "profile3": 4
+    }
+  }
+}

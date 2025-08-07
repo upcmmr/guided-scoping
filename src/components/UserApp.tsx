@@ -2121,7 +2121,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                               type="number"
                                               min="0"
                                               max="20"
-                                              step="1"
+                                              step="0.5"
                                                                                               value={isTeamEditMode ? 
                                                  (customTeamRoles.get(`${sectionIndex}-${roleIndex}`) ?? 
                                                     (selectedTeamModel === 'profile1' ? (role.profile1 || 0) :
@@ -2134,7 +2134,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                                               onChange={(e) => {
                                                 if (isTeamEditMode) {
                                                   const roleKey = `${sectionIndex}-${roleIndex}`;
-                                                  const value = Math.max(0, Math.min(20, parseInt(e.target.value) || 0));
+                                                  const value = Math.max(0, Math.min(20, parseFloat(e.target.value) || 0));
                                                   setCustomTeamRoles(prev => new Map(prev.set(roleKey, value)));
                                                 }
                                               }}
