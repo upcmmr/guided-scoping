@@ -89,6 +89,20 @@
           "profile1": false,
           "profile2": false,
           "profile3": true
+        },
+        {
+          "name": "ERP",
+          "hours": 120,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Ratings and Reviews",
+          "hours": 60,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         }
       ]
     },
@@ -100,6 +114,13 @@
           "hours": 240,
           "profile1": false,
           "profile2": false,
+          "profile3": true
+        },
+        {
+          "name": "Sticky Header",
+          "hours": 20,
+          "profile1": true,
+          "profile2": true,
           "profile3": true
         },
         {
@@ -143,6 +164,13 @@
           "profile1": false,
           "profile2": true,
           "profile3": true
+        },
+        {
+          "name": "Sharable Wishlist",
+          "hours": 40,
+          "profile1": false,
+          "profile2": true,
+          "profile3": true
         }
       ]
     },
@@ -169,6 +197,13 @@
           "profile1": false,
           "profile2": true,
           "profile3": true
+        },
+        {
+          "name": "Data Load Support",
+          "hours": 80,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         }
       ]
     }
@@ -187,13 +222,13 @@
           {
             "name": "Technical Architect",
             "profile1": 1,
-            "profile2": 1,
+            "profile2": 1.5,
             "profile3": 2
           },
           {
             "name": "Solution Architect",
             "profile1": 1,
-            "profile2": 1.5,
+            "profile2": 1,
             "profile3": 2
           },
           {
@@ -214,7 +249,8 @@
             "profile2": 1,
             "profile3": 1
           }
-        ]
+        ],
+        "region": "USA"
       },
       {
         "name": "Offshore Lead Resources",
@@ -237,7 +273,8 @@
             "profile2": 1,
             "profile3": 1
           }
-        ]
+        ],
+        "region": "GDC"
       }
     ]
   },

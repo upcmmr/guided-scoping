@@ -318,6 +318,63 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
     }
   }, [setupApplicationState]);
 
+  const handleCustomTemplateFile = useCallback(async (file: File) => {
+    try {
+      setLoading(true);
+      const text = await file.text();
+      const customTemplate = JSON.parse(text);
+      
+      // Create template metadata for the custom file
+      const templateMetadata: TemplateMetadata = {
+        filename: file.name,
+        projectType: customTemplate.projectType || 'Custom Template',
+        description: customTemplate.description || 'Custom uploaded template',
+        teamSections: customTemplate.teamSections || {
+          minDevelopers: APP_DEFAULTS.developers.min,
+          standardDevelopers: APP_DEFAULTS.developers.standard,
+          maxDevelopers: APP_DEFAULTS.developers.max,
+          minQaTeamFactor: APP_DEFAULTS.qa.minTeamFactor,
+          standardQaTeamFactor: APP_DEFAULTS.qa.standardTeamFactor,
+          maxQaTeamFactor: APP_DEFAULTS.qa.maxTeamFactor
+        },
+        sprintSections: customTemplate.sprintSections || {
+          sprintLength: APP_DEFAULTS.sprint.length,
+          sprintEfficiency: APP_DEFAULTS.sprintPlanning.efficiency
+        },
+        sectionsCount: customTemplate.scopeSections?.length || 0,
+        totalItems: customTemplate.scopeSections?.reduce((acc: number, section: any) => acc + (section.items?.length || 0), 0) || 0
+      };
+      
+      // Initialize all items as unselected for new template
+      const initialSelections = new Map<string, boolean>();
+      customTemplate.scopeSections?.forEach((section: ProjectSection, sectionIndex: number) => {
+        section.items.forEach((item: ProjectScopeItem, itemIndex: number) => {
+          initialSelections.set(`${sectionIndex}-${itemIndex}`, false);
+        });
+      });
+
+      // Reset team customization for new template
+      setCustomTeamRoles(new Map());
+      setTeamRoleSelections(new Map());
+      setSelectedTeamModel(null);
+      setIsTeamEditMode(false);
+      setShowTeamDetails(false);
+
+      setupApplicationState({
+        projectData: customTemplate,
+        templateMetadata,
+        isFromTemplate: true,
+        itemSelections: initialSelections
+      });
+      
+    } catch (error) {
+      console.error('Error loading custom template file:', error);
+      alert('Failed to load custom template file. Please ensure it is a valid JSON template file.');
+    } finally {
+      setLoading(false);
+    }
+  }, [setupApplicationState]);
+
   const handleTemplateSelected = useCallback(async (template: TemplateMetadata) => {
     try {
       setLoading(true);
@@ -1098,7 +1155,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
                   Continue working on a project you've already started by loading your saved project file with your previous selections.
                 </p>
                 <div className="flex items-center justify-center text-green-600 font-medium">
-                  <span>Browse Files</span>
+                  <span>Open File</span>
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                 </div>
                 </div>
@@ -1120,6 +1177,7 @@ const UserApp: React.FC<UserAppProps> = ({ onSwitchToAdmin }) => {
           <div className="mt-8">
             <TemplateSelector 
               onTemplateSelected={handleTemplateSelected}
+              onCustomFileSelected={handleCustomTemplateFile}
               inline={true}
             />
           </div>

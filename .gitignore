@@ -133,7 +133,7 @@ $RECYCLE.BIN/
 *.tar.gz
 
 # User-generated project files (exclude)
-projects/
+# projects/ - folder removed
 
 # Keep project templates (include by default)
 # project_templates/ - this folder should be committed 

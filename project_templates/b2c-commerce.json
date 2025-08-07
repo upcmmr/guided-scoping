@@ -49,7 +49,7 @@
           "profile3": true
         },
         {
-          "name": "Reviews",
+          "name": "Ratings & Reviews",
           "hours": 60,
           "profile1": false,
           "profile2": true,
@@ -157,6 +157,13 @@
           "profile1": false,
           "profile2": true,
           "profile3": true
+        },
+        {
+          "name": "Sticky Header",
+          "hours": 40,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         }
       ]
     },
@@ -183,6 +190,13 @@
           "profile1": false,
           "profile2": true,
           "profile3": true
+        },
+        {
+          "name": "Data Load Support",
+          "hours": 80,
+          "profile1": false,
+          "profile2": false,
+          "profile3": true
         }
       ]
     }
@@ -201,13 +215,13 @@
           {
             "name": "Technical Architect",
             "profile1": 1,
-            "profile2": 1,
+            "profile2": 1.5,
             "profile3": 2
           },
           {
             "name": "Solution Architect",
             "profile1": 1,
-            "profile2": 1.5,
+            "profile2": 1,
             "profile3": 2
           },
           {
@@ -228,7 +242,8 @@
             "profile2": 1,
             "profile3": 1
           }
-        ]
+        ],
+        "region": "USA"
       },
       {
         "name": "Offshore Lead Resources",
@@ -251,7 +266,8 @@
             "profile2": 1,
             "profile3": 1
           }
-        ]
+        ],
+        "region": "GDC"
       }
     ]
   },

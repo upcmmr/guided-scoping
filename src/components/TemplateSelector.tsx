@@ -10,11 +10,12 @@ import { getButtonClasses, getHeadingClasses, getBodyClasses, iconSizes, animati
 
 interface TemplateSelectorProps {
   onTemplateSelected: (template: TemplateMetadata) => void;
+  onCustomFileSelected?: (file: File) => void;
   onBack?: () => void;
   inline?: boolean;
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected, onBack, inline = false }) => {
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected, onCustomFileSelected, onBack, inline = false }) => {
   const [templates, setTemplates] = useState<TemplateMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,19 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
   const handleTemplateSelect = (template: TemplateMetadata) => {
     setSelectedTemplate(template.filename);
     onTemplateSelected(template);
+  };
+
+  const handleCustomFileUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file && onCustomFileSelected) {
+        onCustomFileSelected(file);
+      }
+    };
+    input.click();
   };
 
   const content = (
@@ -129,6 +143,46 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onTemplateSelected,
               </button>
             </div>
           ))}
+          
+          {/* Custom Template Upload Option */}
+          {onCustomFileSelected && (
+            <div
+              className="border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg border-gray-200 hover:border-gray-300"
+              onClick={handleCustomFileUpload}
+            >
+              {/* Template Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    Open your Own Template file
+                  </h3>
+                  <p className="text-base text-gray-600 leading-relaxed">
+                    Upload a custom template file from your computer to use your own project configuration.
+                  </p>
+                </div>
+              </div>
+
+              {/* Template Stats */}
+              <div className="space-y-3 mb-4">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Layers className="w-4 h-4 mr-2 text-purple-500" />
+                  <span>Custom template from your computer</span>
+                </div>
+              </div>
+
+              {/* Select Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCustomFileUpload();
+                }}
+                className="w-full flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                Browse Files
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

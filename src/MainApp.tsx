@@ -2,17 +2,36 @@
 // MAIN APP - Router between Admin and User interfaces
 // ============================================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminApp from './components/AdminApp';
 import UserApp from './components/UserApp';
+import PasswordModal from './components/PasswordModal';
 
 type AppMode = 'user' | 'admin';
 
 const MainApp: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<AppMode>('user');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check if user is already authenticated on app load
+  useEffect(() => {
+    const authStatus = sessionStorage.getItem('app_authenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true);
+  };
 
   const switchToAdmin = () => setCurrentMode('admin');
   const switchToUser = () => setCurrentMode('user');
+
+  // Show password modal if not authenticated
+  if (!isAuthenticated) {
+    return <PasswordModal onAuthenticated={handleAuthenticated} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
