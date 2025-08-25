@@ -1,6 +1,7 @@
 import React from 'react';
 import rolesAndRates from '../config/roles-and-rates.json';
 import APP_DEFAULTS from '../config/defaults';
+import { downloadTimelineImage, TimelinePhaseData } from '../utils/timelineImageGenerator';
 
 interface BidDisplayProps {
   projectData?: any;
@@ -24,8 +25,7 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
   selectedSize,
   cameFromTemplate,
   isTeamEditMode,
-  customTeamRoles,
-  onClose
+  customTeamRoles
 }) => {
   // Utility function to get business days per week
   const getBusinessDaysPerWeek = () => 5; // Standard business week
@@ -301,19 +301,83 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
     maximumFractionDigits: 0
   }).format(amount);
 
-  return (
-    <div className="w-full max-h-[70vh] overflow-y-auto">
+  // Handle timeline image download
+  const handleDownloadTimeline = async () => {
+    try {
+      const timelineData: TimelinePhaseData = {
+        discovery: bidCalculation.duration.discovery,
+        sprints: bidCalculation.duration.sprints,
+        sprintsCount: bidCalculation.duration.sprintsCount || 0,
+        uat: bidCalculation.duration.uat,
+        postLaunch: bidCalculation.duration.postLaunch,
+        total: bidCalculation.duration.total
+      };
 
+      const config = {
+        projectName: projectData?.projectName || 'Project Timeline',
+        sprintLength: projectData?.sprintSections?.sprintLength || APP_DEFAULTS.sprint.length
+      };
+
+      await downloadTimelineImage(timelineData, config);
+    } catch (error) {
+      console.error('Failed to download timeline image:', error);
+      // You could add a toast notification here if you have one
+    }
+  };
+
+  return (
+    <div className="w-full max-h-[70vh] overflow-y-auto p-2">
+
+      {/* Project Scope Section */}
+      <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
+        <h3 className="text-2xl font-bold text-gray-800 mb-4">Project Scope</h3>
+        
+        {projectData?.scopeSections?.map((section: any, sectionIndex: number) => {
+          // Get selected items for this section
+          const selectedItems = section.items?.filter((_: any, itemIndex: number) => {
+            const key = `${sectionIndex}-${itemIndex}`;
+            return scopeSelections?.get(key);
+          });
+
+          // Only show sections that have selected items
+          if (!selectedItems || selectedItems.length === 0) return null;
+
+          return (
+            <div key={sectionIndex} className="mb-4">
+              <h4 className="text-xl font-semibold text-gray-700 mb-2">{section.name}</h4>
+              <ul className="list-disc list-inside space-y-1 ml-4">
+                {selectedItems.map((item: any, itemIndex: number) => (
+                  <li key={itemIndex} className="text-base text-gray-600">
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Download Timeline Button - Inside scrollable area with proper spacing */}
+      <div className="flex justify-end mb-4">
+        <button 
+          onClick={handleDownloadTimeline}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          title="Download timeline as image"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Download Timeline
+        </button>
+      </div>
 
                   {/* Project Timeline Gantt Chart */}
       <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
-        <h4 className="text-lg font-semibold text-gray-800 mb-4">Project Timeline</h4>
+        <h3 className="text-2xl font-bold text-gray-800 mb-4">Project Timeline</h3>
         
         {(() => {
           // Calculate responsive width per week to fit full modal width
           const totalWeeks = Math.ceil(bidCalculation.duration.total);
-          // Use CSS calc to determine available width dynamically
-          const weekWidthPercent = 100 / totalWeeks; // Each week gets equal percentage of available width
           
           return (
             <>
@@ -427,62 +491,62 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
 
       {/* Project Duration */}
       <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
-        <h4 className="text-lg font-semibold text-gray-800 mb-4">Project Duration</h4>
+        <h3 className="text-2xl font-bold text-gray-800 mb-4">Project Duration</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-gray-600">Discovery:</span>
-            <span className="font-medium text-gray-800">{bidCalculation.duration.discovery} weeks</span>
+            <span className="text-base text-gray-600">Discovery:</span>
+            <span className="text-base font-medium text-gray-800">{bidCalculation.duration.discovery} weeks</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Development:</span>
-            <span className="font-medium text-gray-800">{Math.round(bidCalculation.duration.sprints)} weeks</span>
+            <span className="text-base text-gray-600">Development:</span>
+            <span className="text-base font-medium text-gray-800">{Math.round(bidCalculation.duration.sprints)} weeks</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">UAT:</span>
-            <span className="font-medium text-gray-800">{bidCalculation.duration.uat} weeks</span>
+            <span className="text-base text-gray-600">UAT:</span>
+            <span className="text-base font-medium text-gray-800">{bidCalculation.duration.uat} weeks</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Post Launch:</span>
-            <span className="font-medium text-gray-800">{bidCalculation.duration.postLaunch} weeks</span>
+            <span className="text-base text-gray-600">Post Launch:</span>
+            <span className="text-base font-medium text-gray-800">{bidCalculation.duration.postLaunch} weeks</span>
           </div>
           <div className="flex justify-between pt-3 border-t border-gray-200">
-            <span className="font-semibold text-gray-800">Total Duration:</span>
-            <span className="font-medium text-gray-800">{Math.round(bidCalculation.duration.total)} weeks</span>
+            <span className="text-base font-semibold text-gray-800">Total Duration:</span>
+            <span className="text-base font-medium text-gray-800">{Math.round(bidCalculation.duration.total)} weeks</span>
           </div>
         </div>
       </div>
 
       {/* Team Resource Breakdown */}
       <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
-        <h4 className="text-lg font-semibold text-gray-800 mb-4">Team Resource Costs</h4>
+        <h3 className="text-2xl font-bold text-gray-800 mb-4">Team Resource Costs</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-200">
-                <th className="text-left p-3 text-gray-600 font-medium w-1/3">Role</th>
-                <th className="text-center p-3 text-gray-600 font-medium w-1/12">Count</th>
-                <th className="text-right p-3 text-gray-600 font-medium w-1/6">Total Hours</th>
-                <th className="text-right p-3 text-gray-600 font-medium w-1/6">Rate/Hr</th>
-                <th className="text-right p-3 text-gray-600 font-medium w-1/4">Total Cost</th>
+                <th className="text-left p-3 text-sm text-gray-600 font-medium w-1/3">Role</th>
+                <th className="text-center p-3 text-sm text-gray-600 font-medium w-1/12">Count</th>
+                <th className="text-right p-3 text-sm text-gray-600 font-medium w-1/6">Total Hours</th>
+                <th className="text-right p-3 text-sm text-gray-600 font-medium w-1/6">Rate/Hr</th>
+                <th className="text-right p-3 text-sm text-gray-600 font-medium w-1/4">Total Cost</th>
               </tr>
             </thead>
             <tbody>
               {Object.entries(bidCalculation.teamCosts.breakdown).map(([region, roles]) => (
                 <React.Fragment key={region}>
                   <tr className="bg-gray-100">
-                    <td colSpan={5} className="p-3 font-semibold text-gray-800 border-b border-gray-200">
+                    <td colSpan={5} className="p-3 text-base font-semibold text-gray-800 border-b border-gray-200">
                       {region}
                     </td>
                   </tr>
                   {roles.map((item, index) => (
                     <tr key={`${region}-${index}`} className="border-b border-gray-200">
                       <td className="p-3">
-                        <div className="font-medium text-gray-800">{item.role}</div>
+                        <div className="text-sm font-medium text-gray-800">{item.role}</div>
                       </td>
-                      <td className="text-center p-3 text-gray-800">{item.count}</td>
-                      <td className="text-right p-3 text-gray-800">{item.totalHours.toLocaleString()}</td>
-                      <td className="text-right p-3 text-gray-800">{formatCurrency(item.rate)}</td>
-                      <td className="text-right p-3 font-semibold text-gray-800">{formatCurrency(item.totalCost)}</td>
+                      <td className="text-center p-3 text-sm text-gray-800">{item.count}</td>
+                      <td className="text-right p-3 text-sm text-gray-800">{item.totalHours.toLocaleString()}</td>
+                      <td className="text-right p-3 text-sm text-gray-800">{formatCurrency(item.rate)}</td>
+                      <td className="text-right p-3 text-sm font-semibold text-gray-800">{formatCurrency(item.totalCost)}</td>
                     </tr>
                   ))}
                 </React.Fragment>
@@ -499,8 +563,6 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
           </table>
         </div>
       </div>
-
-
 
 
     </div>
