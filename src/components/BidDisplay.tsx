@@ -2,6 +2,7 @@ import React from 'react';
 import rolesAndRates from '../config/roles-and-rates.json';
 import APP_DEFAULTS from '../config/defaults';
 import { downloadTimelineImage, TimelinePhaseData } from '../utils/timelineImageGenerator';
+import ExportToSlidesButton from './ExportToSlidesButton';
 
 interface BidDisplayProps {
   projectData?: any;
@@ -326,7 +327,18 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
   };
 
   return (
-    <div className="w-full max-h-[70vh] overflow-y-auto p-2">
+    <div className="w-full">
+      {/* Export to Slides Button - Fixed outside scrollable area */}
+      <div className="flex justify-end mb-4 px-2">
+        <ExportToSlidesButton
+          projectData={projectData}
+          bidCalculation={bidCalculation}
+          scopeSelections={scopeSelections || new Map()}
+        />
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="w-full max-h-[70vh] overflow-y-auto p-2">
 
       {/* Project Scope Section */}
       <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-lg shadow-sm">
@@ -357,7 +369,7 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
         })}
       </div>
 
-      {/* Download Timeline Button - Inside scrollable area with proper spacing */}
+      {/* Download Timeline Button - Inside scrollable area */}
       <div className="flex justify-end mb-4">
         <button 
           onClick={handleDownloadTimeline}
@@ -564,7 +576,7 @@ const BidDisplay: React.FC<BidDisplayProps> = ({
         </div>
       </div>
 
-
+      </div>
     </div>
   );
 };

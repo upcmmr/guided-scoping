@@ -22,7 +22,7 @@ export interface TimelineImageConfig {
 
 const DEFAULT_CONFIG: Required<TimelineImageConfig> = {
   width: 1200,
-  height: 300, // Starting height, will be adjusted dynamically
+  height: 500, // Starting height, will be adjusted dynamically
   backgroundColor: '#ffffff',
   projectName: 'Project Timeline',
   totalBid: '',
@@ -61,27 +61,32 @@ export const generateTimelineImage = async (
     throw new Error('Could not create canvas context');
   }
 
-  // Set canvas dimensions with high DPI support
-  const dpr = window.devicePixelRatio || 1;
+  // Set canvas dimensions with high DPI support for maximum crispness
+  const dpr = Math.max(window.devicePixelRatio || 1, 2); // Force at least 2x for crisp rendering
   canvas.width = finalConfig.width * dpr;
   canvas.height = finalConfig.height * dpr;
   canvas.style.width = `${finalConfig.width}px`;
   canvas.style.height = `${finalConfig.height}px`;
   ctx.scale(dpr, dpr);
+  
+  // Enable high-quality rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.textRenderingOptimization = 'optimizeQuality';
 
   // Clear canvas with background color
   ctx.fillStyle = finalConfig.backgroundColor;
   ctx.fillRect(0, 0, finalConfig.width, finalConfig.height);
 
   // Calculate dynamic layout dimensions based on timeline data
-  const padding = 60;
-  const timelineY = 40; // Start timeline near the top
+  const padding = 80; // Increased padding for better text spacing
+  const timelineY = 60; // Start timeline lower to give more room for week headers
   const timelineWidth = finalConfig.width - (padding * 2);
   
   // Calculate required timeline height based on phases
-  const barHeight = 40;
-  const barSpacing = 10;
-  let requiredTimelineHeight = 60; // Base height for week headers
+  const barHeight = 45; // Slightly taller bars for better text visibility
+  const barSpacing = 15; // More spacing between bars
+  let requiredTimelineHeight = 80; // More base height for week headers
   
   // Add height for each phase that exists
   if (timelineData.discovery > 0) requiredTimelineHeight += barHeight + barSpacing;
@@ -110,7 +115,7 @@ export const generateTimelineImage = async (
   // Draw project info (phases and durations only)
   drawProjectInfo(ctx, timelineData, finalConfig, padding, timelineY + requiredTimelineHeight + 20);
 
-  // Convert canvas to blob
+  // Convert canvas to blob with maximum quality
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) {
@@ -118,7 +123,7 @@ export const generateTimelineImage = async (
       } else {
         reject(new Error('Failed to generate image blob'));
       }
-    }, 'image/png', 1.0);
+    }, 'image/png', 1.0); // Maximum quality PNG
   });
 };
 
@@ -141,14 +146,22 @@ const drawTimeline = (
   const barHeight = 40;
   const barSpacing = 10;
   
-  // Draw week numbers header
+  // Draw week numbers header with better spacing and sizing
   ctx.fillStyle = '#6B7280';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
+  
+  // Only show week numbers if there's enough space (minimum 30px per week)
+  const showWeekNumbers = weekWidth >= 30;
+  const weekNumberInterval = weekWidth < 50 ? Math.ceil(50 / weekWidth) : 1;
   
   for (let i = 0; i < totalWeeks; i++) {
     const weekX = x + (i * weekWidth) + (weekWidth / 2);
-    ctx.fillText(`W${i + 1}`, weekX, y - 10);
+    
+    // Show week numbers with appropriate interval
+    if (showWeekNumbers && i % weekNumberInterval === 0) {
+      ctx.fillText(`W${i + 1}`, weekX, y - 15);
+    }
     
     // Draw week separator lines extending through entire timeline
     if (i > 0) {
@@ -156,13 +169,17 @@ const drawTimeline = (
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x + (i * weekWidth), y);
-      ctx.lineTo(x + (i * weekWidth), y + height - 60); // Extend to bottom of timeline area
+      ctx.lineTo(x + (i * weekWidth), y + height - 80); // Extend to bottom of timeline area
       ctx.stroke();
     }
   }
   
-  let currentY = y + 20;
+  let currentY = y + 30; // More space from week headers
   let currentWeek = 0;
+  
+  // Use the updated bar dimensions from the layout calculation
+  const actualBarHeight = 45;
+  const actualBarSpacing = 15;
   
   // Draw Discovery phase
   if (timelineData.discovery > 0) {
@@ -173,10 +190,11 @@ const drawTimeline = (
       x + (currentWeek * weekWidth),
       currentY,
       timelineData.discovery * weekWidth,
-      barHeight
+      actualBarHeight,
+      weekWidth
     );
     currentWeek += timelineData.discovery;
-    currentY += barHeight + barSpacing;
+    currentY += actualBarHeight + actualBarSpacing;
   }
   
   // Draw Sprint phases
@@ -190,10 +208,11 @@ const drawTimeline = (
         x + (currentWeek * weekWidth),
         currentY,
         sprintWeeks * weekWidth,
-        barHeight
+        actualBarHeight,
+        weekWidth
       );
       currentWeek += sprintWeeks;
-      currentY += barHeight + barSpacing;
+      currentY += actualBarHeight + actualBarSpacing;
     }
   }
   
@@ -206,10 +225,11 @@ const drawTimeline = (
       x + (currentWeek * weekWidth),
       currentY,
       timelineData.uat * weekWidth,
-      barHeight
+      actualBarHeight,
+      weekWidth
     );
     currentWeek += timelineData.uat;
-    currentY += barHeight + barSpacing;
+    currentY += actualBarHeight + actualBarSpacing;
   }
   
   // Draw Post Launch phase
@@ -221,7 +241,8 @@ const drawTimeline = (
       x + (currentWeek * weekWidth),
       currentY,
       timelineData.postLaunch * weekWidth,
-      barHeight
+      actualBarHeight,
+      weekWidth
     );
   }
 };
@@ -251,7 +272,7 @@ const drawRoundedRect = (
 };
 
 /**
- * Draws an individual phase bar with rounded edges
+ * Draws an individual phase bar with rounded edges and adaptive text sizing
  */
 const drawPhaseBar = (
   ctx: CanvasRenderingContext2D,
@@ -260,9 +281,10 @@ const drawPhaseBar = (
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  weekWidth: number
 ) => {
-  const borderRadius = 6; // Rounded corner radius
+  const borderRadius = 8; // Slightly larger rounded corners
   
   // Draw bar background with rounded corners
   ctx.fillStyle = color;
@@ -275,11 +297,62 @@ const drawPhaseBar = (
   drawRoundedRect(ctx, x, y, width, height, borderRadius);
   ctx.stroke();
   
-  // Draw label
+  // Adaptive font sizing based on bar width and available space
+  let fontSize = 16;
+  let fontWeight = 'bold';
+  
+  // Adjust font size based on available width
+  if (width < 100) {
+    fontSize = 12;
+  } else if (width < 150) {
+    fontSize = 14;
+  } else if (width < 200) {
+    fontSize = 16;
+  } else {
+    fontSize = 18;
+  }
+  
+  // Further adjust if week width is very small (many weeks)
+  if (weekWidth < 25) {
+    fontSize = Math.max(10, fontSize - 2);
+  }
+  
+  // Set text properties with high-quality font rendering
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
+  ctx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText(label, x + (width / 2), y + (height / 2) + 5);
+  ctx.textBaseline = 'middle';
+  
+  // Check if text fits, if not, truncate or use abbreviation
+  const textWidth = ctx.measureText(label).width;
+  let displayLabel = label;
+  
+  if (textWidth > width - 10) { // 10px padding
+    // Try abbreviations for common labels
+    if (label.includes('Sprint')) {
+      displayLabel = label.replace('Sprint', 'S');
+    } else if (label === 'Discovery') {
+      displayLabel = 'Disc';
+    } else if (label === 'Post Launch') {
+      displayLabel = 'Launch';
+    }
+    
+    // If still too long, truncate
+    const abbrevWidth = ctx.measureText(displayLabel).width;
+    if (abbrevWidth > width - 10) {
+      // Use smaller font for very narrow bars
+      fontSize = Math.max(8, fontSize - 4);
+      ctx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, sans-serif`;
+      
+      // Try one more time with smaller font
+      if (ctx.measureText(displayLabel).width > width - 10) {
+        displayLabel = displayLabel.substring(0, Math.floor((width - 10) / (fontSize * 0.6))) + '...';
+      }
+    }
+  }
+  
+  // Draw the text centered in the bar
+  ctx.fillText(displayLabel, x + (width / 2), y + (height / 2));
 };
 
 
@@ -295,7 +368,7 @@ const drawProjectInfo = (
   y: number
 ) => {
   ctx.fillStyle = '#374151';
-  ctx.font = '16px system-ui, -apple-system, sans-serif';
+  ctx.font = 'bold 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
   ctx.textAlign = 'left';
   
   const info = [

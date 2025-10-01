@@ -96,6 +96,17 @@ export const APP_DEFAULTS = {
     defaultProjectFilename: 'project.json',
   },
 
+  // Google Apps Script Integration
+  googleAppsScript: {
+    // Default URL - should be overridden in production deployments
+    // To override: set environment variable VITE_APPS_SCRIPT_URL
+    defaultUrl: 'https://script.google.com/macros/s/AKfycbzvUD3oo63Wja1M4TCSfwtCV9fQWLgQp5k70KYTOVPVX9aaBB_lOpA2KwWeNkzqO_dN/exec',
+    // Timeout for requests to Apps Script (milliseconds)
+    requestTimeout: 30000,
+    // Delay before opening result tab (milliseconds)
+    resultTabDelay: 2000,
+  },
+
 
 
   // User Project Backwards Compatibility
