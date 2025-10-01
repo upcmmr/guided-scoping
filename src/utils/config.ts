@@ -5,20 +5,22 @@
 import { APP_DEFAULTS } from '../config/defaults';
 
 /**
- * Get the Google Apps Script URL from environment variable or default config
- * Environment variable: VITE_APPS_SCRIPT_URL
- * Fallback: APP_DEFAULTS.googleAppsScript.defaultUrl
+ * Get the Google Apps Script URL from environment variable
+ * Environment variable: VITE_APPS_SCRIPT_URL (required)
+ * @throws Error if environment variable is not set
  */
 export const getAppsScriptUrl = (): string => {
   const envUrl = import.meta.env.VITE_APPS_SCRIPT_URL;
   
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
-    console.log('Using Apps Script URL from environment variable');
-    return envUrl.trim();
+  if (!envUrl || typeof envUrl !== 'string' || !envUrl.trim()) {
+    throw new Error(
+      'VITE_APPS_SCRIPT_URL environment variable is not configured. ' +
+      'Please set this variable in your Vercel project settings or .env.local file.'
+    );
   }
   
-  console.log('Using default Apps Script URL from configuration');
-  return APP_DEFAULTS.googleAppsScript.defaultUrl;
+  console.log('Using Apps Script URL from environment variable');
+  return envUrl.trim();
 };
 
 /**
